@@ -55,4 +55,4 @@ An AI-powered food barcode scanner that helps you make healthier, more informed 
 Set up your environment variables in `.env`:
 
 - `OPENROUTER_API_KEY` - Your OpenRouter API key with credits for AI features (get one at [openrouter.ai](https://openrouter.ai))
-- `APP_URL` - Your application URL (optional, defaults to vercel.app URL)
+- `APP_URL` - Your application URL
