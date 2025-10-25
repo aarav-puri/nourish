@@ -16,7 +16,7 @@ An AI-powered food barcode scanner that helps you make healthier, more informed 
 
 ## How to Use
 
-1. Open `index.html` in a web browser
+1. Open `barcodesense.vercel.app` in a web browser
 2. Click "Upload Barcode Image" to get started
 3. Upload a photo of a barcode (or drag and drop)
 4. View product information and nutritional facts
