@@ -604,6 +604,76 @@ body {
   margin: 0;
 }
 
+/* Animated Ring */
+.ring {
+  margin: 30px auto;
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.ring1,
+.ring2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 40%;
+  animation-timing-function: ease-in-out;
+}
+
+.ring1 {
+  border: 3px solid var(--white);
+  border-radius: 41% 71% 57% 35% / 38% 51% 64% 49%;
+  animation: animate 20s linear infinite;
+}
+
+.ring2 {
+  border: 3px solid var(--text-secondary);
+  animation: animate2 15s linear infinite;
+}
+
+@keyframes animate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes animate2 {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.ring p {
+  font-size: 0.75em;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.ring a {
+  position: relative;
+  z-index: 10;
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.ring a:hover {
+  color: var(--primary-dark);
+  transform: scale(1.05);
+}
+
 /* Mobile Bottom Navigation */
 .mobile-bottom-nav {
   display: none;
@@ -1145,7 +1215,7 @@ body {
     margin-bottom: 100px;
     padding-bottom: 20px;
   }
-  
+
   body {
     padding-bottom: env(safe-area-inset-bottom);
   }
