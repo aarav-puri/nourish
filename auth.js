@@ -20,26 +20,20 @@ async function initAuth() {
 // Update UI based on auth state
 function updateAuthUI() {
     const authBtn = document.getElementById('authBtn');
-    const authBtnMobile = document.getElementById('authBtnMobile');
     const userMenu = document.getElementById('userMenu');
-    const userMenuMobile = document.getElementById('userMenuMobile');
     const userEmail = document.getElementById('userEmail');
     
     if (currentUser) {
         // User is logged in
         if (authBtn) authBtn.classList.add('hidden');
-        if (authBtnMobile) authBtnMobile.classList.add('hidden');
         if (userMenu) {
             userMenu.classList.remove('hidden');
             if (userEmail) userEmail.textContent = currentUser.email;
         }
-        if (userMenuMobile) userMenuMobile.classList.remove('hidden');
     } else {
         // User is logged out
         if (authBtn) authBtn.classList.remove('hidden');
-        if (authBtnMobile) authBtnMobile.classList.remove('hidden');
         if (userMenu) userMenu.classList.add('hidden');
-        if (userMenuMobile) userMenuMobile.classList.add('hidden');
     }
 }
 

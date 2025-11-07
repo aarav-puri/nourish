@@ -3366,10 +3366,6 @@ body {
 }
 
 /* Mobile user menu positioning */
-.user-menu-mobile {
-  position: relative;
-}
-
 @media (max-width: 768px) {
   .user-dropdown {
     position: fixed !important;
