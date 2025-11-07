@@ -483,4 +483,9 @@ async function displayProductInfo(product) {
 
   result.classList.remove("hidden");
   result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  
+  // Save to database if user is logged in
+  if (typeof saveScannedProduct === 'function') {
+    saveScannedProduct(barcode, product.product_name || 'Unknown Product', product);
+  }
 }
