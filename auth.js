@@ -107,7 +107,7 @@ async function handleSignup(event) {
     
     try {
         await supabaseAuth.signUp(email, password);
-        successEl.textContent = 'Account created! Check your email to verify.';
+        successEl.textContent = 'Account created successfully. You can now sign in.';
         successEl.classList.remove('hidden');
         errorEl.classList.add('hidden');
         
