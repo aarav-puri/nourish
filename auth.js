@@ -210,7 +210,11 @@ async function deleteHistoryItem(id) {
 
 // Save scanned product (call this after successful scan)
 async function saveScannedProduct(barcode, productName, productData) {
-    if (!currentUser) return; // Don't save if not logged in
+    if (!currentUser) {
+        // Show sign-in prompt if not logged in
+        showSignInPrompt();
+        return;
+    }
     
     try {
         await supabaseDB.saveScannedProduct(barcode, productName, productData);
@@ -218,6 +222,75 @@ async function saveScannedProduct(barcode, productName, productData) {
         console.error('Save product error:', error);
     }
 }
+
+// Show sign-in prompt popup
+let scanCount = 0;
+function showSignInPrompt() {
+    scanCount++;
+    
+    // Show popup on 1st, 3rd, and every 2 scans after that
+    if (scanCount === 1 || scanCount === 3 || (scanCount > 3 && scanCount % 2 === 0)) {
+        const popup = document.createElement('div');
+        popup.className = 'signin-prompt-overlay';
+        popup.innerHTML = `
+            <div class="signin-prompt">
+                <button class="signin-prompt-close" onclick="closeSignInPrompt()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="signin-prompt-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <h3>Save Your Scan History</h3>
+                <p>Sign in to automatically save all your scanned products and access them anytime, anywhere!</p>
+                <div class="signin-prompt-benefits">
+                    <div class="benefit-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Never lose your scan history</span>
+                    </div>
+                    <div class="benefit-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Access from any device</span>
+                    </div>
+                    <div class="benefit-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Track your product insights</span>
+                    </div>
+                </div>
+                <button class="signin-prompt-btn" onclick="closeSignInPrompt(); showAuthModal();">
+                    Sign In Now
+                </button>
+                <button class="signin-prompt-later" onclick="closeSignInPrompt()">
+                    Maybe Later
+                </button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+        
+        // Fade in animation
+        setTimeout(() => popup.classList.add('show'), 10);
+    }
+}
+
+// Close sign-in prompt
+window.closeSignInPrompt = function() {
+    const popup = document.querySelector('.signin-prompt-overlay');
+    if (popup) {
+        popup.classList.remove('show');
+        setTimeout(() => popup.remove(), 300);
+    }
+};
 
 // Toast notification
 function showToast(message) {
