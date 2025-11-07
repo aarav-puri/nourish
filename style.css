@@ -3272,9 +3272,9 @@ body {
 }
 
 .user-dropdown {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
+  position: fixed;
+  top: auto;
+  right: 20px;
   background: var(--dark-card);
   border: 1px solid var(--light-gray);
   border-radius: 16px;
@@ -3283,6 +3283,15 @@ body {
   overflow: hidden;
   z-index: 1000;
   animation: dropdownSlide 0.3s ease;
+}
+
+/* Desktop positioning */
+@media (min-width: 769px) {
+  .user-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+  }
 }
 
 @keyframes dropdownSlide {
