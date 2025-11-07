@@ -25,9 +25,8 @@
                     </div>
                     <h1 class="app-title">BarcodeSense</h1>
                 </a>
-                <nav class="top-nav">
+                <nav class="top-nav" id="authNavContainer">
                     <button id="authBtn" class="auth-nav-btn" onclick="showAuthModal()">Sign In</button>
-                    <div id="userMenu" class="user-menu hidden"></div>
                 </nav>
             </div>
         </header>
@@ -182,7 +181,18 @@
         fetch('auth.html')
             .then(r => r.text())
             .then(html => {
-                document.getElementById('authContainer').innerHTML = html;
+                // Insert modals into authContainer
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                // Move user menu to nav
+                const userMenu = tempDiv.querySelector('#userMenu');
+                if (userMenu) {
+                    document.getElementById('authNavContainer').appendChild(userMenu);
+                }
+                
+                // Add remaining content (modals) to authContainer
+                document.getElementById('authContainer').innerHTML = tempDiv.innerHTML;
             });
     </script>
 </body>
