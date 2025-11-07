@@ -734,6 +734,23 @@ body {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.profile-icon-mobile {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.profile-icon-mobile svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--white);
+}
+
 /* Features Grid */
 .features-grid {
   display: grid;
