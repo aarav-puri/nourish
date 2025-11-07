@@ -1,8 +1,7 @@
 // Supabase Client Configuration
-// For local testing, these are loaded from .env file (not committed to git)
-// For production, set these as environment variables in Vercel dashboard
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+// Credentials are loaded from config.js
+const SUPABASE_URL = CONFIG.SUPABASE_URL;
+const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 
 // Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
