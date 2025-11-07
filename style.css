@@ -1217,16 +1217,7 @@ body {
   }
 
   .top-nav {
-    display: flex !important;
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-  
-  .auth-nav-btn {
-    font-size: 0.85rem;
-    padding: 6px 12px;
+    display: none;
   }
 
   .mobile-bottom-nav {
@@ -3375,14 +3366,18 @@ body {
 }
 
 /* Mobile user menu positioning */
+.user-menu-mobile {
+  position: relative;
+}
+
 @media (max-width: 768px) {
   .user-dropdown {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    left: 20px;
-    top: auto;
-    max-width: calc(100% - 40px);
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 20px !important;
+    left: 20px !important;
+    top: auto !important;
+    max-width: calc(100% - 40px) !important;
   }
   
   .user-dropdown-header {
