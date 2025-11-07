@@ -346,7 +346,7 @@ async function fetchProductInfo(barcode) {
     const data = await response.json();
 
     if (data.product && Object.keys(data.product).length > 0) {
-      displayProductInfo(data.product);
+      displayProductInfo(data.product, barcode);
     } else {
       productInfo.innerHTML = `
                 <div class="product-field">
@@ -370,7 +370,7 @@ async function fetchProductInfo(barcode) {
 }
 
 // Display product information
-async function displayProductInfo(product) {
+async function displayProductInfo(product, barcode) {
   let html = "";
 
   if (product.image_url) {
