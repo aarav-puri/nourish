@@ -157,8 +157,8 @@ async function showHistory() {
     try {
         const products = await supabaseDB.getScannedProducts();
         
-        if (products.length === 0) {
-            historyContent.innerHTML = '<p class="no-history">No scanned products yet</p>';
+        if (!products || products.length === 0) {
+            historyContent.innerHTML = '<p class="no-history">No scanned products yet. Start scanning to build your history!</p>';
             return;
         }
         
@@ -184,8 +184,16 @@ async function showHistory() {
         html += '</div>';
         historyContent.innerHTML = html;
     } catch (error) {
-        historyContent.innerHTML = '<p class="error">Failed to load history</p>';
         console.error('History error:', error);
+        let errorMsg = 'Failed to load history. ';
+        if (error.message.includes('not authenticated')) {
+            errorMsg += 'Please sign in first.';
+        } else if (error.message.includes('relation') || error.message.includes('does not exist')) {
+            errorMsg += 'Database tables not set up. Please run the SQL setup script.';
+        } else {
+            errorMsg += error.message;
+        }
+        historyContent.innerHTML = `<p class="error" style="color: var(--white); padding: 20px;">${errorMsg}</p>`;
     }
 }
 
@@ -218,8 +226,14 @@ async function saveScannedProduct(barcode, productName, productData) {
     
     try {
         await supabaseDB.saveScannedProduct(barcode, productName, productData);
+        console.log('Product saved successfully:', productName);
     } catch (error) {
         console.error('Save product error:', error);
+        if (error.message.includes('relation') || error.message.includes('does not exist')) {
+            showToast('Database not set up. Please run the SQL setup script.');
+        } else {
+            showToast('Failed to save product');
+        }
     }
 }
 
