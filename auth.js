@@ -4,33 +4,27 @@ let currentUser = null;
 // Initialize auth state
 async function initAuth() {
     try {
-        // Handle OAuth callback
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        if (hashParams.has('access_token')) {
-            // OAuth callback detected, let Supabase handle it
-            const { data, error } = await supabase.auth.getSession();
-            if (error) {
-                console.error('OAuth callback error:', error);
-                showToast('Authentication failed');
-            } else if (data.session) {
-                // Clear the hash from URL
-                window.history.replaceState(null, '', window.location.pathname);
-                showToast('Successfully signed in!');
-            }
-        }
-        
-        currentUser = await supabaseAuth.getCurrentUser();
-        updateAuthUI();
-        
-        // Listen for auth changes
+        // Listen for auth changes first
         supabaseAuth.onAuthStateChange((event, session) => {
+            console.log('Auth state changed:', event, session?.user?.email);
             currentUser = session?.user || null;
             updateAuthUI();
             
             if (event === 'SIGNED_IN') {
                 showToast('Welcome back!');
+                closeAuthModal();
+                
+                // Clean up OAuth hash from URL
+                if (window.location.hash.includes('access_token')) {
+                    window.history.replaceState(null, '', window.location.pathname);
+                }
             }
         });
+        
+        // Get current user
+        currentUser = await supabaseAuth.getCurrentUser();
+        updateAuthUI();
+        
     } catch (error) {
         console.error('Auth init error:', error);
     }

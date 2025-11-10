@@ -3,8 +3,14 @@
 const SUPABASE_URL = CONFIG.SUPABASE_URL;
 const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 
-// Initialize Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client with auth options
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
 
 // Auth helper functions
 const auth = {
