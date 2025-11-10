@@ -4,15 +4,7 @@ let currentUser = null;
 // Initialize auth state
 async function initAuth() {
     try {
-        // If we have an OAuth hash, redirect to app.html if we're not already there
-        if (window.location.hash.includes('access_token')) {
-            const currentPath = window.location.pathname;
-            if (!currentPath.includes('app.html') && !currentPath.includes('index.html')) {
-                // Redirect to app.html with the hash
-                window.location.href = '/app.html' + window.location.hash;
-                return;
-            }
-        }
+        console.log('Initializing auth...');
         
         // Listen for auth changes first
         supabaseAuth.onAuthStateChange((event, session) => {
@@ -21,6 +13,7 @@ async function initAuth() {
             updateAuthUI();
             
             if (event === 'SIGNED_IN') {
+                console.log('User signed in successfully');
                 showToast('Welcome back!');
                 if (typeof closeAuthModal === 'function') {
                     closeAuthModal();
@@ -29,6 +22,7 @@ async function initAuth() {
                 // Clean up OAuth hash from URL after a short delay
                 setTimeout(() => {
                     if (window.location.hash.includes('access_token')) {
+                        console.log('Cleaning up OAuth hash from URL');
                         window.history.replaceState(null, '', window.location.pathname);
                     }
                 }, 1000);
@@ -37,6 +31,7 @@ async function initAuth() {
         
         // Get current user
         currentUser = await supabaseAuth.getCurrentUser();
+        console.log('Current user:', currentUser?.email || 'Not signed in');
         updateAuthUI();
         
     } catch (error) {
@@ -376,16 +371,16 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Handle OAuth callback immediately on page load
+if (window.location.hash && window.location.hash.includes('access_token')) {
+    console.log('OAuth callback detected, redirecting to app...');
+    // Redirect to app.html if not already there
+    if (!window.location.pathname.includes('app.html')) {
+        window.location.href = '/app.html' + window.location.hash;
+    }
+}
+
 // Initialize on page load
 if (typeof supabaseAuth !== 'undefined') {
-    // If there's an OAuth hash, process it immediately
-    if (window.location.hash && window.location.hash.includes('access_token')) {
-        console.log('OAuth callback detected in hash');
-        // Give Supabase a moment to process the hash
-        setTimeout(() => {
-            initAuth();
-        }, 100);
-    } else {
-        initAuth();
-    }
+    initAuth();
 }
