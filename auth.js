@@ -371,16 +371,31 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Handle OAuth callback immediately on page load
-if (window.location.hash && window.location.hash.includes('access_token')) {
-    console.log('OAuth callback detected, redirecting to app...');
-    // Redirect to app.html if not already there
-    if (!window.location.pathname.includes('app.html')) {
-        window.location.href = '/app.html' + window.location.hash;
+// Wait for everything to load before initializing
+window.addEventListener('load', () => {
+    console.log('Page loaded, checking for OAuth callback...');
+    
+    // Handle OAuth callback immediately
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+        console.log('OAuth callback detected in hash');
+        
+        // Redirect to app.html if not already there
+        if (!window.location.pathname.includes('app.html') && !window.location.pathname.includes('index.html')) {
+            console.log('Redirecting to app.html with hash');
+            window.location.href = '/app.html' + window.location.hash;
+            return;
+        }
+        
+        console.log('On correct page, initializing auth...');
     }
-}
-
-// Initialize on page load
-if (typeof supabaseAuth !== 'undefined') {
-    initAuth();
-}
+    
+    // Initialize auth
+    if (typeof supabaseAuth !== 'undefined' && typeof supabase !== 'undefined') {
+        console.log('Supabase client ready, initializing auth');
+        initAuth();
+    } else {
+        console.error('Supabase not loaded properly');
+        console.log('supabaseAuth:', typeof supabaseAuth);
+        console.log('supabase:', typeof supabase);
+    }
+});
