@@ -6,7 +6,12 @@ async function initAuth() {
     try {
         console.log('Initializing auth...');
         
-        // Listen for auth changes first
+        // Get current user immediately
+        currentUser = await supabaseAuth.getCurrentUser();
+        console.log('Current user:', currentUser?.email || 'Not signed in');
+        updateAuthUI();
+        
+        // Listen for auth changes
         supabaseAuth.onAuthStateChange((event, session) => {
             console.log('Auth state changed:', event, session?.user?.email);
             currentUser = session?.user || null;
@@ -19,20 +24,20 @@ async function initAuth() {
                     closeAuthModal();
                 }
                 
-                // Clean up OAuth hash from URL after a short delay
-                setTimeout(() => {
-                    if (window.location.hash.includes('access_token')) {
-                        console.log('Cleaning up OAuth hash from URL');
-                        window.history.replaceState(null, '', window.location.pathname);
-                    }
-                }, 1000);
+                // Redirect to app page if on home page
+                if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                    console.log('Redirecting to app page');
+                    window.location.href = '/app.html';
+                    return;
+                }
+                
+                // Clean up OAuth hash from URL
+                if (window.location.hash.includes('access_token')) {
+                    console.log('Cleaning up OAuth hash from URL');
+                    window.history.replaceState(null, '', window.location.pathname);
+                }
             }
         });
-        
-        // Get current user
-        currentUser = await supabaseAuth.getCurrentUser();
-        console.log('Current user:', currentUser?.email || 'Not signed in');
-        updateAuthUI();
         
     } catch (error) {
         console.error('Auth init error:', error);
@@ -397,31 +402,27 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Wait for everything to load before initializing
-window.addEventListener('load', () => {
-    console.log('Page loaded, checking for OAuth callback...');
+// Initialize immediately when script loads (not waiting for window.load)
+(function() {
+    console.log('Auth script loaded, checking for OAuth callback...');
     
     // Handle OAuth callback immediately
     if (window.location.hash && window.location.hash.includes('access_token')) {
         console.log('OAuth callback detected in hash');
         
-        // Redirect to app.html if not already there
-        if (!window.location.pathname.includes('app.html') && !window.location.pathname.includes('index.html')) {
+        // Redirect to app.html if on home page
+        if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
             console.log('Redirecting to app.html with hash');
             window.location.href = '/app.html' + window.location.hash;
             return;
         }
-        
-        console.log('On correct page, initializing auth...');
     }
     
-    // Initialize auth
-    if (typeof supabaseAuth !== 'undefined' && typeof supabase !== 'undefined') {
-        console.log('Supabase client ready, initializing auth');
-        initAuth();
+    // Initialize auth when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAuth);
     } else {
-        console.error('Supabase not loaded properly');
-        console.log('supabaseAuth:', typeof supabaseAuth);
-        console.log('supabase:', typeof supabase);
+        // DOM already loaded
+        initAuth();
     }
-});
+})();
