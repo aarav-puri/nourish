@@ -95,18 +95,14 @@ function clearAuthForms() {
 // Handle Discord OAuth login
 async function handleDiscordLogin() {
     try {
-        const redirectUrl = window.location.href.includes('app.html') 
-            ? window.location.origin + '/app.html'
-            : window.location.origin + '/index.html';
+        console.log('Starting Discord login...');
             
         const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'discord',
-            options: {
-                redirectTo: redirectUrl
-            }
+            provider: 'discord'
         });
         
         if (error) throw error;
+        console.log('Discord OAuth initiated');
     } catch (error) {
         console.error('Discord login error:', error);
         showToast('Discord login failed. Please try again.');
