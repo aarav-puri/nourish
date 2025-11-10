@@ -41,17 +41,11 @@ async function initAuth() {
 
 // Update UI based on auth state
 function updateAuthUI() {
-    console.log('Updating auth UI, currentUser:', currentUser?.email);
+    console.log('Updating auth UI, currentUser:', currentUser);
     
     const authBtn = document.getElementById('authBtn');
     const userMenu = document.getElementById('userMenu');
     const userEmail = document.getElementById('userEmail');
-    
-    console.log('Auth elements found:', {
-        authBtn: !!authBtn,
-        userMenu: !!userMenu,
-        userEmail: !!userEmail
-    });
     
     if (currentUser) {
         // User is logged in
@@ -59,7 +53,24 @@ function updateAuthUI() {
         if (authBtn) authBtn.classList.add('hidden');
         if (userMenu) {
             userMenu.classList.remove('hidden');
-            if (userEmail) userEmail.textContent = currentUser.email;
+            
+            // Get Discord username and avatar from user metadata
+            const metadata = currentUser.user_metadata;
+            const displayName = metadata?.full_name || metadata?.name || currentUser.email;
+            const avatarUrl = metadata?.avatar_url || metadata?.picture;
+            
+            console.log('User metadata:', metadata);
+            console.log('Display name:', displayName);
+            console.log('Avatar URL:', avatarUrl);
+            
+            if (userEmail) {
+                userEmail.textContent = displayName;
+            }
+            
+            // Update profile icons with Discord avatar if available
+            if (avatarUrl) {
+                updateProfileIcons(avatarUrl);
+            }
         }
     } else {
         // User is logged out
@@ -67,6 +78,15 @@ function updateAuthUI() {
         if (authBtn) authBtn.classList.remove('hidden');
         if (userMenu) userMenu.classList.add('hidden');
     }
+}
+
+// Update profile icons with user avatar
+function updateProfileIcons(avatarUrl) {
+    const profileIcons = document.querySelectorAll('.profile-icon, .profile-icon-large');
+    profileIcons.forEach(icon => {
+        // Replace SVG with image
+        icon.innerHTML = `<img src="${avatarUrl}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    });
 }
 
 // Show auth modal
