@@ -131,13 +131,22 @@ function clearAuthForms() {
 async function handleDiscordLogin() {
     try {
         console.log('Starting Discord login...');
+        
+        // Determine redirect URL
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const redirectUrl = isLocal 
+            ? 'http://localhost:3000/app.html'
+            : 'https://barcodesense.vercel.app/app.html';
             
         const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'discord'
+            provider: 'discord',
+            options: {
+                redirectTo: redirectUrl
+            }
         });
         
         if (error) throw error;
-        console.log('Discord OAuth initiated');
+        console.log('Discord OAuth initiated with redirect:', redirectUrl);
     } catch (error) {
         console.error('Discord login error:', error);
         showToast('Discord login failed. Please try again.');
