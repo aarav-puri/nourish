@@ -4,6 +4,21 @@ let currentUser = null;
 // Initialize auth state
 async function initAuth() {
     try {
+        // Handle OAuth callback
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        if (hashParams.has('access_token')) {
+            // OAuth callback detected, let Supabase handle it
+            const { data, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('OAuth callback error:', error);
+                showToast('Authentication failed');
+            } else if (data.session) {
+                // Clear the hash from URL
+                window.history.replaceState(null, '', window.location.pathname);
+                showToast('Successfully signed in!');
+            }
+        }
+        
         currentUser = await supabaseAuth.getCurrentUser();
         updateAuthUI();
         
@@ -11,6 +26,10 @@ async function initAuth() {
         supabaseAuth.onAuthStateChange((event, session) => {
             currentUser = session?.user || null;
             updateAuthUI();
+            
+            if (event === 'SIGNED_IN') {
+                showToast('Welcome back!');
+            }
         });
     } catch (error) {
         console.error('Auth init error:', error);
@@ -73,10 +92,14 @@ function clearAuthForms() {
 // Handle Discord OAuth login
 async function handleDiscordLogin() {
     try {
+        const redirectUrl = window.location.href.includes('app.html') 
+            ? window.location.origin + '/app.html'
+            : window.location.origin + '/index.html';
+            
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'discord',
             options: {
-                redirectTo: window.location.origin + '/app.html'
+                redirectTo: redirectUrl
             }
         });
         
