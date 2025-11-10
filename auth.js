@@ -70,6 +70,23 @@ function clearAuthForms() {
     document.getElementById('signupSuccess').classList.add('hidden');
 }
 
+// Handle Discord OAuth login
+async function handleDiscordLogin() {
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'discord',
+            options: {
+                redirectTo: window.location.origin + '/app.html'
+            }
+        });
+        
+        if (error) throw error;
+    } catch (error) {
+        console.error('Discord login error:', error);
+        showToast('Discord login failed. Please try again.');
+    }
+}
+
 // Handle login
 async function handleLogin(event) {
     event.preventDefault();
