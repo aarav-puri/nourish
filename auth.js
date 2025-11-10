@@ -41,12 +41,21 @@ async function initAuth() {
 
 // Update UI based on auth state
 function updateAuthUI() {
+    console.log('Updating auth UI, currentUser:', currentUser?.email);
+    
     const authBtn = document.getElementById('authBtn');
     const userMenu = document.getElementById('userMenu');
     const userEmail = document.getElementById('userEmail');
     
+    console.log('Auth elements found:', {
+        authBtn: !!authBtn,
+        userMenu: !!userMenu,
+        userEmail: !!userEmail
+    });
+    
     if (currentUser) {
         // User is logged in
+        console.log('User is logged in, showing profile menu');
         if (authBtn) authBtn.classList.add('hidden');
         if (userMenu) {
             userMenu.classList.remove('hidden');
@@ -54,6 +63,7 @@ function updateAuthUI() {
         }
     } else {
         // User is logged out
+        console.log('User is logged out, showing sign in button');
         if (authBtn) authBtn.classList.remove('hidden');
         if (userMenu) userMenu.classList.add('hidden');
     }
