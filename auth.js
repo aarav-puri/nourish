@@ -138,11 +138,8 @@ async function handleDiscordLogin() {
             ? 'http://localhost:3000/app.html'
             : 'https://barcodesense.vercel.app/app.html';
             
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'discord',
-            options: {
-                redirectTo: redirectUrl
-            }
+        const { data, error } = await supabaseAuth.signInWithOAuth('discord', {
+            redirectTo: redirectUrl
         });
         
         if (error) throw error;

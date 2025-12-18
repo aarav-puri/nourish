@@ -4,7 +4,7 @@ const SUPABASE_URL = CONFIG.SUPABASE_URL;
 const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 
 // Initialize Supabase client with auth options
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -16,7 +16,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 const auth = {
   // Sign up new user
   async signUp(email, password) {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
     });
@@ -26,7 +26,7 @@ const auth = {
 
   // Sign in existing user
   async signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
     });
@@ -36,19 +36,29 @@ const auth = {
 
   // Sign out
   async signOut() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
   },
 
   // Get current user
   async getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     return user;
   },
 
   // Listen to auth changes
   onAuthStateChange(callback) {
-    return supabase.auth.onAuthStateChange(callback);
+    return supabaseClient.auth.onAuthStateChange(callback);
+  },
+
+  // OAuth sign in
+  async signInWithOAuth(provider, options) {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider,
+      options
+    });
+    if (error) throw error;
+    return data;
   }
 };
 
@@ -59,7 +69,7 @@ const db = {
     const user = await auth.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('scanned_products')
       .insert([
         {
@@ -80,7 +90,7 @@ const db = {
     const user = await auth.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('scanned_products')
       .select('*')
       .eq('user_id', user.id)
@@ -96,7 +106,7 @@ const db = {
     const user = await auth.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('scanned_products')
       .delete()
       .eq('id', id)
@@ -110,7 +120,7 @@ const db = {
     const user = await auth.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_preferences')
       .upsert([
         {
@@ -131,7 +141,7 @@ const db = {
     const user = await auth.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_preferences')
       .select('*')
       .eq('user_id', user.id)
