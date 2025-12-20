@@ -19,7 +19,7 @@ async function initAuth() {
             
             if (event === 'SIGNED_IN') {
                 console.log('User signed in successfully');
-                showToast('Welcome back!');
+                showToast('Welcome back.');
                 if (typeof closeAuthModal === 'function') {
                     closeAuthModal();
                 }
