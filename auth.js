@@ -414,8 +414,8 @@ function handleMobileProfile() {
     if (supabaseClient) {
         supabaseClient.auth.getUser().then(({data}) => {
             if (data.user) {
-                // User is logged in, show history
-                showHistory();
+                // User is logged in, show mobile menu
+                showMobileProfileMenu(data.user);
             } else {
                 // User not logged in, show auth modal
                 showAuthModal();
@@ -424,6 +424,26 @@ function handleMobileProfile() {
     } else {
         showAuthModal();
     }
+}
+
+// Show mobile profile menu
+function showMobileProfileMenu(user) {
+    const mobileUserEmail = document.getElementById('mobileUserEmail');
+    if (mobileUserEmail && user) {
+        mobileUserEmail.textContent = user.email;
+    }
+    document.getElementById('mobileProfileMenu').classList.remove('hidden');
+}
+
+// Close mobile profile menu
+function closeMobileProfileMenu() {
+    document.getElementById('mobileProfileMenu').classList.add('hidden');
+}
+
+// Show history from mobile menu
+function showHistoryFromMobile() {
+    closeMobileProfileMenu();
+    showHistory();
 }
 
 // Initialize immediately when script loads (not waiting for window.load)

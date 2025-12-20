@@ -136,6 +136,44 @@
     </div>
 </div>
 
+<!-- Mobile Profile Menu -->
+<div id="mobileProfileMenu" class="auth-modal hidden">
+    <div class="auth-modal-overlay" onclick="closeMobileProfileMenu()"></div>
+    <div class="auth-modal-content" style="max-width: 400px;">
+        <button class="auth-close-btn" onclick="closeMobileProfileMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        
+        <div class="user-dropdown-header" style="margin-bottom: 20px;">
+            <div class="profile-icon-large">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <span id="mobileUserEmail" class="user-email-display"></span>
+        </div>
+        
+        <a href="#" onclick="showHistoryFromMobile(); return false;" class="dropdown-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3h7a2 2 0 0 1 2 2v14a2 2 0 0 0 2 2 2 2 0 0 0 2-2V5a2 2 0 0 1 2-2h7"></path>
+            </svg>
+            View Scanned Items
+        </a>
+        <a href="#" onclick="handleLogout(); return false;" class="dropdown-item logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Sign Out
+        </a>
+    </div>
+</div>
+
 <!-- History Modal -->
 <div id="historyModal" class="auth-modal hidden">
     <div class="auth-modal-overlay" onclick="closeHistoryModal()"></div>
