@@ -408,6 +408,24 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Handle mobile profile button
+function handleMobileProfile() {
+    // Check if user is logged in
+    if (supabaseClient) {
+        supabaseClient.auth.getUser().then(({data}) => {
+            if (data.user) {
+                // User is logged in, show history
+                showHistory();
+            } else {
+                // User not logged in, show auth modal
+                showAuthModal();
+            }
+        });
+    } else {
+        showAuthModal();
+    }
+}
+
 // Initialize immediately when script loads (not waiting for window.load)
 (function() {
     console.log('Auth script loaded, checking for OAuth callback...');
