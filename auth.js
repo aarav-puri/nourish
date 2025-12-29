@@ -482,20 +482,18 @@ document.addEventListener('click', (e) => {
 
 // Handle mobile profile button
 function handleMobileProfile() {
-    // Check if user is logged in
-    if (supabaseClient) {
-        supabaseClient.auth.getUser().then(({data}) => {
-            if (data.user) {
-                // User is logged in, show mobile menu
-                showMobileProfileMenu(data.user);
-            } else {
-                // User not logged in, show auth modal
-                showAuthModal();
-            }
-        });
-    } else {
+    // Check if user is logged in using the auth wrapper
+    supabaseAuth.getCurrentUser().then(user => {
+        if (user) {
+            // User is logged in, show mobile menu
+            showMobileProfileMenu(user);
+        } else {
+            // User not logged in, show auth modal
+            showAuthModal();
+        }
+    }).catch(() => {
         showAuthModal();
-    }
+    });
 }
 
 // Show mobile profile menu

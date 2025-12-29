@@ -1,11 +1,22 @@
 // Supabase Client Configuration
 // Credentials are loaded from config.js
-const SUPABASE_URL = CONFIG?.SUPABASE_URL;
-const SUPABASE_ANON_KEY = CONFIG?.SUPABASE_ANON_KEY;
+
+// Debug: Check if CONFIG is loaded
+if (typeof CONFIG === 'undefined') {
+  console.error('CONFIG is not defined. Make sure config.js is loaded before supabase-client.js');
+}
+
+const SUPABASE_URL = (typeof CONFIG !== 'undefined') ? CONFIG.SUPABASE_URL : null;
+const SUPABASE_ANON_KEY = (typeof CONFIG !== 'undefined') ? CONFIG.SUPABASE_ANON_KEY : null;
 
 // Check if credentials are available
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('Supabase credentials not found in CONFIG');
+  console.error('Supabase credentials not found. URL:', !!SUPABASE_URL, 'Key:', !!SUPABASE_ANON_KEY);
+}
+
+// Check if Supabase library is loaded
+if (typeof window.supabase === 'undefined') {
+  console.error('Supabase library not loaded. Make sure the CDN script is loaded first.');
 }
 
 // Initialize Supabase client with auth options
@@ -18,6 +29,10 @@ const supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
       }
     })
   : null;
+
+if (!supabaseClient) {
+  console.error('Failed to initialize Supabase client');
+}
 
 // Auth helper functions
 const auth = {
