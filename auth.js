@@ -224,7 +224,7 @@ async function handleForgotPassword(event) {
     
     try {
         await supabaseAuth.resetPasswordForEmail(email);
-        successEl.textContent = 'Password reset link sent! Check your email.';
+        successEl.textContent = 'If an account exists with this email, you will receive a password reset link.';
         successEl.classList.remove('hidden');
         errorEl.classList.add('hidden');
         
