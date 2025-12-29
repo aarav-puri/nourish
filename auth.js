@@ -19,12 +19,6 @@ async function initAuth() {
                     closeAuthModal();
                 }
                 
-                // Redirect to app page if on home page
-                if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-                    window.location.href = '/app.html';
-                    return;
-                }
-                
                 // Clean up OAuth hash from URL
                 if (window.location.hash.includes('access_token')) {
                     window.history.replaceState(null, '', window.location.pathname);

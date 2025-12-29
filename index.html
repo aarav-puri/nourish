@@ -20,14 +20,20 @@
                     <img src="favicon.png" alt="BarcodeSense" class="logo-img">
                     <span class="logo-text">BarcodeSense</span>
                 </a>
-                <div class="nav-links">
-                    <a href="#features" class="nav-link">Features</a>
-                    <a href="#how-it-works" class="nav-link">How It Works</a>
+                <button class="hamburger-menu" id="hamburgerMenu" onclick="toggleMobileMenu()" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="nav-links" id="navLinks">
+                    <a href="#features" class="nav-link" onclick="closeMobileMenu()">Features</a>
+                    <a href="#how-it-works" class="nav-link" onclick="closeMobileMenu()">How It Works</a>
                     <a href="app.html" class="cta-btn">Try It Free</a>
                 </div>
             </div>
         </div>
     </nav>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
 
     <!-- Hero Section -->
     <section class="hero-section">
@@ -399,34 +405,33 @@
     <!-- Config must load first -->
     <script src="config.js"></script>
     
-    <!-- Supabase -->
+    <!-- Supabase - only for checking auth state -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
-    <script src="auth.js"></script>
     
     <script src="particles.js"></script>
-    <script src="ai-service.js"></script>
-    <script src="ai-features.js"></script>
-    <script src="app.js"></script>
     
     <script>
-        // Load auth UI
-        fetch('auth.html')
-            .then(r => r.text())
-            .then(html => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-                
-                // Move user menu to nav
-                const userMenu = tempDiv.querySelector('#userMenu');
-                const navLinks = document.querySelector('.nav-links');
-                if (userMenu && navLinks) {
-                    navLinks.insertBefore(userMenu, navLinks.lastElementChild);
+        // Check if user is logged in and redirect to app page
+        (async function() {
+            try {
+                // If there's an OAuth callback hash, redirect immediately to app.html
+                if (window.location.hash && window.location.hash.includes('access_token')) {
+                    window.location.href = '/app.html' + window.location.hash;
+                    return;
                 }
                 
-                // Add remaining content (modals) to body
-                document.body.appendChild(tempDiv);
-            });
+                const user = await supabaseAuth.getCurrentUser();
+                if (user) {
+                    // User is logged in, redirect to app page
+                    window.location.href = '/app.html';
+                    return;
+                }
+            } catch (error) {
+                // Silently fail - user is not logged in, stay on landing page
+                console.log('Not logged in, staying on landing page');
+            }
+        })();
             
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -457,6 +462,39 @@
             
             lastScroll = currentScroll;
         });
+        
+        // Mobile menu toggle functions
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburger = document.getElementById('hamburgerMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (navLinks.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function closeMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburger = document.getElementById('hamburgerMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            
+            navLinks.classList.remove('active');
+            hamburger.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Make functions globally accessible
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.closeMobileMenu = closeMobileMenu;
     </script>
 </body>
 </html>
