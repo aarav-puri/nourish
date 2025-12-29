@@ -4762,6 +4762,8 @@ tbody tr:hover td:nth-child(2) {
   .comparison-table-wrapper {
     margin-top: 40px;
     border-radius: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .comparison-table {
@@ -4964,10 +4966,15 @@ tbody tr:hover td:nth-child(2) {
   .comparison-table-wrapper {
     margin-top: 30px;
     border-radius: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding: 0 20px;
   }
 
   .comparison-table {
-    min-width: 600px;
+    min-width: 550px;
   }
 
   .comparison-table th {
