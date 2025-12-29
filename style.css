@@ -3363,6 +3363,24 @@ body {
   text-decoration: underline;
 }
 
+.auth-forgot {
+  text-align: right;
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+
+.auth-forgot a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.auth-forgot a:hover {
+  color: var(--white);
+  text-decoration: underline;
+}
+
 /* User Menu */
 .user-menu {
   position: relative;
