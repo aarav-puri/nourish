@@ -2,164 +2,461 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a0a0a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BarcodeSense - Smart Food Scanner</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BarcodeSense — Smart Product Scanning with AI</title>
+    <meta name="description" content="Scan any barcode and get instant AI-powered insights about products, ingredients, sustainability, and healthier alternatives.">
+    <link rel="icon" href="favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Main App -->
-    <div id="app" class="app hidden">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <a href="index.html" class="header-left">
-                    <div class="logo-small">
-                        <img src="favicon.png" alt="BarcodeSense Logo" style="width: 100%; height: 100%; object-fit: contain;">
-                    </div>
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="/" class="logo-link">
+                    <img src="favicon.png" alt="BarcodeSense" class="logo-img">
+                    <span class="logo-text">BarcodeSense</span>
                 </a>
-                <nav class="top-nav">
-                    <a href="app.html" class="get-started-btn">Get Started</a>
-                </nav>
+                <div class="nav-links">
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#how-it-works" class="nav-link">How It Works</a>
+                    <a href="app.html" class="cta-btn">Try It Free</a>
+                </div>
             </div>
-        </header>
+        </div>
+    </nav>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="particles-container" id="particles"></div>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                </svg>
+                AI-Powered Product Intelligence
+            </div>
+            <h1 class="hero-title">Know what you're buying with <span class="gradient-text">AI insights</span></h1>
+            <p class="hero-subtitle">Scan any barcode and instantly discover ingredients, health scores, eco-impact, and smarter alternatives — all powered by AI.</p>
+            <div class="hero-cta">
+                <a href="app.html" class="primary-btn">
+                    Start Scanning Free
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">The Problem</p>
+                <h2 class="section-title">Why informed choices matter</h2>
+            </div>
             
-            <!-- Hero Section -->
-            <section class="page-section">
-                <div class="page-hero">
-                    <div class="hero-icon">
-                        <img src="favicon.png" alt="BarcodeSense Logo" style="width: 100%; height: 100%; object-fit: contain;">
-                    </div>
-                    <h2 class="hero-title">Scan. Learn. Eat Better.</h2>
-                    <p class="hero-subtitle">Discover what's in your food with a simple scan</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">55%</div>
+                    <p class="stat-description">of daily calories Americans consume come from ultra-processed foods</p>
+                    <a href="https://publichealth.jhu.edu/2024/ultraprocessed-foods-account-for-more-than-half-of-calories-consumed-at-home" target="_blank" rel="noopener" class="stat-source">Source: Johns Hopkins University</a>
                 </div>
 
-                <!-- Feature Buttons -->
-                <div class="features-grid">
-                    <div class="feature-card" style="animation-delay: 0.1s">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                        </div>
-                        <h3>Upload & Scan</h3>
-                        <p>Upload a barcode image and get instant product information</p>
-                    </div>
-
-                    <div class="feature-card" style="animation-delay: 0.2s">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                            </svg>
-                        </div>
-                        <h3>AI Health Alternatives</h3>
-                        <p>Get personalized healthier product recommendations powered by AI</p>
-                    </div>
-
-                    <div class="feature-card" style="animation-delay: 0.3s">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                            </svg>
-                        </div>
-                        <h3>Mood-Based Suggestions</h3>
-                        <p>Discover foods that match your mood and energy levels</p>
-                    </div>
-
-                    <div class="feature-card" style="animation-delay: 0.4s">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 11l3 3L22 4"></path>
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                            </svg>
-                        </div>
-                        <h3>Diet Compatibility</h3>
-                        <p>Check if products match your dietary restrictions instantly</p>
-                    </div>
-
-                    <div class="feature-card" style="animation-delay: 0.5s">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 3h18v18H3z"></path>
-                                <path d="M3 9h18"></path>
-                                <path d="M9 21V9"></path>
-                            </svg>
-                        </div>
-                        <h3>Eco Impact Score</h3>
-                        <p>Understand the environmental footprint of your food choices</p>
-                    </div>
-
-                    <div class="feature-card" style="animation-delay: 0.6s">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
-                            </svg>
-                        </div>
-                        <h3>Powered by AI</h3>
-                        <p>Original AI-driven insights you won't find anywhere else</p>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">32</div>
+                    <p class="stat-description">harmful health effects linked to ultra-processed foods, including heart disease and diabetes</p>
+                    <a href="https://www.theguardian.com/society/2024/feb/28/ultra-processed-food-32-harmful-effects-health-review" target="_blank" rel="noopener" class="stat-source">Source: BMJ Study</a>
                 </div>
-            </section>
-        </main>
 
-        <!-- Footer -->
-        <footer class="app-footer">
-            <p>&copy; 2025 BarcodeSense. All rights reserved.</p>
-        </footer>
+                <div class="stat-card">
+                    <div class="stat-number">70%</div>
+                    <p class="stat-description">of people don't fully understand nutrition labels on food packaging</p>
+                    <a href="https://foodforhealth.ai/the-hidden-truth-about-food-label-reading/" target="_blank" rel="noopener" class="stat-source">Source: Food Health Research</a>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <!-- Mobile Bottom Navigation -->
-        <nav class="mobile-bottom-nav">
-            <a href="index.html" class="mobile-nav-item active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
-                <span>Home</span>
-            </a>
-            <a href="app.html" class="mobile-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <span>Upload</span>
-            </a>
-            <a href="#" class="mobile-nav-item" id="mobileProfileBtn" onclick="handleMobileProfile(); return false;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span>Profile</span>
-            </a>
-        </nav>
-    </div>
-    
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Features</p>
+                <h2 class="section-title">Everything you need to shop smarter</h2>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                        </svg>
+                    </div>
+                    <h3>AI-Powered Analysis</h3>
+                    <p>Get instant insights about any product with advanced AI that understands ingredients, nutrition, and more.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        </svg>
+                    </div>
+                    <h3>Health Score</h3>
+                    <p>See how healthy a product really is with our comprehensive scoring system based on ingredients and nutrition.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                    </div>
+                    <h3>Eco Impact</h3>
+                    <p>Understand the environmental footprint of your purchases and make more sustainable choices.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path>
+                        </svg>
+                    </div>
+                    <h3>Instant Scanning</h3>
+                    <p>Upload a photo or enter a barcode manually — get results in seconds from our global product database.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path>
+                        </svg>
+                    </div>
+                    <h3>Mood Recommendations</h3>
+                    <p>Get personalized product suggestions based on your current mood and preferences.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                    </div>
+                    <h3>Diet Compatibility</h3>
+                    <p>Check if products match your dietary restrictions — vegan, gluten-free, keto, and more.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why BarcodeSense Section -->
+    <section class="why-section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Why Choose Us</p>
+                <h2 class="section-title">BarcodeSense vs Traditional Methods</h2>
+                <p class="section-subtitle">See how AI-powered insights make all the difference</p>
+            </div>
+
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th class="feature-col">Feature</th>
+                            <th class="barcodesense-col">
+                                <div class="table-header-content">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                                    </svg>
+                                    BarcodeSense
+                                </div>
+                            </th>
+                            <th class="others-col">Manual Reading</th>
+                            <th class="others-col">Basic Apps</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-name">AI-Powered Analysis</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Health Score Analysis</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                            <td class="partial-cell">
+                                <span>Limited</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Eco Impact Tracking</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Smart Alternatives</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Mood-Based Recommendations</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Diet Compatibility Check</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="partial-cell">
+                                <span>Limited</span>
+                            </td>
+                            <td class="partial-cell">
+                                <span>Limited</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Instant Results</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Comprehensive Insights</td>
+                            <td class="check-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </td>
+                            <td class="cross-cell">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </td>
+                            <td class="partial-cell">
+                                <span>Limited</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">How It Works</p>
+                <h2 class="section-title">Three simple steps</h2>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Scan or Upload</h3>
+                    <p>Take a photo of any barcode or enter the numbers manually.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>AI Analysis</h3>
+                    <p>Our AI instantly analyzes ingredients, nutrition, and environmental impact.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Make Better Choices</h3>
+                    <p>Get personalized insights and discover healthier, more sustainable alternatives.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to shop smarter?</h2>
+                <p>Start scanning products and get AI-powered insights instantly.</p>
+                <a href="app.html" class="primary-btn large">
+                    Try BarcodeSense Free
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="favicon.png" alt="BarcodeSense" class="footer-logo">
+                    <span class="footer-text">BarcodeSense</span>
+                </div>
+                <p class="footer-copy">© 2025 BarcodeSense</p>
+            </div>
+        </div>
+    </footer>
+
     <!-- Config must load first -->
     <script src="config.js"></script>
     
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
     
     <script src="particles.js"></script>
     <script src="ai-service.js"></script>
     <script src="ai-features.js"></script>
     <script src="app.js"></script>
+    
+    <script>
+        // Load auth UI
+        fetch('auth.html')
+            .then(r => r.text())
+            .then(html => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                // Move user menu to nav
+                const userMenu = tempDiv.querySelector('#userMenu');
+                const navLinks = document.querySelector('.nav-links');
+                if (userMenu && navLinks) {
+                    navLinks.insertBefore(userMenu, navLinks.lastElementChild);
+                }
+                
+                // Add remaining content (modals) to body
+                document.body.appendChild(tempDiv);
+            });
+            
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+        
+        // Hide logo when scrolling down
+        let lastScroll = 0;
+        const nav = document.querySelector('.landing-nav');
+        const logoLink = document.querySelector('.logo-link');
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                logoLink.style.opacity = '0';
+                logoLink.style.pointerEvents = 'none';
+            } else {
+                logoLink.style.opacity = '1';
+                logoLink.style.pointerEvents = 'auto';
+            }
+            
+            lastScroll = currentScroll;
+        });
+    </script>
 </body>
 </html>

@@ -133,75 +133,89 @@ function resetUpload() {
 }
 
 // Upload functionality
-uploadBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  imageInput.click();
-});
-
-uploadArea.addEventListener("click", (e) => {
-  // Only trigger if clicking the upload area itself, not the button
-  if (e.target === uploadArea || uploadArea.contains(e.target)) {
+if (uploadBtn) {
+  uploadBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
     imageInput.click();
-  }
-});
+  });
+}
 
-uploadArea.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  uploadArea.classList.add("drag-over");
-});
+if (uploadArea) {
+  uploadArea.addEventListener("click", (e) => {
+    // Only trigger if clicking the upload area itself, not the button
+    if (e.target === uploadArea || uploadArea.contains(e.target)) {
+      imageInput.click();
+    }
+  });
 
-uploadArea.addEventListener("dragleave", () => {
-  uploadArea.classList.remove("drag-over");
-});
+  uploadArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadArea.classList.add("drag-over");
+  });
 
-uploadArea.addEventListener("drop", (e) => {
-  e.preventDefault();
-  uploadArea.classList.remove("drag-over");
+  uploadArea.addEventListener("dragleave", () => {
+    uploadArea.classList.remove("drag-over");
+  });
 
-  const files = e.dataTransfer.files;
-  if (files.length > 0 && files[0].type.startsWith("image/")) {
-    handleImageUpload(files[0]);
-  }
-});
+  uploadArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove("drag-over");
 
-imageInput.addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    handleImageUpload(file);
-  }
-});
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type.startsWith("image/")) {
+      handleImageUpload(files[0]);
+    }
+  });
+}
 
-removeImage.addEventListener("click", (e) => {
-  e.stopPropagation();
-  resetUpload();
-  result.classList.add("hidden");
-});
+if (imageInput) {
+  imageInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  });
+}
+
+if (removeImage) {
+  removeImage.addEventListener("click", (e) => {
+    e.stopPropagation();
+    resetUpload();
+    result.classList.add("hidden");
+  });
+}
 
 // Manual barcode search
-searchBtn.addEventListener("click", () => {
-  const barcode = manualBarcode.value.trim();
-  if (barcode) {
-    statusEl.textContent = `Searching for barcode: ${barcode}`;
-    statusEl.className = "status-message scanning";
-    handleBarcodeDetected(barcode);
-    manualBarcode.value = "";
-  } else {
-    statusEl.textContent = "Please enter a barcode number";
-    statusEl.className = "status-message error";
-  }
-});
+if (searchBtn) {
+  searchBtn.addEventListener("click", () => {
+    const barcode = manualBarcode.value.trim();
+    if (barcode) {
+      statusEl.textContent = `Searching for barcode: ${barcode}`;
+      statusEl.className = "status-message scanning";
+      handleBarcodeDetected(barcode);
+      manualBarcode.value = "";
+    } else {
+      statusEl.textContent = "Please enter a barcode number";
+      statusEl.className = "status-message error";
+    }
+  });
+}
 
 // Allow Enter key to search
-manualBarcode.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    searchBtn.click();
-  }
-});
+if (manualBarcode) {
+  manualBarcode.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      if (searchBtn) searchBtn.click();
+    }
+  });
+}
 
 // Close result
-closeResultBtn.addEventListener("click", () => {
-  result.classList.add("hidden");
-});
+if (closeResultBtn) {
+  closeResultBtn.addEventListener("click", () => {
+    result.classList.add("hidden");
+  });
+}
 
 // Handle image upload
 function handleImageUpload(file) {
@@ -340,8 +354,9 @@ window.closeSuccessModal = function () {
 // Fetch product information
 async function fetchProductInfo(barcode) {
   try {
+    // Use our proxy endpoint to avoid CORS issues
     const response = await fetch(
-      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
+      `/api/product?barcode=${barcode}`
     );
     const data = await response.json();
 

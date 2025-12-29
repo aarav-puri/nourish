@@ -4,21 +4,16 @@ let currentUser = null;
 // Initialize auth state
 async function initAuth() {
     try {
-        console.log('Initializing auth...');
-        
         // Get current user immediately
         currentUser = await supabaseAuth.getCurrentUser();
-        console.log('Current user:', currentUser?.email || 'Not signed in');
         updateAuthUI();
         
         // Listen for auth changes
         supabaseAuth.onAuthStateChange((event, session) => {
-            console.log('Auth state changed:', event, session?.user?.email);
             currentUser = session?.user || null;
             updateAuthUI();
             
             if (event === 'SIGNED_IN') {
-                console.log('User signed in successfully');
                 showToast('Welcome back.');
                 if (typeof closeAuthModal === 'function') {
                     closeAuthModal();
@@ -26,14 +21,12 @@ async function initAuth() {
                 
                 // Redirect to app page if on home page
                 if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-                    console.log('Redirecting to app page');
                     window.location.href = '/app.html';
                     return;
                 }
                 
                 // Clean up OAuth hash from URL
                 if (window.location.hash.includes('access_token')) {
-                    console.log('Cleaning up OAuth hash from URL');
                     window.history.replaceState(null, '', window.location.pathname);
                 }
             }
@@ -46,15 +39,12 @@ async function initAuth() {
 
 // Update UI based on auth state
 function updateAuthUI() {
-    console.log('Updating auth UI, currentUser:', currentUser);
-    
     const authBtn = document.getElementById('authBtn');
     const userMenu = document.getElementById('userMenu');
     const userEmail = document.getElementById('userEmail');
     
     if (currentUser) {
         // User is logged in
-        console.log('User is logged in, showing profile menu');
         if (authBtn) authBtn.classList.add('hidden');
         if (userMenu) {
             userMenu.classList.remove('hidden');
@@ -63,10 +53,6 @@ function updateAuthUI() {
             const metadata = currentUser.user_metadata;
             const displayName = metadata?.full_name || metadata?.name || currentUser.email;
             const avatarUrl = metadata?.avatar_url || metadata?.picture;
-            
-            console.log('User metadata:', metadata);
-            console.log('Display name:', displayName);
-            console.log('Avatar URL:', avatarUrl);
             
             if (userEmail) {
                 userEmail.textContent = displayName;
@@ -79,7 +65,6 @@ function updateAuthUI() {
         }
     } else {
         // User is logged out
-        console.log('User is logged out, showing sign in button');
         if (authBtn) authBtn.classList.remove('hidden');
         if (userMenu) userMenu.classList.add('hidden');
     }
@@ -127,26 +112,23 @@ function clearAuthForms() {
     document.getElementById('signupSuccess').classList.add('hidden');
 }
 
-// Handle Discord OAuth login
-async function handleDiscordLogin() {
+// Handle Google OAuth login
+async function handleGoogleLogin() {
     try {
-        console.log('Starting Discord login...');
-        
         // Determine redirect URL
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const redirectUrl = isLocal 
             ? 'http://localhost:3000/app.html'
             : 'https://barcodesense.vercel.app/app.html';
             
-        const { data, error } = await supabaseAuth.signInWithOAuth('discord', {
+        const { data, error} = await supabaseAuth.signInWithOAuth('google', {
             redirectTo: redirectUrl
         });
         
         if (error) throw error;
-        console.log('Discord OAuth initiated with redirect:', redirectUrl);
     } catch (error) {
-        console.error('Discord login error:', error);
-        showToast('Discord login failed. Please try again.');
+        console.error('Google login error:', error);
+        showToast('Google login failed. Please try again.');
     }
 }
 
@@ -306,7 +288,6 @@ async function saveScannedProduct(barcode, productName, productData) {
     
     try {
         await supabaseDB.saveScannedProduct(barcode, productName, productData);
-        console.log('Product saved successfully:', productName);
     } catch (error) {
         console.error('Save product error:', error);
         if (error.message.includes('relation') || error.message.includes('does not exist')) {
@@ -448,15 +429,10 @@ function showHistoryFromMobile() {
 
 // Initialize immediately when script loads (not waiting for window.load)
 (function() {
-    console.log('Auth script loaded, checking for OAuth callback...');
-    
     // Handle OAuth callback immediately
     if (window.location.hash && window.location.hash.includes('access_token')) {
-        console.log('OAuth callback detected in hash');
-        
         // Redirect to app.html if on home page
         if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-            console.log('Redirecting to app.html with hash');
             window.location.href = '/app.html' + window.location.hash;
             return;
         }
