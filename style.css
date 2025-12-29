@@ -1230,7 +1230,7 @@ body {
   }
 
   .top-nav {
-    display: flex;
+    display: none;
   }
 
   .mobile-bottom-nav {
