@@ -1221,16 +1221,16 @@ body {
   }
 
   .header-content {
-    justify-content: center;
+    justify-content: space-between;
     padding: 0 15px;
   }
 
   .header-left {
-    margin: 0 auto;
+    margin: 0;
   }
 
   .top-nav {
-    display: none;
+    display: flex;
   }
 
   .mobile-bottom-nav {
@@ -1253,6 +1253,8 @@ body {
   .app-page-header {
     padding-bottom: 15px;
     margin-bottom: 20px;
+    justify-content: center;
+    text-align: center;
   }
 
   .back-button {
@@ -1261,6 +1263,8 @@ body {
 
   .page-title {
     font-size: 1.5rem;
+    text-align: center;
+    width: 100%;
   }
 
   .ai-modal {
