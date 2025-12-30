@@ -89,8 +89,6 @@ function closeAuthModal() {
 function showLogin() {
     document.getElementById('loginForm').classList.remove('hidden');
     document.getElementById('signupForm').classList.add('hidden');
-    document.getElementById('forgotPasswordForm').classList.add('hidden');
-    document.getElementById('resetPasswordForm').classList.add('hidden');
     clearAuthForms();
 }
 
@@ -98,42 +96,16 @@ function showLogin() {
 function showSignup() {
     document.getElementById('loginForm').classList.add('hidden');
     document.getElementById('signupForm').classList.remove('hidden');
-    document.getElementById('forgotPasswordForm').classList.add('hidden');
-    document.getElementById('resetPasswordForm').classList.add('hidden');
     clearAuthForms();
 }
 
-// Show forgot password form
-function showForgotPassword() {
-    document.getElementById('loginForm').classList.add('hidden');
-    document.getElementById('signupForm').classList.add('hidden');
-    document.getElementById('forgotPasswordForm').classList.remove('hidden');
-    document.getElementById('resetPasswordForm').classList.add('hidden');
-    clearAuthForms();
-}
 
-// Show reset password form
-function showResetPassword() {
-    document.getElementById('loginForm').classList.add('hidden');
-    document.getElementById('signupForm').classList.add('hidden');
-    document.getElementById('forgotPasswordForm').classList.add('hidden');
-    document.getElementById('resetPasswordForm').classList.remove('hidden');
-    clearAuthForms();
-}
 
 // Clear form errors
 function clearAuthForms() {
     document.getElementById('loginError').classList.add('hidden');
     document.getElementById('signupError').classList.add('hidden');
     document.getElementById('signupSuccess').classList.add('hidden');
-    const forgotError = document.getElementById('forgotError');
-    const forgotSuccess = document.getElementById('forgotSuccess');
-    const resetError = document.getElementById('resetError');
-    const resetSuccess = document.getElementById('resetSuccess');
-    if (forgotError) forgotError.classList.add('hidden');
-    if (forgotSuccess) forgotSuccess.classList.add('hidden');
-    if (resetError) resetError.classList.add('hidden');
-    if (resetSuccess) resetSuccess.classList.add('hidden');
 }
 
 // Handle Google OAuth login
@@ -177,30 +149,24 @@ async function handleLogin(event) {
 // Handle signup
 async function handleSignup(event) {
     event.preventDefault();
-    
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
     const confirmPassword = document.getElementById('signupPasswordConfirm').value;
     const errorEl = document.getElementById('signupError');
     const successEl = document.getElementById('signupSuccess');
-    
-    // Validate passwords match
+
     if (password !== confirmPassword) {
         errorEl.textContent = 'Passwords do not match';
         errorEl.classList.remove('hidden');
         return;
     }
-    
+
     try {
         await supabaseAuth.signUp(email, password);
         successEl.textContent = 'Account created successfully. You can now sign in.';
         successEl.classList.remove('hidden');
         errorEl.classList.add('hidden');
-        
-        // Switch to login after 2 seconds
-        setTimeout(() => {
-            showLogin();
-        }, 2000);
+        setTimeout(() => showLogin(), 2000);
     } catch (error) {
         errorEl.textContent = error.message;
         errorEl.classList.remove('hidden');
@@ -208,68 +174,6 @@ async function handleSignup(event) {
     }
 }
 
-// Handle forgot password
-async function handleForgotPassword(event) {
-    event.preventDefault();
-    
-    const email = document.getElementById('forgotEmail').value;
-    const errorEl = document.getElementById('forgotError');
-    const successEl = document.getElementById('forgotSuccess');
-    
-    try {
-        await supabaseAuth.resetPasswordForEmail(email);
-        successEl.textContent = 'If an account exists with this email, you will receive a password reset link.';
-        successEl.classList.remove('hidden');
-        errorEl.classList.add('hidden');
-        
-        // Switch to login after 3 seconds
-        setTimeout(() => {
-            showLogin();
-        }, 3000);
-    } catch (error) {
-        errorEl.textContent = error.message;
-        errorEl.classList.remove('hidden');
-        successEl.classList.add('hidden');
-    }
-}
-
-// Handle reset password
-async function handleResetPassword(event) {
-    event.preventDefault();
-    
-    const password = document.getElementById('resetPassword').value;
-    const confirmPassword = document.getElementById('resetPasswordConfirm').value;
-    const errorEl = document.getElementById('resetError');
-    const successEl = document.getElementById('resetSuccess');
-    
-    // Validate passwords match
-    if (password !== confirmPassword) {
-        errorEl.textContent = 'Passwords do not match';
-        errorEl.classList.remove('hidden');
-        return;
-    }
-    
-    try {
-        await supabaseAuth.updatePassword(password);
-        successEl.textContent = 'Password updated successfully!';
-        successEl.classList.remove('hidden');
-        errorEl.classList.add('hidden');
-        
-        // Close modal and redirect after 2 seconds
-        setTimeout(() => {
-            closeAuthModal();
-            showToast('Password updated successfully!');
-            // Clean up the hash
-            window.history.replaceState(null, '', window.location.pathname);
-        }, 2000);
-    } catch (error) {
-        errorEl.textContent = error.message;
-        errorEl.classList.remove('hidden');
-        successEl.classList.add('hidden');
-    }
-}
-
-// Handle logout
 async function handleLogout() {
     try {
         await supabaseAuth.signOut();
@@ -514,16 +418,7 @@ function showHistoryFromMobile() {
 (function() {
     // Handle OAuth callback immediately
     if (window.location.hash && window.location.hash.includes('access_token')) {
-        // Check if this is a password recovery callback
-        if (window.location.hash.includes('type=recovery')) {
-            // Show reset password form
-            setTimeout(() => {
-                showAuthModal();
-                showResetPassword();
-            }, 500);
-        }
-        // Redirect to app.html if on home page
-        else if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+        if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
             window.location.href = '/app.html' + window.location.hash;
             return;
         }

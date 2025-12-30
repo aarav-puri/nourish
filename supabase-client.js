@@ -89,30 +89,7 @@ const auth = {
     return data;
   },
 
-  // Send password reset email
-  async resetPasswordForEmail(email) {
-    if (!supabaseClient) throw new Error('Supabase client not initialized');
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const redirectUrl = isLocal 
-      ? 'http://localhost:3000/app.html'
-      : 'https://barcodesense.vercel.app/app.html';
-      
-    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl
-    });
-    if (error) throw error;
-    return data;
-  },
 
-  // Update user password
-  async updatePassword(newPassword) {
-    if (!supabaseClient) throw new Error('Supabase client not initialized');
-    const { data, error } = await supabaseClient.auth.updateUser({
-      password: newPassword
-    });
-    if (error) throw error;
-    return data;
-  }
 };
 
 // Database helper functions
