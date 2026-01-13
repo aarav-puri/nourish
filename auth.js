@@ -15,8 +15,11 @@ async function initAuth() {
             
             if (event === 'SIGNED_IN') {
                 showToast('Welcome back.');
-                if (typeof closeAuthModal === 'function') {
-                    closeAuthModal();
+                
+                // Show logged-in view instead of auto-closing
+                const modal = document.getElementById('authModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    showLoggedInView();
                 }
                 
                 // Clean up OAuth hash from URL
@@ -193,8 +196,7 @@ async function handleLogin(event) {
     
     try {
         await supabaseAuth.signIn(email, password);
-        closeAuthModal();
-        showToast('Welcome back!');
+        // Don't auto-close, the auth state change handler will show the logged-in view
     } catch (error) {
         // Provide user-friendly error messages
         let errorMessage = 'An error occurred. Please try again.';
