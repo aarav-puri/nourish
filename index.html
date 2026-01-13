@@ -419,7 +419,7 @@
     <script src="particles.js"></script>
     
     <script>
-        // Check if user is logged in and redirect to app page
+        // Check if user is logged in and update CTA buttons
         (async function() {
             try {
                 // If there's an OAuth callback hash, redirect immediately to app.html
@@ -430,9 +430,12 @@
                 
                 const user = await supabaseAuth.getCurrentUser();
                 if (user) {
-                    // User is logged in, redirect to app page
-                    window.location.href = '/app.html';
-                    return;
+                    // User is logged in, update all CTA buttons to "Go to App"
+                    const ctaButtons = document.querySelectorAll('.nav-links .cta-btn, .hero-cta .primary-btn, .cta-section .primary-btn');
+                    ctaButtons.forEach(btn => {
+                        btn.textContent = 'Go to App';
+                        btn.innerHTML = 'Go to App <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>';
+                    });
                 }
             } catch (error) {
                 // Silently fail - user is not logged in, stay on landing page
