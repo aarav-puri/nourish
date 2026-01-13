@@ -4693,7 +4693,7 @@ tbody tr:hover td:nth-child(2) {
   }
 
   .mobile-menu-overlay {
-    display: block;
+    display: none;
   }
 
   .mobile-menu-overlay.active {
@@ -4831,11 +4831,14 @@ tbody tr:hover td:nth-child(2) {
     margin-top: 40px;
     border-radius: 16px;
     overflow-x: auto;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
+    width: 100%;
   }
 
   .comparison-table {
     min-width: 650px;
+    width: max-content;
   }
 
   .comparison-table th {
@@ -5048,14 +5051,17 @@ tbody tr:hover td:nth-child(2) {
     margin-top: 30px;
     border-radius: 12px;
     overflow-x: auto;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
-    margin-left: -20px;
-    margin-right: -20px;
-    padding: 0 20px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+    width: 100%;
   }
 
   .comparison-table {
-    min-width: 550px;
+    min-width: 600px;
+    width: max-content;
   }
 
   .comparison-table th {

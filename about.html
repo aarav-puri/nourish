@@ -281,7 +281,7 @@
 
         @media (max-width: 768px) {
             .about-container {
-                padding: 20px 15px 120px;
+                padding: 20px 15px 40px;
                 margin-top: 70px;
             }
 
@@ -334,43 +334,59 @@
             }
 
             .cta-section {
-                padding: 30px 10px;
+                padding: 30px 0;
             }
 
             .cta-title {
                 font-size: 1.5rem;
+                margin-bottom: 25px;
             }
 
             .cta-buttons {
+                display: flex;
                 flex-direction: column;
-                align-items: stretch;
+                align-items: center;
                 gap: 12px;
                 width: 100%;
+                padding: 0 15px;
             }
 
             .cta-btn {
                 width: 100%;
+                max-width: 300px;
                 justify-content: center;
-                padding: 14px 20px;
-                font-size: 0.95rem;
+                padding: 16px 24px;
+                font-size: 1rem;
                 text-align: center;
+                box-sizing: border-box;
             }
 
             .cta-btn svg {
                 width: 18px;
                 height: 18px;
             }
-
+        }
+    </style>
+    <style>
+        /* Mobile footer fix - must be after main styles */
+        @media (max-width: 768px) {
             .landing-footer {
-                padding: 30px 0 20px;
+                padding: 30px 20px;
                 position: relative;
-                z-index: 10;
+                z-index: 100;
+                background: var(--dark);
+            }
+
+            .landing-footer .container {
+                padding: 0;
             }
 
             .landing-footer .footer-content {
+                display: flex;
                 flex-direction: column;
+                align-items: center;
                 text-align: center;
-                gap: 15px;
+                gap: 20px;
             }
 
             .landing-footer .footer-links {
@@ -378,12 +394,19 @@
                 flex-direction: row;
                 flex-wrap: wrap;
                 justify-content: center;
-                gap: 15px;
+                gap: 8px 20px;
+                position: relative;
+                z-index: 101;
             }
 
             .landing-footer .footer-link {
-                padding: 8px 12px;
+                padding: 12px 16px;
                 display: inline-block;
+                color: var(--text-secondary);
+                text-decoration: none;
+                font-size: 0.9rem;
+                position: relative;
+                z-index: 102;
             }
         }
     </style>
