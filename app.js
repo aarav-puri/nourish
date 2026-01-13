@@ -360,24 +360,47 @@ async function fetchProductInfo(barcode) {
     );
     const data = await response.json();
 
-    if (data.product && Object.keys(data.product).length > 0) {
-      displayProductInfo(data.product, barcode);
-    } else {
+    if (data.status === 0 || !data.product || Object.keys(data.product).length === 0) {
+      // Barcode not found in database
       productInfo.innerHTML = `
-                <div class="product-field">
-                    <strong>Barcode:</strong> ${barcode}
-                </div>
-                <div class="product-field not-found-message">
-                    <p style="color: var(--white);">Product not found in our database.</p>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 10px;">Perhaps this product doesn't exist in our system yet, or the barcode may be incorrect. Try scanning again or enter a different barcode.</p>
+                <div class="not-found-container" style="text-align: center; padding: 40px 20px;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(229, 62, 62, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 40px; height: 40px; color: #e53e3e;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h3 style="color: var(--white); margin-bottom: 10px; font-size: 1.25rem;">Barcode Not Found</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 15px;">We couldn't find this product in our database.</p>
+                    <div class="product-field" style="background: var(--glass-light); padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+                        <strong style="color: var(--text-secondary);">Scanned Barcode:</strong>
+                        <div style="font-family: monospace; font-size: 1.1rem; color: var(--white);">${barcode}</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">This could mean:</p>
+                    <ul style="color: var(--text-secondary); font-size: 0.85rem; text-align: left; max-width: 280px; margin: 10px auto 0; list-style: disc; padding-left: 20px;">
+                        <li>The product hasn't been added to the database yet</li>
+                        <li>The barcode was scanned incorrectly</li>
+                        <li>This is a store-specific or regional product</li>
+                    </ul>
                 </div>
             `;
       result.classList.remove("hidden");
+    } else {
+      displayProductInfo(data.product, barcode);
     }
   } catch (err) {
     productInfo.innerHTML = `
-            <div class="product-field">
-                <p style="color: #e53e3e;">Error fetching product info: ${err.message}</p>
+            <div class="not-found-container" style="text-align: center; padding: 40px 20px;">
+                <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(229, 62, 62, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <svg style="width: 40px; height: 40px; color: #e53e3e;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <h3 style="color: var(--white); margin-bottom: 10px; font-size: 1.25rem;">Connection Error</h3>
+                <p style="color: var(--text-secondary);">Unable to fetch product information. Please check your internet connection and try again.</p>
             </div>
         `;
     result.classList.remove("hidden");
