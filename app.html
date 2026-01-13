@@ -196,6 +196,11 @@
                 
                 // Add remaining content (modals) to authContainer
                 document.getElementById('authContainer').innerHTML = tempDiv.innerHTML;
+                
+                // Re-run auth UI update now that elements exist
+                if (typeof updateAuthUI === 'function') {
+                    updateAuthUI();
+                }
             });
     </script>
 </body>

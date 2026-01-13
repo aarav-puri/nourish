@@ -363,9 +363,7 @@
                     <a href="/#features" class="nav-link" onclick="closeMobileMenu()">Features</a>
                     <a href="/#how-it-works" class="nav-link" onclick="closeMobileMenu()">How It Works</a>
                     <a href="/about.html" class="nav-link active" onclick="closeMobileMenu()">About</a>
-                    <div id="authNavContainer">
-                        <a href="app.html" class="cta-btn" id="navCtaBtn">Try It Free</a>
-                    </div>
+                    <a href="app.html" class="cta-btn">Try It Free</a>
                 </div>
             </div>
         </div>
@@ -532,7 +530,6 @@
     <!-- Supabase - only for checking auth state -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
-    <script src="auth.js"></script>
     
     <script src="particles.js"></script>
     
@@ -548,49 +545,12 @@
                 
                 const user = await supabaseAuth.getCurrentUser();
                 if (user) {
-                    // User is logged in - hide the CTA button and load user menu
-                    const navCtaBtn = document.getElementById('navCtaBtn');
-                    if (navCtaBtn) {
-                        navCtaBtn.style.display = 'none';
+                    // Update CTA buttons to "Go to App" (no arrow, no profile icon)
+                    const navCta = document.querySelector('.nav-links .cta-btn');
+                    if (navCta) {
+                        navCta.textContent = 'Go to App';
                     }
                     
-                    // Load auth.html to get user menu
-                    fetch('auth.html')
-                        .then(r => r.text())
-                        .then(html => {
-                            const tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = html;
-                            
-                            // Move user menu to nav
-                            const userMenu = tempDiv.querySelector('#userMenu');
-                            if (userMenu) {
-                                userMenu.classList.remove('hidden');
-                                document.getElementById('authNavContainer').appendChild(userMenu);
-                                
-                                // Update profile icon with user photo if available
-                                const photoUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
-                                if (photoUrl) {
-                                    const profileIcons = userMenu.querySelectorAll('.profile-icon, .profile-icon-large');
-                                    profileIcons.forEach(icon => {
-                                        icon.innerHTML = '<img src="' + photoUrl + '" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
-                                    });
-                                }
-                                
-                                // Update email display
-                                const emailDisplay = userMenu.querySelector('#userEmail');
-                                if (emailDisplay) {
-                                    emailDisplay.textContent = user.email;
-                                }
-                            }
-                            
-                            // Add modals to body
-                            const historyModal = tempDiv.querySelector('#historyModal');
-                            if (historyModal) {
-                                document.body.appendChild(historyModal);
-                            }
-                        });
-                    
-                    // Update main CTA button (remove arrow)
                     const mainCta = document.querySelector('.cta-buttons .cta-btn:first-child');
                     if (mainCta) {
                         mainCta.textContent = 'Go to App';
