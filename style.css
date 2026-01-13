@@ -4967,6 +4967,19 @@ tbody tr:hover td:nth-child(2) {
   .footer-copy {
     font-size: 0.85rem;
   }
+
+  .footer-links {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .footer-link {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 480px) {

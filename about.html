@@ -281,11 +281,13 @@
 
         @media (max-width: 768px) {
             .about-container {
-                padding: 30px 15px 80px;
+                padding: 20px 15px 120px;
+                margin-top: 70px;
             }
 
             .back-button {
                 margin-bottom: 20px !important;
+                margin-top: 0;
             }
 
             .creator-header {
@@ -327,6 +329,12 @@
 
             .features-list {
                 grid-template-columns: 1fr;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .cta-section {
+                padding: 30px 10px;
             }
 
             .cta-title {
@@ -336,11 +344,46 @@
             .cta-buttons {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 12px;
+                width: 100%;
             }
 
             .cta-btn {
                 width: 100%;
                 justify-content: center;
+                padding: 14px 20px;
+                font-size: 0.95rem;
+                text-align: center;
+            }
+
+            .cta-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .landing-footer {
+                padding: 30px 0 20px;
+                position: relative;
+                z-index: 10;
+            }
+
+            .landing-footer .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .landing-footer .footer-links {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .landing-footer .footer-link {
+                padding: 8px 12px;
+                display: inline-block;
             }
         }
     </style>
