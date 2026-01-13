@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About the Creator — BarcodeSense</title>
+    <meta name="description" content="Learn about Aarav Puri, the creator of BarcodeSense, and the story behind building an AI-powered product scanning app.">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .about-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .creator-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .creator-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            border: 4px solid var(--white);
+            box-shadow: var(--glow);
+            overflow: hidden;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .creator-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .creator-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #d4d4d8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .creator-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .creator-link:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .creator-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .story-section {
+            background: var(--dark-card);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid var(--light-gray);
+            margin-bottom: 30px;
+            animation: slideInUp 0.6s ease 0.2s both;
+            transition: all 0.4s ease;
+        }
+
+        .story-section:hover {
+            border-color: var(--white);
+            box-shadow: var(--glow);
+            transform: translateY(-5px);
+        }
+
+        .story-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #d4d4d8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .story-title svg {
+            width: 32px;
+            height: 32px;
+            color: var(--white);
+        }
+
+        .story-content {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.9;
+        }
+
+        .story-content p {
+            margin-bottom: 20px;
+        }
+
+        .story-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-left: 4px solid var(--white);
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            font-style: italic;
+            color: var(--white);
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .feature-item svg {
+            width: 20px;
+            height: 20px;
+            color: var(--white);
+            flex-shrink: 0;
+        }
+
+        .feature-item span {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .tech-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--light-gray);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--white);
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .tech-badge:hover {
+            background: var(--white);
+            color: var(--dark);
+            transform: translateY(-2px);
+        }
+
+        .cta-section {
+            text-align: center;
+            padding: 40px 20px;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .cta-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #d4d4d8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--white), var(--primary-dark));
+            color: var(--dark);
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .cta-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .cta-btn.secondary {
+            background: var(--dark-elevated);
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+
+        .cta-btn.secondary:hover {
+            background: var(--white);
+            color: var(--dark);
+        }
+
+        @media (max-width: 768px) {
+            .about-container {
+                padding: 30px 15px;
+            }
+
+            .creator-header {
+                margin-bottom: 35px;
+            }
+
+            .creator-photo {
+                width: 120px;
+                height: 120px;
+            }
+
+            .creator-name {
+                font-size: 2rem;
+            }
+
+            .creator-link {
+                font-size: 1rem;
+            }
+
+            .story-section {
+                padding: 25px 20px;
+            }
+
+            .story-title {
+                font-size: 1.4rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .story-content {
+                font-size: 1rem;
+            }
+
+            .highlight-box {
+                padding: 15px 18px;
+                margin: 20px 0;
+            }
+
+            .features-list {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-title {
+                font-size: 1.5rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .cta-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="/" class="logo-link">
+                    <img src="favicon.png" alt="BarcodeSense" class="logo-img">
+                    <span class="logo-text">BarcodeSense</span>
+                </a>
+                <button class="hamburger-menu" id="hamburgerMenu" onclick="toggleMobileMenu()" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="nav-links" id="navLinks">
+                    <a href="/#features" class="nav-link" onclick="closeMobileMenu()">Features</a>
+                    <a href="/#how-it-works" class="nav-link" onclick="closeMobileMenu()">How It Works</a>
+                    <a href="/about.html" class="nav-link active" onclick="closeMobileMenu()">About</a>
+                    <a href="app.html" class="cta-btn">Try It Free</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Particles Background -->
+    <div id="particles" class="particles-container"></div>
+
+    <!-- Main Content -->
+    <div class="about-container">
+        <!-- Creator Header -->
+        <div class="creator-header">
+            <div class="creator-photo">
+                <img src="ap.jpeg" alt="Aarav Puri">
+            </div>
+            <h1 class="creator-name">Aarav Puri</h1>
+            <a href="https://aaravpuri.org" target="_blank" rel="noopener" class="creator-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                aaravpuri.org
+            </a>
+        </div>
+
+        <!-- The Story -->
+        <div class="story-section">
+            <h2 class="story-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                The Origin Story
+            </h2>
+            <div class="story-content">
+                <p>BarcodeSense was born from a simple, everyday problem: my dad is vegetarian, and I kept noticing how often packaged foods quietly include ingredients that don't actually fit vegetarian diets. Hidden animal-derived ingredients, confusing labels, and unclear nutritional information made grocery shopping unnecessarily complicated.</p>
+                
+                <p>I wanted a simple way to scan products and immediately know what's inside—not just for vegetarians, but for anyone trying to make informed choices about what they eat.</p>
+
+                <div class="highlight-box">
+                    "I built BarcodeSense using vibe coding—coding side‑by‑side with AI, focusing less on writing actual code and more on momentum, intuition, and rapid iteration."
+                </div>
+
+                <p>From there, the concept expanded beyond just checking ingredients. I realized people need help understanding what they're eating and making better choices with a simple scan. BarcodeSense evolved into a comprehensive tool that:</p>
+
+                <div class="features-list">
+                    <div class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Surfaces product information instantly</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Suggests AI-powered healthier alternatives</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Adapts to mood and diet restrictions</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Checks dietary compatibility</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Highlights environmental impact</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Delivers AI-driven insights</span>
+                    </div>
+                </div>
+
+                <p>The result is a clean, focused experience that helps you discover what's in your food with a single scan—powered by AI, built from a personal problem, and designed to make better eating feel effortless.</p>
+            </div>
+        </div>
+
+        <!-- The Mission -->
+        <div class="story-section">
+            <h2 class="story-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                The Mission
+            </h2>
+            <div class="story-content">
+                <p>BarcodeSense is built on a simple philosophy: everyone deserves to know what they're putting into their body, without needing to be a nutrition expert or spend hours researching ingredients.</p>
+                
+                <p>As a developer passionate about building solutions that make everyday life easier, I'm committed to continuously improving BarcodeSense based on real user needs and feedback.</p>
+
+                <p>Every feature is designed with real people in mind, from the instant scanning capability to the personalized AI recommendations. The goal is to empower you to make better food choices effortlessly, whether you're managing dietary restrictions, trying to eat healthier, or simply curious about what's in your groceries.</p>
+
+                <div class="highlight-box">
+                    Built with: AI-powered analysis, real-time product data, and a focus on making nutrition information accessible to everyone.
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2 class="cta-title">Ready to discover what's in your food?</h2>
+            <div class="cta-buttons">
+                <a href="app.html" class="cta-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                    </svg>
+                    Try BarcodeSense Free
+                </a>
+                <a href="https://aaravpuri.org" target="_blank" rel="noopener" class="cta-btn secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    Visit My Website
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="favicon.png" alt="BarcodeSense" class="footer-logo">
+                    <span class="footer-text">BarcodeSense</span>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html" class="footer-link">About</a>
+                    <a href="privacy.html" class="footer-link">Privacy Policy</a>
+                    <a href="terms.html" class="footer-link">Terms of Service</a>
+                </div>
+                <p class="footer-copy">&copy; 2025 BarcodeSense</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="particles.js"></script>
+    
+    <script>
+        // Mobile menu toggle functions
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburger = document.getElementById('hamburgerMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            
+            navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            if (navLinks.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function closeMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburger = document.getElementById('hamburgerMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            
+            navLinks.classList.remove('active');
+            hamburger.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Make functions globally accessible
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.closeMobileMenu = closeMobileMenu;
+    </script>
+</body>
+</html>

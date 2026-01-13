@@ -28,6 +28,7 @@
                 <div class="nav-links" id="navLinks">
                     <a href="#features" class="nav-link" onclick="closeMobileMenu()">Features</a>
                     <a href="#how-it-works" class="nav-link" onclick="closeMobileMenu()">How It Works</a>
+                    <a href="about.html" class="nav-link" onclick="closeMobileMenu()">About</a>
                     <a href="app.html" class="cta-btn">Try It Free</a>
                 </div>
             </div>
@@ -65,26 +66,46 @@
     <section class="stats-section">
         <div class="container">
             <div class="section-header">
-                <p class="section-label">The Problem</p>
-                <h2 class="section-title">Why informed choices matter</h2>
+                <p class="section-label scroll-fade-in">The Problem</p>
+                <h2 class="section-title scroll-reveal">Why informed choices matter</h2>
             </div>
             
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">55%</div>
+                <div class="stat-card scroll-reveal">
+                    <div class="stat-number" data-number="55%">55%</div>
                     <p class="stat-description">of daily calories Americans consume come from ultra-processed foods</p>
+                    <div class="stat-progress">
+                        <div class="stat-progress-bar" style="--progress-width: 55%;"></div>
+                    </div>
                     <a href="https://publichealth.jhu.edu/2024/ultraprocessed-foods-account-for-more-than-half-of-calories-consumed-at-home" target="_blank" rel="noopener" class="stat-source">Source: Johns Hopkins University</a>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-number">32</div>
+                <div class="stat-card scroll-reveal">
+                    <div class="stat-circle">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <defs>
+                                <linearGradient id="statGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#a1a1aa;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="stat-circle-bg" cx="60" cy="60" r="50" />
+                            <circle class="stat-circle-progress" cx="60" cy="60" r="50" style="--circle-progress: 100;" />
+                        </svg>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%;">
+                            <div class="stat-number" data-number="32" style="font-size: 2.5rem; margin: 0; line-height: 1;">32</div>
+                        </div>
+                    </div>
                     <p class="stat-description">harmful health effects linked to ultra-processed foods, including heart disease and diabetes</p>
                     <a href="https://www.theguardian.com/society/2024/feb/28/ultra-processed-food-32-harmful-effects-health-review" target="_blank" rel="noopener" class="stat-source">Source: BMJ Study</a>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-number">51%</div>
+                <div class="stat-card scroll-reveal">
+                    <div class="stat-number" data-number="51%">51%</div>
                     <p class="stat-description">of people don't fully understand nutrition labels on food packaging</p>
+                    <div class="stat-progress">
+                        <div class="stat-progress-bar" style="--progress-width: 51%;"></div>
+                    </div>
                     <a href="https://foodforhealth.ai/the-hidden-truth-about-food-label-reading/" target="_blank" rel="noopener" class="stat-source">Source: Food Health Research</a>
                 </div>
             </div>
@@ -95,12 +116,12 @@
     <section id="features" class="features-section">
         <div class="container">
             <div class="section-header">
-                <p class="section-label">Features</p>
-                <h2 class="section-title">Everything you need to shop smarter</h2>
+                <p class="section-label scroll-fade-in">Features</p>
+                <h2 class="section-title scroll-reveal">Everything you need to shop smarter</h2>
             </div>
             
             <div class="feature-grid">
-                <div class="feature-card">
+                <div class="feature-card scroll-reveal card-shimmer">
                     <div class="feature-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"></circle>
@@ -111,7 +132,7 @@
                     <p>Get instant insights about any product with advanced AI that understands ingredients, nutrition, and more.</p>
                 </div>
 
-                <div class="feature-card">
+                <div class="feature-card scroll-reveal card-shimmer">
                     <div class="feature-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
@@ -121,7 +142,7 @@
                     <p>See how healthy a product really is with our comprehensive scoring system based on ingredients and nutrition.</p>
                 </div>
 
-                <div class="feature-card">
+                <div class="feature-card scroll-reveal card-shimmer">
                     <div class="feature-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -131,7 +152,7 @@
                     <p>Understand the environmental footprint of your purchases and make more sustainable choices.</p>
                 </div>
 
-                <div class="feature-card">
+                <div class="feature-card scroll-reveal card-shimmer">
                     <div class="feature-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path>
@@ -141,7 +162,7 @@
                     <p>Upload a photo or enter a barcode manually — get results in seconds from our global product database.</p>
                 </div>
 
-                <div class="feature-card">
+                <div class="feature-card scroll-reveal card-shimmer">
                     <div class="feature-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -152,7 +173,7 @@
                     <p>Get personalized product suggestions based on your current mood and preferences.</p>
                 </div>
 
-                <div class="feature-card">
+                <div class="feature-card scroll-reveal card-shimmer">
                     <div class="feature-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
@@ -169,12 +190,12 @@
     <section class="why-section">
         <div class="container">
             <div class="section-header">
-                <p class="section-label">Why Choose Us</p>
-                <h2 class="section-title">BarcodeSense vs Traditional Methods</h2>
-                <p class="section-subtitle">See how AI-powered insights make all the difference</p>
+                <p class="section-label scroll-fade-in">Why Choose Us</p>
+                <h2 class="section-title scroll-reveal">BarcodeSense vs Traditional Methods</h2>
+                <p class="section-subtitle scroll-fade-in">See how AI-powered insights make all the difference</p>
             </div>
 
-            <div class="comparison-table-wrapper">
+            <div class="comparison-table-wrapper scroll-scale">
                 <table class="comparison-table">
                     <thead>
                         <tr>
@@ -350,24 +371,24 @@
     <section id="how-it-works" class="how-section">
         <div class="container">
             <div class="section-header">
-                <p class="section-label">How It Works</p>
-                <h2 class="section-title">Three simple steps</h2>
+                <p class="section-label scroll-fade-in">How It Works</p>
+                <h2 class="section-title scroll-reveal">Three simple steps</h2>
             </div>
             
             <div class="steps-grid">
-                <div class="step-card">
+                <div class="step-card scroll-slide-left">
                     <div class="step-number">1</div>
                     <h3>Scan or Upload</h3>
                     <p>Take a photo of any barcode or enter the numbers manually.</p>
                 </div>
 
-                <div class="step-card">
+                <div class="step-card scroll-scale">
                     <div class="step-number">2</div>
                     <h3>AI Analysis</h3>
                     <p>Our AI instantly analyzes ingredients, nutrition, and environmental impact.</p>
                 </div>
 
-                <div class="step-card">
+                <div class="step-card scroll-slide-right">
                     <div class="step-number">3</div>
                     <h3>Make Better Choices</h3>
                     <p>Get personalized insights and discover healthier, more sustainable alternatives.</p>
@@ -377,7 +398,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
+    <section class="cta-section scroll-reveal">
         <div class="container">
             <div class="cta-content">
                 <h2>Ready to shop smarter?</h2>
@@ -401,6 +422,7 @@
                     <span class="footer-text">BarcodeSense</span>
                 </div>
                 <div class="footer-links">
+                    <a href="about.html" class="footer-link">About</a>
                     <a href="privacy.html" class="footer-link">Privacy Policy</a>
                     <a href="terms.html" class="footer-link">Terms of Service</a>
                 </div>
@@ -417,6 +439,7 @@
     <script src="supabase-client.js"></script>
     
     <script src="particles.js"></script>
+    <script src="scroll-animations.js"></script>
     
     <script>
         // Check if user is logged in and update CTA buttons
