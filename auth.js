@@ -94,8 +94,19 @@ function showLoggedInView() {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     
+    if (!loginForm) {
+        // Auth modal not loaded yet, wait and retry
+        setTimeout(showLoggedInView, 100);
+        return;
+    }
+    
     loginForm.classList.add('hidden');
     signupForm.classList.add('hidden');
+    
+    // Get user info
+    const metadata = currentUser?.user_metadata;
+    const displayName = metadata?.full_name || metadata?.name || currentUser?.email || 'User';
+    const avatarUrl = metadata?.avatar_url || metadata?.picture;
     
     // Create or show logged-in view
     let loggedInView = document.getElementById('loggedInView');
@@ -103,34 +114,34 @@ function showLoggedInView() {
         loggedInView = document.createElement('div');
         loggedInView.id = 'loggedInView';
         loggedInView.className = 'auth-form';
-        loggedInView.innerHTML = `
-            <div style="text-align: center; padding: 20px;">
-                <svg style="width: 64px; height: 64px; margin: 0 auto 20px; color: var(--primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                <h2 style="margin-bottom: 10px;">You're Already Signed In!</h2>
-                <p id="loggedInEmail" style="color: var(--text-secondary); margin-bottom: 30px;"></p>
-                <button onclick="window.location.href='app.html'" class="auth-btn" style="width: 100%; margin-bottom: 10px;">
-                    Go to App
-                </button>
-                <button onclick="closeAuthModal()" class="auth-btn" style="width: 100%; background: var(--glass-light);">
-                    Close
-                </button>
-            </div>
-        `;
-        document.getElementById('loginForm').parentElement.appendChild(loggedInView);
+        loginForm.parentElement.appendChild(loggedInView);
     }
+    
+    // Update the content with current user info
+    const avatarHtml = avatarUrl 
+        ? `<img src="${avatarUrl}" alt="Profile" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 20px; display: block;">`
+        : `<div style="width: 80px; height: 80px; border-radius: 50%; background: var(--glass-light); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+               <svg style="width: 40px; height: 40px; color: var(--primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                   <circle cx="12" cy="7" r="4"></circle>
+               </svg>
+           </div>`;
+    
+    loggedInView.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            ${avatarHtml}
+            <h2 style="margin-bottom: 10px;">You're Signed In!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">${displayName}</p>
+            <a href="app.html" class="auth-btn" style="width: 100%; margin-bottom: 10px; display: block; text-decoration: none; text-align: center;">
+                Go to App
+            </a>
+            <button onclick="closeAuthModal()" class="auth-btn" style="width: 100%; background: var(--glass-light);">
+                Close
+            </button>
+        </div>
+    `;
     
     loggedInView.classList.remove('hidden');
-    
-    // Update email display
-    const metadata = currentUser.user_metadata;
-    const displayName = metadata?.full_name || metadata?.name || currentUser.email;
-    const loggedInEmail = document.getElementById('loggedInEmail');
-    if (loggedInEmail) {
-        loggedInEmail.textContent = displayName;
-    }
 }
 
 // Close auth modal
