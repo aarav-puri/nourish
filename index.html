@@ -453,12 +453,10 @@
                 
                 const user = await supabaseAuth.getCurrentUser();
                 if (user) {
-                    // User is logged in, update all CTA buttons to "Go to App"
+                    // Update CTA buttons to "Go to App" (no arrow)
                     const ctaButtons = document.querySelectorAll('.nav-links .cta-btn, .hero-cta .primary-btn, .cta-section .primary-btn');
                     ctaButtons.forEach(btn => {
-                        // Update button text while preserving the arrow SVG
-                        const arrowSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>';
-                        btn.innerHTML = 'Go to App ' + arrowSvg;
+                        btn.textContent = 'Go to App';
                     });
                 }
             } catch (error) {
