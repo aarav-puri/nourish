@@ -75,8 +75,59 @@ function updateProfileIcons(avatarUrl) {
 
 // Show auth modal
 function showAuthModal() {
-    document.getElementById('authModal').classList.remove('hidden');
-    showLogin();
+    const modal = document.getElementById('authModal');
+    modal.classList.remove('hidden');
+    
+    // Check if user is already logged in
+    if (currentUser) {
+        showLoggedInView();
+    } else {
+        showLogin();
+    }
+}
+
+// Show logged-in view in auth modal
+function showLoggedInView() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    
+    loginForm.classList.add('hidden');
+    signupForm.classList.add('hidden');
+    
+    // Create or show logged-in view
+    let loggedInView = document.getElementById('loggedInView');
+    if (!loggedInView) {
+        loggedInView = document.createElement('div');
+        loggedInView.id = 'loggedInView';
+        loggedInView.className = 'auth-form';
+        loggedInView.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <svg style="width: 64px; height: 64px; margin: 0 auto 20px; color: var(--primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h2 style="margin-bottom: 10px;">You're Already Signed In!</h2>
+                <p id="loggedInEmail" style="color: var(--text-secondary); margin-bottom: 30px;"></p>
+                <button onclick="window.location.href='app.html'" class="auth-btn" style="width: 100%; margin-bottom: 10px;">
+                    Go to App
+                </button>
+                <button onclick="closeAuthModal()" class="auth-btn" style="width: 100%; background: var(--glass-light);">
+                    Close
+                </button>
+            </div>
+        `;
+        document.getElementById('loginForm').parentElement.appendChild(loggedInView);
+    }
+    
+    loggedInView.classList.remove('hidden');
+    
+    // Update email display
+    const metadata = currentUser.user_metadata;
+    const displayName = metadata?.full_name || metadata?.name || currentUser.email;
+    const loggedInEmail = document.getElementById('loggedInEmail');
+    if (loggedInEmail) {
+        loggedInEmail.textContent = displayName;
+    }
 }
 
 // Close auth modal
@@ -89,6 +140,8 @@ function closeAuthModal() {
 function showLogin() {
     document.getElementById('loginForm').classList.remove('hidden');
     document.getElementById('signupForm').classList.add('hidden');
+    const loggedInView = document.getElementById('loggedInView');
+    if (loggedInView) loggedInView.classList.add('hidden');
     clearAuthForms();
 }
 
@@ -96,6 +149,8 @@ function showLogin() {
 function showSignup() {
     document.getElementById('loginForm').classList.add('hidden');
     document.getElementById('signupForm').classList.remove('hidden');
+    const loggedInView = document.getElementById('loggedInView');
+    if (loggedInView) loggedInView.classList.add('hidden');
     clearAuthForms();
 }
 
@@ -141,7 +196,22 @@ async function handleLogin(event) {
         closeAuthModal();
         showToast('Welcome back!');
     } catch (error) {
-        errorEl.textContent = error.message;
+        // Provide user-friendly error messages
+        let errorMessage = 'An error occurred. Please try again.';
+        
+        if (error.message.toLowerCase().includes('invalid') || 
+            error.message.toLowerCase().includes('credentials') ||
+            error.message.toLowerCase().includes('password') ||
+            error.message.toLowerCase().includes('email')) {
+            errorMessage = 'Incorrect email or password. Please try again.';
+        } else if (error.message.toLowerCase().includes('network') || 
+                   error.message.toLowerCase().includes('fetch')) {
+            errorMessage = 'Connection error. Please check your internet and try again.';
+        } else if (error.message.toLowerCase().includes('too many')) {
+            errorMessage = 'Too many attempts. Please try again later.';
+        }
+        
+        errorEl.textContent = errorMessage;
         errorEl.classList.remove('hidden');
     }
 }
@@ -168,7 +238,23 @@ async function handleSignup(event) {
         errorEl.classList.add('hidden');
         setTimeout(() => showLogin(), 2000);
     } catch (error) {
-        errorEl.textContent = error.message;
+        // Provide user-friendly error messages
+        let errorMessage = 'An error occurred. Please try again.';
+        
+        if (error.message.toLowerCase().includes('already registered') ||
+            error.message.toLowerCase().includes('already exists')) {
+            errorMessage = 'This email is already registered. Please sign in instead.';
+        } else if (error.message.toLowerCase().includes('password') && 
+                   error.message.toLowerCase().includes('short')) {
+            errorMessage = 'Password is too short. Please use at least 6 characters.';
+        } else if (error.message.toLowerCase().includes('invalid email')) {
+            errorMessage = 'Invalid email address. Please check and try again.';
+        } else if (error.message.toLowerCase().includes('network') || 
+                   error.message.toLowerCase().includes('fetch')) {
+            errorMessage = 'Connection error. Please check your internet and try again.';
+        }
+        
+        errorEl.textContent = errorMessage;
         errorEl.classList.remove('hidden');
         successEl.classList.add('hidden');
     }
