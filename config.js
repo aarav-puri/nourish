@@ -1,6 +1,6 @@
 // Configuration
 const CONFIG = {
-  OPENROUTER_API_URL: "/api/ai", // Proxy endpoint (Vercel serverless function)
+  OPENROUTER_API_URL: "/api/ai",
   MODEL: "google/gemini-3-flash-preview",
   OPEN_FOOD_FACTS_API: "https://world.openfoodfacts.org/api/v0/product",
   // Supabase credentials
