@@ -8,9 +8,8 @@ async function getHealthierAlternatives(barcode) {
   
   try {
     const product = window.currentProduct || currentProductCache[barcode];
-    const userPrefs = getUserPreferences();
     
-    const result = await aiService.getHealthierSubstitutes(product, userPrefs);
+    const result = await aiService.getHealthierSubstitutes(product);
     
     const productName = product.product_name || product.name || "Product";
     showAIResult(`Alternatives for ${productName}`, result);

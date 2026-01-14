@@ -146,44 +146,6 @@ const db = {
       .eq('user_id', user.id);
 
     if (error) throw error;
-  },
-
-  // Save user preferences
-  async saveUserPreferences(dietaryRestrictions, allergies) {
-    if (!supabaseClient) throw new Error('Supabase client not initialized');
-    const user = await auth.getCurrentUser();
-    if (!user) throw new Error('User not authenticated');
-
-    const { data, error } = await supabaseClient
-      .from('user_preferences')
-      .upsert([
-        {
-          user_id: user.id,
-          dietary_restrictions: dietaryRestrictions,
-          allergies: allergies,
-          updated_at: new Date().toISOString(),
-        }
-      ])
-      .select();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Get user preferences
-  async getUserPreferences() {
-    if (!supabaseClient) throw new Error('Supabase client not initialized');
-    const user = await auth.getCurrentUser();
-    if (!user) throw new Error('User not authenticated');
-
-    const { data, error } = await supabaseClient
-      .from('user_preferences')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
-    return data;
   }
 };
 

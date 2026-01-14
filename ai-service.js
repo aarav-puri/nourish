@@ -44,7 +44,7 @@ class AIService {
   }
 
   // Ingredient Substitution
-  async getHealthierSubstitutes(product, userPrefs) {
+  async getHealthierSubstitutes(product) {
     const prompt = `
 Product: ${product.product_name}
 Ingredients: ${product.ingredients_text || "Not available"}
@@ -54,9 +54,6 @@ Nutrition (per 100g):
 - Carbs: ${product.nutriments?.carbohydrates || "N/A"}g
 - Protein: ${product.nutriments?.proteins || "N/A"}g
 - Sugar: ${product.nutriments?.sugars || "N/A"}g
-
-User dietary restrictions: ${userPrefs.dietaryRestrictions.join(", ") || "None"}
-User allergies: ${userPrefs.allergies.join(", ") || "None"}
 
 Suggest 3 healthier alternatives with similar flavor profiles. For each, provide:
 1. product_name: The specific product name or brand
