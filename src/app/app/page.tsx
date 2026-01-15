@@ -286,7 +286,7 @@ export default function AppPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-zinc-400" />
-                        <span className="text-sm text-zinc-400">AI Insights Today</span>
+                        <span className="text-sm text-zinc-400">AI Insights Left Today</span>
                       </div>
                       <span className="text-sm font-bold text-white">{getRemainingAIInsights()}/1</span>
                     </div>
@@ -671,7 +671,7 @@ export default function AppPage() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
-            <p className="text-zinc-300">Analyzing with AI...</p>
+            <p className="text-zinc-300">Analyzing with AI</p>
           </div>
         </div>
       )}
