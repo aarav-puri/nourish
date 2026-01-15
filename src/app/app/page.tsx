@@ -90,19 +90,37 @@ export default function AppPage() {
       // Use Quagga for barcode detection
       if (typeof window !== 'undefined') {
         const Quagga = (await import('quagga')).default
+        
         Quagga.decodeSingle({
           src: imageSrc,
           numOfWorkers: 0,
           decoder: {
-            readers: ['ean_reader', 'ean_8_reader', 'code_128_reader', 'code_39_reader', 'upc_reader', 'upc_e_reader']
+            readers: [
+              'ean_reader',       // EAN-13, EAN-8
+              'ean_8_reader',     // EAN-8 specifically
+              'code_128_reader',  // Code 128
+              'code_39_reader',   // Code 39
+              'upc_reader',       // UPC-A
+              'upc_e_reader',     // UPC-E
+              'codabar_reader',   // Codabar
+              'i2of5_reader',     // Interleaved 2 of 5
+            ]
           },
-          locate: true
-        }, (result: any) => {
+          locate: true,
+          multiple: false
+        } as any, (result: any) => {
           if (result?.codeResult?.code) {
-            handleBarcodeDetected(result.codeResult.code)
+            const code = result.codeResult.code
+            // Validate barcode (basic check)
+            if (code && code.length >= 8) {
+              handleBarcodeDetected(code)
+            } else {
+              setProductLoading(false)
+              toast.error('Invalid barcode detected. Please try again or enter manually.')
+            }
           } else {
             setProductLoading(false)
-            toast.error('No barcode detected. Try another image or enter manually.')
+            toast.error('No barcode found. Try better lighting or enter manually.')
           }
         })
       }
