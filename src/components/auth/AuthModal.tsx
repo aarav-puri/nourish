@@ -8,9 +8,10 @@ import { toast } from 'sonner'
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
+  showSaveMessage?: boolean
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, showSaveMessage = false }: AuthModalProps) {
   const handleGoogleLogin = async () => {
     try {
       await auth.signInWithGoogle()
@@ -25,9 +26,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold gradient-text">Welcome to BarcodeSense</h2>
+          <h2 className="text-2xl font-bold gradient-text">
+            {showSaveMessage ? 'Save Your Scans' : 'Welcome to BarcodeSense'}
+          </h2>
           <p className="mt-2 text-zinc-400">
-            Sign in with Google to save your scanned products and track your history
+            {showSaveMessage 
+              ? 'Sign in with Google to save your scan history and access it from any device'
+              : 'Sign in with Google to save your scanned products and track your history'
+            }
           </p>
         </div>
 

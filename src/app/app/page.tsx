@@ -23,6 +23,7 @@ export default function AppPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [hasScanned, setHasScanned] = useState(false)
   const [barcode, setBarcode] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [productLoading, setProductLoading] = useState(false)
@@ -109,6 +110,14 @@ export default function AppPage() {
       } else {
         setProduct(data.product)
         setShowResult(true)
+        
+        // Show sign-in prompt after first scan if not logged in
+        if (!user && !hasScanned) {
+          setHasScanned(true)
+          setTimeout(() => {
+            setAuthModalOpen(true)
+          }, 1500) // Show after 1.5 seconds so user can see the result first
+        }
         
         // Save to history if logged in
         if (user) {
@@ -605,7 +614,11 @@ export default function AppPage() {
         </div>
       )}
 
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <AuthModal 
+        isOpen={authModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+        showSaveMessage={hasScanned && !user}
+      />
     </div>
   )
 }
