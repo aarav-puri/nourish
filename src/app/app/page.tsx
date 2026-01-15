@@ -24,6 +24,7 @@ export default function AppPage() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [hasScanned, setHasScanned] = useState(false)
+  const [remainingAI, setRemainingAI] = useState(1)
   const [barcode, setBarcode] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [productLoading, setProductLoading] = useState(false)
@@ -40,13 +41,28 @@ export default function AppPage() {
     auth.getCurrentUser().then((currentUser) => {
       setUser(currentUser)
       setLoading(false)
+      if (currentUser) {
+        updateRemainingAI()
+      }
     })
     const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
       setUser(session?.user || null)
       setLoading(false)
+      if (session?.user) {
+        updateRemainingAI()
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
+
+  const updateRemainingAI = async () => {
+    try {
+      const usedToday = await db.getAIUsageToday()
+      setRemainingAI(Math.max(0, 1 - usedToday))
+    } catch (err) {
+      console.error('Failed to get AI usage:', err)
+    }
+  }
 
   const handleLogout = async () => {
     await auth.signOut()
@@ -54,19 +70,7 @@ export default function AppPage() {
   }
 
   const getRemainingAIInsights = () => {
-    if (!user) return 0
-    
-    const today = new Date().toDateString()
-    const usageKey = `ai_usage_${user.id}`
-    const usageData = localStorage.getItem(usageKey)
-    
-    if (!usageData) return 1
-    
-    const usage = JSON.parse(usageData)
-    // Reset if it's a new day
-    if (usage.date !== today) return 1
-    
-    return Math.max(0, 1 - usage.count)
+    return remainingAI
   }
 
   const handleImageUpload = useCallback((file: File) => {
@@ -161,33 +165,28 @@ export default function AppPage() {
     
     // Non-signed-in users must sign in to use AI features
     if (!user) {
-      toast.error('Sign in to unlock AI insights.')
+      toast.error('Sign in to unlock AI insights!')
       setTimeout(() => setAuthModalOpen(true), 500)
       return
     }
     
     // Check AI usage limit (1 per day for signed-in users)
-    const today = new Date().toDateString()
-    const usageKey = `ai_usage_${user.id}`
-    const usageData = localStorage.getItem(usageKey)
-    
-    let usage = { date: today, count: 0 }
-    if (usageData) {
-      usage = JSON.parse(usageData)
-      // Reset count if it's a new day
-      if (usage.date !== today) {
-        usage = { date: today, count: 0 }
+    try {
+      const usedToday = await db.getAIUsageToday()
+      
+      if (usedToday >= 1) {
+        toast.error('Daily AI limit reached. Come back tomorrow for more insights!')
+        return
       }
-    }
-    
-    if (usage.count >= 1) {
-      toast.error('Daily AI limit reached. Come back tomorrow for more insights.')
+      
+      // Increment usage in database
+      await db.incrementAIUsage()
+      await updateRemainingAI() // Update the UI
+    } catch (err) {
+      console.error('Failed to check AI usage:', err)
+      toast.error('Failed to check AI usage. Please try again.')
       return
     }
-    
-    // Increment usage
-    usage.count += 1
-    localStorage.setItem(usageKey, JSON.stringify(usage))
     
     setAiLoading(true)
     setMoodModalOpen(false)

@@ -126,4 +126,57 @@ export const db = {
 
     if (error) throw error
   },
+
+  async getAIUsageToday() {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+
+    const { data, error } = await supabase
+      .from('ai_usage')
+      .select('count')
+      .eq('user_id', user.id)
+      .eq('date', today)
+      .single()
+
+    if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows returned
+    return data?.count || 0
+  },
+
+  async incrementAIUsage() {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+
+    // Try to increment existing record
+    const { data: existing } = await supabase
+      .from('ai_usage')
+      .select('id, count')
+      .eq('user_id', user.id)
+      .eq('date', today)
+      .single()
+
+    if (existing) {
+      // Update existing record
+      const { error } = await supabase
+        .from('ai_usage')
+        .update({ count: existing.count + 1 })
+        .eq('id', existing.id)
+
+      if (error) throw error
+    } else {
+      // Create new record
+      const { error } = await supabase
+        .from('ai_usage')
+        .insert([{
+          user_id: user.id,
+          date: today,
+          count: 1,
+        }])
+
+      if (error) throw error
+    }
+  },
 }
