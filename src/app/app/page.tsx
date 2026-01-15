@@ -37,9 +37,16 @@ export default function AppPage() {
   const [dietModalOpen, setDietModalOpen] = useState(false)
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    // Check if mobile device
+    const checkMobile = () => {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+    }
+    checkMobile()
+    
     auth.getCurrentUser().then((currentUser) => {
       setUser(currentUser)
       setLoading(false)
@@ -353,19 +360,21 @@ export default function AppPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
+          className={`grid grid-cols-1 ${isMobile ? 'sm:grid-cols-2' : ''} gap-4 mb-6`}
         >
-          {/* Camera Scan */}
-          <div
-            onClick={() => setScannerOpen(true)}
-            className="card cursor-pointer hover:border-zinc-500 transition-colors"
-          >
-            <div className="text-center py-6">
-              <Camera className="w-12 h-12 text-white mx-auto mb-3" />
-              <h3 className="text-lg font-semibold mb-1">Scan with Camera</h3>
-              <p className="text-zinc-400 text-sm">Use your device camera</p>
+          {/* Camera Scan - Only on Mobile */}
+          {isMobile && (
+            <div
+              onClick={() => setScannerOpen(true)}
+              className="card cursor-pointer hover:border-zinc-500 transition-colors"
+            >
+              <div className="text-center py-6">
+                <Camera className="w-12 h-12 text-white mx-auto mb-3" />
+                <h3 className="text-lg font-semibold mb-1">Scan with Camera</h3>
+                <p className="text-zinc-400 text-sm">Use your device camera</p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Upload Image */}
           <div
