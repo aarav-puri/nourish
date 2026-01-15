@@ -53,6 +53,22 @@ export default function AppPage() {
     setUserMenuOpen(false)
   }
 
+  const getRemainingAIInsights = () => {
+    if (!user) return 0
+    
+    const today = new Date().toDateString()
+    const usageKey = `ai_usage_${user.id}`
+    const usageData = localStorage.getItem(usageKey)
+    
+    if (!usageData) return 1
+    
+    const usage = JSON.parse(usageData)
+    // Reset if it's a new day
+    if (usage.date !== today) return 1
+    
+    return Math.max(0, 1 - usage.count)
+  }
+
   const handleImageUpload = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload a valid image file')
@@ -112,10 +128,15 @@ export default function AppPage() {
         setShowResult(true)
         
         // Show sign-in prompt after first scan if not logged in
-        if (!user && !hasScanned) {
+        if (!user && !hasScanned && !loading) {
           setHasScanned(true)
           setTimeout(() => {
-            setAuthModalOpen(true)
+            // Double-check user is still not logged in
+            auth.getCurrentUser().then((currentUser) => {
+              if (!currentUser) {
+                setAuthModalOpen(true)
+              }
+            })
           }, 1500) // Show after 1.5 seconds so user can see the result first
         }
         
@@ -260,6 +281,18 @@ export default function AppPage() {
                     <p className="text-sm text-zinc-400">Signed in as</p>
                     <p className="text-sm font-medium truncate">{user.email}</p>
                   </div>
+                  
+                  {/* AI Limits */}
+                  <div className="px-4 py-3 border-b border-zinc-800 bg-white/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-zinc-400" />
+                        <span className="text-sm text-zinc-400">AI Insights Today</span>
+                      </div>
+                      <span className="text-sm font-bold text-white">{getRemainingAIInsights()}/1</span>
+                    </div>
+                  </div>
+                  
                   <div className="py-2">
                     <Link
                       href="/history"
