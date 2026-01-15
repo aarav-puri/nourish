@@ -156,10 +156,7 @@ export default function HomePage() {
                 <tr className="border-b border-zinc-800">
                   <th className="text-left py-4 px-4 text-zinc-400 font-medium">Feature</th>
                   <th className="py-4 px-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Sparkles className="w-5 h-5" />
-                      <span className="font-semibold">BarcodeSense</span>
-                    </div>
+                    <span className="font-bold text-white">BarcodeSense</span>
                   </th>
                   <th className="py-4 px-4 text-center text-zinc-400">Manual Reading</th>
                   <th className="py-4 px-4 text-center text-zinc-400">Basic Apps</th>
