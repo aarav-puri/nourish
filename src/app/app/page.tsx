@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Upload, Search, ArrowLeft, X, Home, User, Sparkles, 
   Activity, Smile, CheckSquare, Leaf, Loader2, AlertCircle,
-  Check, ChevronDown, LogOut, History
+  Check, ChevronDown, LogOut, History, Camera
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import { fetchProductInfo, ProductData } from '@/lib/product-api'
@@ -16,6 +16,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
 import AuthModal from '@/components/auth/AuthModal'
+import BarcodeScanner from '@/components/ui/BarcodeScanner'
 import { toast } from 'sonner'
 
 export default function AppPage() {
@@ -35,6 +36,7 @@ export default function AppPage() {
   const [moodModalOpen, setMoodModalOpen] = useState(false)
   const [dietModalOpen, setDietModalOpen] = useState(false)
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
+  const [scannerOpen, setScannerOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -110,6 +112,7 @@ export default function AppPage() {
 
   const handleBarcodeDetected = async (code: string) => {
     setBarcode(code)
+    setScannerOpen(false)
     toast.success(`Barcode detected: ${code}`)
     await searchProduct(code)
   }
@@ -328,34 +331,51 @@ export default function AppPage() {
           <h1 className="text-2xl font-bold gradient-text">Scan Your Product</h1>
         </div>
 
-        {/* Upload Area */}
+        {/* Scan Options */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card mb-6"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
         >
-          {!imagePreview ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-zinc-700 rounded-xl p-8 text-center cursor-pointer hover:border-zinc-500 transition-colors"
-            >
-              <Upload className="w-12 h-12 text-zinc-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Upload Barcode Image</h3>
-              <p className="text-zinc-400 text-sm mb-4">Click to browse or drag and drop</p>
-              <div className="text-xs text-zinc-500 space-y-1">
-                <p>• Clear, well-lit barcode image</p>
-                <p>• Barcode should be straight and in focus</p>
-                <p>• Avoid shadows or glare</p>
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
-              />
+          {/* Camera Scan */}
+          <div
+            onClick={() => setScannerOpen(true)}
+            className="card cursor-pointer hover:border-zinc-500 transition-colors"
+          >
+            <div className="text-center py-6">
+              <Camera className="w-12 h-12 text-white mx-auto mb-3" />
+              <h3 className="text-lg font-semibold mb-1">Scan with Camera</h3>
+              <p className="text-zinc-400 text-sm">Use your device camera</p>
             </div>
-          ) : (
+          </div>
+
+          {/* Upload Image */}
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="card cursor-pointer hover:border-zinc-500 transition-colors"
+          >
+            <div className="text-center py-6">
+              <Upload className="w-12 h-12 text-zinc-500 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold mb-1">Upload Image</h3>
+              <p className="text-zinc-400 text-sm">Choose from gallery</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+            />
+          </div>
+        </motion.div>
+
+        {/* Image Preview */}
+        {imagePreview && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="card mb-6"
+          >
             <div className="relative">
               <img src={imagePreview} alt="Preview" className="w-full rounded-xl" />
               <button
@@ -365,8 +385,8 @@ export default function AppPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Divider */}
         <div className="relative my-8">
@@ -681,6 +701,14 @@ export default function AppPage() {
         onClose={() => setAuthModalOpen(false)} 
         showSaveMessage={hasScanned && !user}
       />
+
+      {/* Barcode Scanner */}
+      {scannerOpen && (
+        <BarcodeScanner
+          onScan={handleBarcodeDetected}
+          onClose={() => setScannerOpen(false)}
+        />
+      )}
     </div>
   )
 }
