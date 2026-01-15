@@ -138,6 +138,36 @@ export default function AppPage() {
   const handleAIFeature = async (feature: string, mood?: string) => {
     if (!product) return
     
+    // Non-signed-in users must sign in to use AI features
+    if (!user) {
+      toast.error('Sign in to unlock AI insights.')
+      setTimeout(() => setAuthModalOpen(true), 500)
+      return
+    }
+    
+    // Check AI usage limit (1 per day for signed-in users)
+    const today = new Date().toDateString()
+    const usageKey = `ai_usage_${user.id}`
+    const usageData = localStorage.getItem(usageKey)
+    
+    let usage = { date: today, count: 0 }
+    if (usageData) {
+      usage = JSON.parse(usageData)
+      // Reset count if it's a new day
+      if (usage.date !== today) {
+        usage = { date: today, count: 0 }
+      }
+    }
+    
+    if (usage.count >= 1) {
+      toast.error('Daily AI limit reached. Come back tomorrow for more insights.')
+      return
+    }
+    
+    // Increment usage
+    usage.count += 1
+    localStorage.setItem(usageKey, JSON.stringify(usage))
+    
     setAiLoading(true)
     setMoodModalOpen(false)
     setDietModalOpen(false)
