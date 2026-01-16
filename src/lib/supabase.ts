@@ -77,35 +77,6 @@ export const auth = {
   onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback)
   },
-
-  async deleteAccount() {
-    const user = await auth.getCurrentUser()
-    if (!user) throw new Error('User not authenticated')
-
-    // Get the session token
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('No active session')
-
-    // Delete all user data from database tables
-    await db.deleteAllUserData()
-
-    // Delete the user account (requires service role key)
-    const response = await fetch('/api/delete-account', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || 'Failed to delete account')
-    }
-
-    // Sign out after deletion
-    await auth.signOut()
-  },
 }
 
 // Database helper functions
@@ -214,16 +185,5 @@ export const db = {
 
       if (error) throw error
     }
-  },
-
-  async deleteAllUserData() {
-    const user = await auth.getCurrentUser()
-    if (!user) throw new Error('User not authenticated')
-
-    // Delete all scanned products (but keep AI usage records to prevent abuse)
-    await supabase
-      .from('scanned_products')
-      .delete()
-      .eq('user_id', user.id)
   },
 }

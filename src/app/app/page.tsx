@@ -37,7 +37,6 @@ export default function AppPage() {
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -76,17 +75,6 @@ export default function AppPage() {
   const handleLogout = async () => {
     await auth.signOut()
     setUserMenuOpen(false)
-  }
-
-  const handleDeleteAccount = async () => {
-    try {
-      await auth.deleteAccount()
-      toast.success('Account deleted successfully')
-      window.location.href = '/'
-    } catch (err: any) {
-      console.error('Delete account error:', err)
-      toast.error(err.message || 'Failed to delete account')
-    }
   }
 
   const getRemainingAIInsights = () => {
@@ -343,21 +331,10 @@ export default function AppPage() {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
-                    </button>
-                    <div className="border-t border-zinc-800 my-2"></div>
-                    <button
-                      onClick={() => {
-                        setUserMenuOpen(false)
-                        setDeleteModalOpen(true)
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                      Delete Account
                     </button>
                   </div>
                 </div>
@@ -783,44 +760,6 @@ export default function AppPage() {
         isOpen={authModalOpen} 
         onClose={() => setAuthModalOpen(false)} 
       />
-
-      {/* Delete Account Confirmation Modal */}
-      <Modal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title="Delete Account"
-      >
-        <div className="space-y-4">
-          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-            <p className="text-red-400 font-semibold mb-2">⚠️ This action cannot be undone</p>
-            <p className="text-zinc-400 text-sm">
-              Deleting your account will permanently remove:
-            </p>
-            <ul className="list-disc list-inside text-zinc-400 text-sm mt-2 space-y-1">
-              <li>Your account and profile</li>
-              <li>All scan history</li>
-              <li>AI usage records</li>
-              <li>All associated data</li>
-            </ul>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setDeleteModalOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteAccount}
-              className="flex-1 bg-red-500 hover:bg-red-600"
-            >
-              Delete My Account
-            </Button>
-          </div>
-        </div>
-      </Modal>
 
       {/* Barcode Scanner */}
       {scannerOpen && (
