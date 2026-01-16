@@ -75,16 +75,6 @@ export default function TermsPage() {
               changes constitutes acceptance of the new terms.
             </p>
           </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white mt-8 mb-4">8. Contact</h2>
-            <p>
-              For questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:legal@barcodesense.com" className="text-white hover:underline">
-                legal@barcodesense.com
-              </a>
-            </p>
-          </section>
         </div>
       </main>
       <Footer />
