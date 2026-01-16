@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { motion } from 'framer-motion'
 import { 
   Sparkles, Activity, Leaf, Upload, Smile, CheckSquare, 
   ArrowRight, Check, X, Minus
@@ -56,11 +54,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-zinc-300 mb-8">
               <Sparkles className="w-4 h-4" />
               AI-Powered Product Intelligence
@@ -68,7 +62,7 @@ export default function HomePage() {
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Know what you're buying with{' '}
-              <span className="animated-gradient-text">AI insights</span>
+              <span className="gradient-text">AI insights</span>
             </h1>
             
             <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
@@ -79,10 +73,10 @@ export default function HomePage() {
             <Link href="/app">
               <Button size="lg" className="group">
                 Start Scanning Free
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -96,18 +90,11 @@ export default function HomePage() {
           
           <div className="grid md:grid-cols-3 gap-6">
             {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="card text-center"
-              >
+              <div key={i} className="card text-center">
                 <div className="text-5xl font-bold gradient-text mb-4">{stat.value}</div>
                 <p className="text-zinc-400 mb-4">{stat.label}</p>
                 <p className="text-xs text-zinc-600">Source: {stat.source}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -123,20 +110,13 @@ export default function HomePage() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="card-interactive card-shimmer group"
-              >
-                <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center mb-4 group-hover:bg-white group-hover:scale-110 transition-all duration-300">
-                  <feature.icon className="w-7 h-7 text-white group-hover:text-dark transition-colors" />
+              <div key={i} className="card group">
+                <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+                  <feature.icon className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-zinc-400">{feature.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -197,20 +177,13 @@ export default function HomePage() {
           
           <div className="grid md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.2 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
+              <div key={i} className="text-center">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white to-zinc-400 flex items-center justify-center text-2xl font-bold text-dark mx-auto mb-4">
                   {step.number}
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
                 <p className="text-zinc-400">{step.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -228,12 +201,7 @@ export default function HomePage() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="card p-6 text-center"
-            >
+            <div className="card p-6 text-center">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -241,15 +209,9 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-white mb-2">Encrypted Storage</h3>
               <p className="text-sm text-zinc-400">Your data is encrypted and stored securely with industry-standard protection.</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              viewport={{ once: true }}
-              className="card p-6 text-center"
-            >
+            <div className="card p-6 text-center">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -257,15 +219,9 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-white mb-2">Never Sold</h3>
               <p className="text-sm text-zinc-400">We will never sell your personal information or scan history. Ever.</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              viewport={{ once: true }}
-              className="card p-6 text-center"
-            >
+            <div className="card p-6 text-center">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -274,15 +230,9 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-white mb-2">Private by Default</h3>
               <p className="text-sm text-zinc-400">Your scans and insights are private. Only you can see your data.</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              viewport={{ once: true }}
-              className="card p-6 text-center"
-            >
+            <div className="card p-6 text-center">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500/20 to-red-600/10 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -290,7 +240,7 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-white mb-2">Delete Anytime</h3>
               <p className="text-sm text-zinc-400">Request deletion and we'll permanently remove all your data.</p>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -305,12 +255,7 @@ export default function HomePage() {
           
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Free Plan */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="card p-8"
-            >
+            <div className="card p-8">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold mb-2">Free</h3>
                 <div className="text-4xl font-bold gradient-text mb-2">$0</div>
@@ -328,7 +273,7 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Scan history (with account)</span>
+                  <span className="text-zinc-300">Scan history</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
@@ -346,16 +291,10 @@ export default function HomePage() {
                   Get Started Free
                 </Button>
               </Link>
-            </motion.div>
+            </div>
 
             {/* Pro Plan */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              viewport={{ once: true }}
-              className="card p-8 relative overflow-hidden border-2 border-white/20"
-            >
+            <div className="card p-8 relative overflow-hidden border-2 border-white/20">
               <div className="absolute top-4 right-4">
                 <span className="px-3 py-1 bg-gradient-to-r from-white to-zinc-400 text-dark text-xs font-bold rounded-full">
                   COMING SOON
@@ -394,7 +333,7 @@ export default function HomePage() {
                   <span className="text-zinc-300">Export scan history</span>
                 </li>
               </ul>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -408,51 +347,34 @@ export default function HomePage() {
           </div>
           
           <div className="space-y-4">
-            <motion.details
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="card p-6 cursor-pointer group"
-            >
+            <details className="card p-6 cursor-pointer group">
               <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
                 How does BarcodeSense work?
-                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+                <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
                 Simply scan or upload a photo of any product barcode, or enter the barcode number manually. 
                 BarcodeSense instantly retrieves product information from global databases and uses AI to 
                 analyze ingredients, nutrition, environmental impact, and provide personalized recommendations.
               </p>
-            </motion.details>
+            </details>
 
-            <motion.details
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              viewport={{ once: true }}
-              className="card p-6 cursor-pointer group"
-            >
+            <details className="card p-6 cursor-pointer group">
               <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
                 What are AI insights?
-                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+                <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
                 AI insights are advanced analyses powered by artificial intelligence that help you understand 
                 products better. This includes health scores, healthier alternatives, diet compatibility checks 
                 (vegan, keto, gluten-free, etc.), mood-based recommendations, and environmental impact assessments.
               </p>
-            </motion.details>
+            </details>
 
-            <motion.details
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              viewport={{ once: true }}
-              className="card p-6 cursor-pointer group"
-            >
+            <details className="card p-6 cursor-pointer group">
               <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
                 How accurate is the product information?
-                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+                <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
                 We source product data from comprehensive global databases with millions of products. While we 
@@ -460,18 +382,12 @@ export default function HomePage() {
                 check the physical product label for the most up-to-date information, especially for allergies 
                 or dietary restrictions.
               </p>
-            </motion.details>
+            </details>
 
-            <motion.details
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              viewport={{ once: true }}
-              className="card p-6 cursor-pointer group"
-            >
+            <details className="card p-6 cursor-pointer group">
               <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
                 How can I contact you?
-                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+                <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
                 BarcodeSense is created by Aarav Puri. You can visit{' '}
@@ -485,7 +401,7 @@ export default function HomePage() {
                 </a>
                 {' '}to learn more and get in touch.
               </p>
-            </motion.details>
+            </details>
           </div>
         </div>
       </section>
@@ -493,21 +409,16 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="card p-10"
-          >
+          <div className="card p-10">
             <h2 className="text-3xl font-bold mb-4">Ready to shop smarter?</h2>
             <p className="text-zinc-400 mb-8">Start scanning products and get AI-powered insights instantly.</p>
             <Link href="/app">
-              <Button size="lg" className="group">
+              <Button size="lg">
                 Try BarcodeSense Free
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 

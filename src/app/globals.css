@@ -69,22 +69,16 @@ body {
   background-clip: text;
 }
 
-/* Animated gradient text */
+/* Animated gradient text - removed animation */
 .animated-gradient-text {
   background: linear-gradient(90deg, #ffffff, #d4d4d8, #71717a, #d4d4d8, #ffffff);
   background-size: 300% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradient 5s ease-in-out infinite;
 }
 
-@keyframes gradient {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 100% center; }
-}
-
-/* Glow effect */
+/* Glow effect - static */
 .glow {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
@@ -93,25 +87,10 @@ body {
   box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
 }
 
-/* Card shimmer effect */
+/* Card shimmer effect - removed */
 .card-shimmer {
   position: relative;
   overflow: hidden;
-}
-
-.card-shimmer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
-.card-shimmer:hover::before {
-  left: 100%;
 }
 
 /* Particles - GPU accelerated for mobile */
@@ -148,39 +127,39 @@ body {
   }
 }
 
-/* Button styles */
+/* Button styles - no animations */
 .btn-primary {
   @apply px-6 py-3 bg-gradient-to-r from-white to-zinc-200 text-black font-semibold rounded-xl 
-         transition-all duration-300 hover:shadow-lg hover:shadow-white/20 hover:-translate-y-0.5
-         active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
+         hover:shadow-lg hover:shadow-white/20
+         disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 .btn-secondary {
   @apply px-6 py-3 bg-dark-elevated text-white font-semibold rounded-xl border border-zinc-700
-         transition-all duration-300 hover:border-white hover:bg-zinc-800
-         active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
+         hover:border-white hover:bg-zinc-800
+         disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 .btn-ghost {
   @apply px-4 py-2 text-zinc-400 font-medium rounded-lg
-         transition-all duration-300 hover:text-white hover:bg-white/10;
+         hover:text-white hover:bg-white/10;
 }
 
-/* Input styles */
+/* Input styles - no animations */
 .input-field {
   @apply w-full px-4 py-3 bg-dark-elevated border border-zinc-700 rounded-xl text-white
          placeholder:text-zinc-500 focus:outline-none focus:border-white focus:ring-2 
-         focus:ring-white/20 transition-all duration-300;
+         focus:ring-white/20;
 }
 
-/* Card styles */
+/* Card styles - no animations */
 .card {
-  @apply bg-dark-card rounded-2xl border border-zinc-800 p-6 transition-all duration-300
+  @apply bg-dark-card rounded-2xl border border-zinc-800 p-6
          hover:border-zinc-600 hover:shadow-lg hover:shadow-white/5;
 }
 
 .card-interactive {
-  @apply card hover:-translate-y-1 cursor-pointer;
+  @apply card cursor-pointer;
 }
 
 /* Modal backdrop */
@@ -201,7 +180,7 @@ body {
   @apply toast bg-red-500/20 border border-red-500/50 text-red-400;
 }
 
-/* Loading spinner */
+/* Loading spinner - keeping this one as it's functional */
 .spinner {
   @apply w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin;
 }
