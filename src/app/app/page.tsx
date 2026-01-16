@@ -37,6 +37,7 @@ export default function AppPage() {
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -77,11 +78,29 @@ export default function AppPage() {
     setUserMenuOpen(false)
   }
 
+  const handleDeleteAccount = async () => {
+    try {
+      await auth.deleteAccount()
+      toast.success('Account deleted successfully')
+      window.location.href = '/'
+    } catch (err: any) {
+      console.error('Delete account error:', err)
+      toast.error(err.message || 'Failed to delete account')
+    }
+  }
+
   const getRemainingAIInsights = () => {
     return remainingAI
   }
 
   const handleImageUpload = useCallback((file: File) => {
+    // Require sign-in
+    if (!user) {
+      toast.error('Please sign in to scan products')
+      setAuthModalOpen(true)
+      return
+    }
+
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload a valid image file')
       return
@@ -132,7 +151,7 @@ export default function AppPage() {
       }
     }
     reader.readAsDataURL(file)
-  }, [])
+  }, [user])
 
   const handleBarcodeDetected = async (code: string) => {
     setBarcode(code)
@@ -142,6 +161,13 @@ export default function AppPage() {
   }
 
   const searchProduct = async (code: string) => {
+    // Require sign-in
+    if (!user) {
+      toast.error('Please sign in to scan products')
+      setAuthModalOpen(true)
+      return
+    }
+
     if (!code.trim()) {
       toast.error('Please enter a barcode number')
       return
@@ -317,10 +343,21 @@ export default function AppPage() {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
+                    </button>
+                    <div className="border-t border-zinc-800 my-2"></div>
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false)
+                        setDeleteModalOpen(true)
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                      Delete Account
                     </button>
                   </div>
                 </div>
@@ -351,7 +388,14 @@ export default function AppPage() {
           {/* Camera Scan - Only on Mobile */}
           {isMobile && (
             <div
-              onClick={() => setScannerOpen(true)}
+              onClick={() => {
+                if (!user) {
+                  toast.error('Please sign in to scan products')
+                  setAuthModalOpen(true)
+                  return
+                }
+                setScannerOpen(true)
+              }}
               className="card cursor-pointer hover:border-zinc-500 transition-colors"
             >
               <div className="text-center py-6">
@@ -487,21 +531,40 @@ export default function AppPage() {
 
                     {/* Ingredients */}
                     {product.ingredients_text && (
-                      <div className="p-5 bg-white/5 rounded-xl border border-zinc-800">
-                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-4 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
-                          Ingredients
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {product.ingredients_text.split(',').map((ingredient, idx) => (
-                            <span
-                              key={idx}
-                              className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-full text-sm text-zinc-200 transition-colors border border-white/10"
-                            >
-                              {ingredient.trim()}
-                            </span>
-                          ))}
+                      <div className="p-5 bg-gradient-to-br from-white/8 to-white/3 rounded-xl border border-white/10 backdrop-blur-sm">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center">
+                              <Leaf className="w-4 h-4 text-emerald-400" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-white">Ingredients</p>
+                              <p className="text-xs text-zinc-500">{product.ingredients_text.split(',').length} items</p>
+                            </div>
+                          </div>
                         </div>
+                        <div className="flex flex-wrap gap-2">
+                          {product.ingredients_text.split(',').map((ingredient, idx) => {
+                            const trimmed = ingredient.trim().toLowerCase()
+                            const isFirst = idx < 3
+                            return (
+                              <span
+                                key={idx}
+                                className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 cursor-default
+                                  ${isFirst 
+                                    ? 'bg-gradient-to-r from-white/15 to-white/10 text-white font-medium border border-white/20 shadow-sm' 
+                                    : 'bg-white/5 text-zinc-300 border border-white/5 hover:bg-white/10 hover:border-white/15'
+                                  }`}
+                              >
+                                {ingredient.trim()}
+                              </span>
+                            )
+                          })}
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-4 flex items-center gap-1.5">
+                          <span className="w-1 h-1 rounded-full bg-zinc-500"></span>
+                          First 3 ingredients are the most prominent
+                        </p>
                       </div>
                     )}
 
@@ -720,6 +783,44 @@ export default function AppPage() {
         isOpen={authModalOpen} 
         onClose={() => setAuthModalOpen(false)} 
       />
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Account"
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+            <p className="text-red-400 font-semibold mb-2">⚠️ This action cannot be undone</p>
+            <p className="text-zinc-400 text-sm">
+              Deleting your account will permanently remove:
+            </p>
+            <ul className="list-disc list-inside text-zinc-400 text-sm mt-2 space-y-1">
+              <li>Your account and profile</li>
+              <li>All scan history</li>
+              <li>AI usage records</li>
+              <li>All associated data</li>
+            </ul>
+          </div>
+          
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => setDeleteModalOpen(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteAccount}
+              className="flex-1 bg-red-500 hover:bg-red-600"
+            >
+              Delete My Account
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Barcode Scanner */}
       {scannerOpen && (

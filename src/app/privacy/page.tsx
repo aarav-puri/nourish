@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <div className="prose prose-invert prose-zinc max-w-none space-y-6 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">1. Information We Collect</h2>
-            <p>When you use BarcodeSense, we may collect:</p>
+            <p className="mb-4">When you use BarcodeSense, we may collect:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Account information (email address) when you sign up</li>
               <li>Product barcodes you scan</li>
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. How We Use Your Information</h2>
-            <p>We use your information to:</p>
+            <p className="mb-4">We use your information to:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Provide and improve our barcode scanning service</li>
               <li>Save your scan history for your convenience</li>
@@ -39,25 +39,23 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. Data Storage</h2>
             <p>
-              Your data is stored securely using Supabase, a trusted database provider. 
-              We implement industry-standard security measures to protect your information.
+              Your data is stored securely using industry-standard encryption and security measures. 
+              We implement best practices to protect your information.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Third-Party Services</h2>
-            <p>We use the following third-party services:</p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>Open Food Facts API for product information</li>
-              <li>OpenRouter AI for generating product insights</li>
-              <li>Supabase for authentication and data storage</li>
-              <li>Google OAuth for sign-in</li>
-            </ul>
+            <p>
+              We use trusted third-party services to provide and improve our application, including 
+              product databases, AI analysis providers, authentication services, and cloud infrastructure. 
+              These services are carefully selected for their security and reliability standards.
+            </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">5. Your Rights</h2>
-            <p>You have the right to:</p>
+            <p className="mb-4">You have the right to:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Access your personal data</li>
               <li>Delete your account and associated data</li>

@@ -159,19 +159,13 @@ export default function AboutPage() {
           className="text-center"
         >
           <h2 className="text-2xl font-bold gradient-text mb-6">Ready to discover what's in your food?</h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex items-center justify-center">
             <Link href="/app">
               <Button size="lg">
                 <Sparkles className="w-5 h-5" />
                 Try BarcodeSense Free
               </Button>
             </Link>
-            <a href="https://aaravpuri.org" target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary" size="lg">
-                <ExternalLink className="w-5 h-5" />
-                Visit My Website
-              </Button>
-            </a>
           </div>
         </motion.div>
       </main>

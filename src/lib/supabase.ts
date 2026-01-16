@@ -77,6 +77,35 @@ export const auth = {
   onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback)
   },
+
+  async deleteAccount() {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    // Get the session token
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('No active session')
+
+    // Delete all user data from database tables
+    await db.deleteAllUserData()
+
+    // Delete the user account (requires service role key)
+    const response = await fetch('/api/delete-account', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to delete account')
+    }
+
+    // Sign out after deletion
+    await auth.signOut()
+  },
 }
 
 // Database helper functions
@@ -129,33 +158,45 @@ export const db = {
 
   async getAIUsageToday() {
     const user = await auth.getCurrentUser()
-    if (!user) throw new Error('User not authenticated')
+    if (!user || !user.email) throw new Error('User not authenticated')
 
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    // Get start and end of today in ISO format
+    const now = new Date()
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString()
 
+    // Track by email to prevent abuse from account deletion/recreation
     const { data, error } = await supabase
       .from('ai_usage')
       .select('count')
-      .eq('user_id', user.id)
-      .eq('date', today)
+      .eq('email', user.email)
+      .gte('date', startOfDay)
+      .lt('date', endOfDay)
       .single()
 
-    if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows returned
+    if (error && error.code !== 'PGRST116') {
+      console.error('AI usage query error:', error)
+      throw error
+    }
     return data?.count || 0
   },
 
   async incrementAIUsage() {
     const user = await auth.getCurrentUser()
-    if (!user) throw new Error('User not authenticated')
+    if (!user || !user.email) throw new Error('User not authenticated')
 
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    // Get start and end of today
+    const now = new Date()
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString()
 
-    // Try to increment existing record
+    // Track by email to prevent abuse from account deletion/recreation
     const { data: existing } = await supabase
       .from('ai_usage')
       .select('id, count')
-      .eq('user_id', user.id)
-      .eq('date', today)
+      .eq('email', user.email)
+      .gte('date', startOfDay)
+      .lt('date', endOfDay)
       .single()
 
     if (existing) {
@@ -167,16 +208,28 @@ export const db = {
 
       if (error) throw error
     } else {
-      // Create new record
+      // Create new record with email and current timestamp
       const { error } = await supabase
         .from('ai_usage')
         .insert([{
           user_id: user.id,
-          date: today,
+          email: user.email,
+          date: new Date().toISOString(),
           count: 1,
         }])
 
       if (error) throw error
     }
+  },
+
+  async deleteAllUserData() {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    // Delete all scanned products (but keep AI usage records to prevent abuse)
+    await supabase
+      .from('scanned_products')
+      .delete()
+      .eq('user_id', user.id)
   },
 }

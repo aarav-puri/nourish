@@ -216,6 +216,280 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Privacy & Security Section */}
+      <section className="py-20 px-4 bg-white/[0.02]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Privacy First</p>
+            <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Your data belongs to you</h2>
+            <p className="text-zinc-400 max-w-2xl mx-auto">
+              We're committed to protecting your privacy. Your information is secure, private, and never sold.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="card p-6 text-center"
+            >
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-white mb-2">Encrypted Storage</h3>
+              <p className="text-sm text-zinc-400">Your data is encrypted and stored securely with industry-standard protection.</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              viewport={{ once: true }}
+              className="card p-6 text-center"
+            >
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-white mb-2">Never Sold</h3>
+              <p className="text-sm text-zinc-400">We will never sell your personal information or scan history. Ever.</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              viewport={{ once: true }}
+              className="card p-6 text-center"
+            >
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-white mb-2">Private by Default</h3>
+              <p className="text-sm text-zinc-400">Your scans and insights are private. Only you can see your data.</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              viewport={{ once: true }}
+              className="card p-6 text-center"
+            >
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500/20 to-red-600/10 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-white mb-2">Delete Anytime</h3>
+              <p className="text-sm text-zinc-400">Request deletion and we'll permanently remove all your data.</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 px-4 scroll-mt-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Pricing</p>
+            <h2 className="text-3xl md:text-4xl font-bold gradient-text">Simple, transparent pricing</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Free Plan */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="card p-8"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold mb-2">Free</h3>
+                <div className="text-4xl font-bold gradient-text mb-2">$0</div>
+                <p className="text-zinc-400 text-sm">Forever free</p>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">Unlimited barcode scans</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">Product information & nutrition</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">Scan history (with account)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">
+                    <strong className="text-white">1 AI insight per day</strong>
+                    <span className="block text-sm text-zinc-500 mt-1">
+                      ~30 insights per month
+                    </span>
+                  </span>
+                </li>
+              </ul>
+              
+              <Link href="/app" className="block">
+                <Button variant="secondary" className="w-full">
+                  Get Started Free
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Pro Plan */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              viewport={{ once: true }}
+              className="card p-8 relative overflow-hidden border-2 border-white/20"
+            >
+              <div className="absolute top-4 right-4">
+                <span className="px-3 py-1 bg-gradient-to-r from-white to-zinc-400 text-dark text-xs font-bold rounded-full">
+                  COMING SOON
+                </span>
+              </div>
+              
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold mb-2">Pro</h3>
+                <div className="text-4xl font-bold gradient-text mb-2">
+                  $9.99
+                  <span className="text-lg text-zinc-400">/mo</span>
+                </div>
+                <p className="text-zinc-400 text-sm">For power users</p>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">Everything in Free</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">
+                    <strong className="text-white">10 AI insights per day</strong>
+                    <span className="block text-sm text-zinc-500 mt-1">
+                      300 insights per month
+                    </span>
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">Advanced analytics</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-zinc-300">Export scan history</span>
+                </li>
+              </ul>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 px-4 scroll-mt-20">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">FAQ</p>
+            <h2 className="text-3xl md:text-4xl font-bold gradient-text">Frequently Asked Questions</h2>
+          </div>
+          
+          <div className="space-y-4">
+            <motion.details
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="card p-6 cursor-pointer group"
+            >
+              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
+                How does BarcodeSense work?
+                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                Simply scan or upload a photo of any product barcode, or enter the barcode number manually. 
+                BarcodeSense instantly retrieves product information from global databases and uses AI to 
+                analyze ingredients, nutrition, environmental impact, and provide personalized recommendations.
+              </p>
+            </motion.details>
+
+            <motion.details
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              viewport={{ once: true }}
+              className="card p-6 cursor-pointer group"
+            >
+              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
+                What are AI insights?
+                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                AI insights are advanced analyses powered by artificial intelligence that help you understand 
+                products better. This includes health scores, healthier alternatives, diet compatibility checks 
+                (vegan, keto, gluten-free, etc.), mood-based recommendations, and environmental impact assessments.
+              </p>
+            </motion.details>
+
+            <motion.details
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              viewport={{ once: true }}
+              className="card p-6 cursor-pointer group"
+            >
+              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
+                How accurate is the product information?
+                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                We source product data from comprehensive global databases with millions of products. While we 
+                strive for accuracy, product information is provided for informational purposes only. Always 
+                check the physical product label for the most up-to-date information, especially for allergies 
+                or dietary restrictions.
+              </p>
+            </motion.details>
+
+            <motion.details
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              viewport={{ once: true }}
+              className="card p-6 cursor-pointer group"
+            >
+              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
+                How can I contact you?
+                <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                BarcodeSense is created by Aarav Puri. You can visit{' '}
+                <a 
+                  href="https://aaravpuri.org" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white hover:underline font-medium"
+                >
+                  aaravpuri.org
+                </a>
+                {' '}to learn more and get in touch.
+              </p>
+            </motion.details>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
