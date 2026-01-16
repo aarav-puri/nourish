@@ -193,7 +193,7 @@ export default function AppPage() {
     
     // Non-signed-in users must sign in to use AI features
     if (!user) {
-      toast.error('Sign in to unlock AI insights!')
+      toast.error('Sign in to unlock AI insights.')
       setTimeout(() => setAuthModalOpen(true), 500)
       return
     }
