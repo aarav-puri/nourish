@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Camera, X, Zap } from 'lucide-react'
 import Button from './Button'
 
@@ -14,134 +14,130 @@ export default function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps)
   const [error, setError] = useState<string | null>(null)
   const [torchEnabled, setTorchEnabled] = useState(false)
   const mountedRef = useRef(true)
-  const videoTrackRef = useRef<MediaStreamTrack | null>(null)
+  const quaggaRef = useRef<any>(null)
+  const lastCodeRef = useRef<string | null>(null)
+  const codeCountRef = useRef<number>(0)
+
+  const stopScanner = useCallback(async () => {
+    if (quaggaRef.current) {
+      try {
+        quaggaRef.current.offDetected()
+        quaggaRef.current.stop()
+      } catch (err) {
+        console.error('Error stopping scanner:', err)
+      }
+    }
+  }, [])
+
+  const handleDetected = useCallback((result: any) => {
+    if (!result?.codeResult?.code || !mountedRef.current) return
+    
+    const code = result.codeResult.code
+    
+    // Require same code detected multiple times to reduce false positives
+    if (code === lastCodeRef.current) {
+      codeCountRef.current++
+    } else {
+      lastCodeRef.current = code
+      codeCountRef.current = 1
+    }
+    
+    // Only accept after 3 consistent reads
+    if (codeCountRef.current >= 3 && code.length >= 8) {
+      stopScanner()
+      onScan(code)
+    }
+  }, [onScan, stopScanner])
 
   useEffect(() => {
     mountedRef.current = true
-    startScanner()
+    
+    const initScanner = async () => {
+      try {
+        const Quagga = (await import('quagga')).default as any
+        quaggaRef.current = Quagga
+
+        const config = {
+          inputStream: {
+            type: 'LiveStream',
+            target: document.querySelector('#barcode-scanner'),
+            constraints: {
+              facingMode: 'environment'
+            },
+            area: {
+              top: '25%',
+              right: '10%',
+              left: '10%',
+              bottom: '25%'
+            }
+          },
+          locator: {
+            patchSize: 'medium',
+            halfSample: true
+          },
+          numOfWorkers: navigator.hardwareConcurrency || 4,
+          frequency: 10,
+          decoder: {
+            readers: [
+              'ean_reader',
+              'ean_8_reader',
+              'upc_reader',
+              'upc_e_reader',
+              'code_128_reader',
+              'code_39_reader',
+              'codabar_reader',
+              'i2of5_reader'
+            ],
+            multiple: false
+          },
+          locate: true
+        }
+
+        Quagga.init(config, (err: any) => {
+          if (err) {
+            console.error('Quagga init error:', err)
+            if (mountedRef.current) {
+              setError('Failed to access camera. Please check permissions.')
+            }
+            return
+          }
+
+          if (mountedRef.current) {
+            Quagga.start()
+            setIsScanning(true)
+          }
+        })
+
+        Quagga.onDetected(handleDetected)
+
+      } catch (err: any) {
+        console.error('Scanner error:', err)
+        if (mountedRef.current) {
+          setError(err.message || 'Failed to start camera')
+        }
+      }
+    }
+
+    initScanner()
     
     return () => {
       mountedRef.current = false
       stopScanner()
     }
-  }, [])
-
-  const startScanner = async () => {
-    try {
-      const Quagga = (await import('quagga')).default
-
-      Quagga.init({
-        inputStream: {
-          name: 'Live',
-          type: 'LiveStream',
-          target: document.querySelector('#barcode-scanner'),
-          constraints: {
-            width: { min: 640, ideal: 1280, max: 1920 },
-            height: { min: 480, ideal: 720, max: 1080 },
-            facingMode: 'environment',
-            aspectRatio: { min: 1, max: 2 }
-          },
-          area: {
-            top: '20%',
-            right: '10%',
-            left: '10%',
-            bottom: '20%'
-          }
-        },
-        locator: {
-          patchSize: 'medium',
-          halfSample: true
-        },
-        numOfWorkers: 2,
-        frequency: 10,
-        decoder: {
-          readers: [
-            'ean_reader',
-            'ean_8_reader',
-            'code_128_reader',
-            'code_39_reader',
-            'upc_reader',
-            'upc_e_reader',
-            'codabar_reader',
-            'i2of5_reader'
-          ],
-          debug: {
-            drawBoundingBox: true,
-            showFrequency: false,
-            drawScanline: true,
-            showPattern: false
-          }
-        },
-        locate: true
-      }, (err: any) => {
-        if (err) {
-          console.error('Quagga init error:', err)
-          if (mountedRef.current) {
-            setError('Failed to start camera. Please check permissions.')
-          }
-          return
-        }
-
-        // Get video track for torch control
-        const stream = Quagga.CameraAccess.getActiveStreamLabel()
-        if (stream) {
-          const videoTrack = Quagga.CameraAccess.getActiveTrack()
-          if (videoTrack) {
-            videoTrackRef.current = videoTrack
-          }
-        }
-
-        Quagga.start()
-        setIsScanning(true)
-      })
-
-      // Listen for detected barcodes
-      Quagga.onDetected((result: any) => {
-        if (result?.codeResult?.code && mountedRef.current) {
-          const code = result.codeResult.code
-          // Validate barcode
-          if (code && code.length >= 8) {
-            onScan(code)
-            stopScanner()
-          }
-        }
-      })
-
-    } catch (err: any) {
-      console.error('Scanner error:', err)
-      if (mountedRef.current) {
-        setError(err.message || 'Failed to start camera')
-      }
-    }
-  }
-
-  const stopScanner = async () => {
-    try {
-      const Quagga = (await import('quagga')).default
-      Quagga.stop()
-      Quagga.offDetected()
-      Quagga.offProcessed()
-      
-      // Stop video track
-      if (videoTrackRef.current) {
-        videoTrackRef.current.stop()
-        videoTrackRef.current = null
-      }
-    } catch (err) {
-      console.error('Error stopping scanner:', err)
-    }
-  }
+  }, [handleDetected, stopScanner])
 
   const toggleTorch = async () => {
-    if (videoTrackRef.current && isScanning) {
+    if (quaggaRef.current && isScanning) {
       try {
-        const capabilities = videoTrackRef.current.getCapabilities() as any
-        
-        if (capabilities.torch) {
-          await videoTrackRef.current.applyConstraints({
-            advanced: [{ torch: !torchEnabled } as any]
-          })
-          setTorchEnabled(!torchEnabled)
+        const track = quaggaRef.current.CameraAccess?.getActiveTrack?.()
+        if (track) {
+          const capabilities = track.getCapabilities() as any
+          if (capabilities.torch) {
+            await track.applyConstraints({
+              advanced: [{ torch: !torchEnabled }]
+            })
+            setTorchEnabled(!torchEnabled)
+          }
         }
       } catch (err) {
         console.error('Torch error:', err)
@@ -149,9 +145,13 @@ export default function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps)
     }
   }
 
+  const handleClose = () => {
+    stopScanner()
+    onClose()
+  }
+
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between p-4 bg-dark-card/95 backdrop-blur-lg border-b border-zinc-800">
         <h2 className="text-lg font-semibold">Scan Barcode</h2>
         <div className="flex items-center gap-2">
@@ -161,24 +161,22 @@ export default function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps)
               className={`p-2 rounded-lg transition-colors ${
                 torchEnabled ? 'bg-yellow-500/20 text-yellow-400' : 'hover:bg-white/10'
               }`}
+              aria-label="Toggle flashlight"
             >
               <Zap className="w-5 h-5" />
             </button>
           )}
           <button
-            onClick={() => {
-              stopScanner()
-              onClose()
-            }}
+            onClick={handleClose}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Close scanner"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      {/* Scanner Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
         {error ? (
           <div className="text-center px-4">
             <Camera className="w-16 h-16 text-red-400 mx-auto mb-4" />
@@ -189,25 +187,21 @@ export default function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps)
               <p>• Make sure no other app is using the camera</p>
               <p>• Try refreshing the page</p>
             </div>
-            <Button onClick={onClose}>Close</Button>
+            <Button onClick={handleClose}>Close</Button>
           </div>
         ) : (
           <div className="w-full max-w-lg">
             <div 
               id="barcode-scanner" 
-              className="rounded-xl overflow-hidden shadow-2xl relative"
-              style={{ maxHeight: '60vh' }}
-            >
-              <canvas className="drawingBuffer" style={{ display: 'none' }} />
-            </div>
+              className="rounded-xl overflow-hidden shadow-2xl relative bg-black"
+              style={{ maxHeight: '50vh', aspectRatio: '4/3' }}
+            />
             <div className="mt-6 space-y-3 text-center">
-              <p className="text-white font-medium">
-                Position barcode in the frame
-              </p>
+              <p className="text-white font-medium">Position barcode in the frame</p>
               <div className="text-sm text-zinc-400 space-y-1">
-                <p>• Hold steady and ensure good lighting</p>
+                <p>• Hold steady with good lighting</p>
                 <p>• Keep barcode horizontal and in focus</p>
-                <p>• Move closer if not detecting</p>
+                <p>• Move closer for small barcodes</p>
               </div>
             </div>
           </div>
