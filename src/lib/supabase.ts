@@ -160,18 +160,15 @@ export const db = {
     const user = await auth.getCurrentUser()
     if (!user || !user.email) throw new Error('User not authenticated')
 
-    // Get start and end of today in ISO format
-    const now = new Date()
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString()
+    // Get today's date as YYYY-MM-DD string
+    const today = new Date().toISOString().split('T')[0]
 
     // Track by email to prevent abuse from account deletion/recreation
     const { data, error } = await supabase
       .from('ai_usage')
       .select('count')
       .eq('email', user.email)
-      .gte('date', startOfDay)
-      .lt('date', endOfDay)
+      .eq('date', today)
       .single()
 
     if (error && error.code !== 'PGRST116') {
@@ -185,18 +182,15 @@ export const db = {
     const user = await auth.getCurrentUser()
     if (!user || !user.email) throw new Error('User not authenticated')
 
-    // Get start and end of today
-    const now = new Date()
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString()
+    // Get today's date as YYYY-MM-DD string
+    const today = new Date().toISOString().split('T')[0]
 
     // Track by email to prevent abuse from account deletion/recreation
     const { data: existing } = await supabase
       .from('ai_usage')
       .select('id, count')
       .eq('email', user.email)
-      .gte('date', startOfDay)
-      .lt('date', endOfDay)
+      .eq('date', today)
       .single()
 
     if (existing) {
@@ -208,13 +202,13 @@ export const db = {
 
       if (error) throw error
     } else {
-      // Create new record with email and current timestamp
+      // Create new record with email
       const { error } = await supabase
         .from('ai_usage')
         .insert([{
           user_id: user.id,
           email: user.email,
-          date: new Date().toISOString(),
+          date: today,
           count: 1,
         }])
 
