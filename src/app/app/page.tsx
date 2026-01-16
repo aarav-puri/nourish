@@ -24,7 +24,6 @@ export default function AppPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [hasScanned, setHasScanned] = useState(false)
   const [remainingAI, setRemainingAI] = useState(1)
   const [barcode, setBarcode] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -158,19 +157,6 @@ export default function AppPage() {
       } else {
         setProduct(data.product)
         setShowResult(true)
-        
-        // Show sign-in prompt after first scan if not logged in
-        if (!user && !hasScanned && !loading) {
-          setHasScanned(true)
-          setTimeout(() => {
-            // Double-check user is still not logged in
-            auth.getCurrentUser().then((currentUser) => {
-              if (!currentUser) {
-                setAuthModalOpen(true)
-              }
-            })
-          }, 1500) // Show after 1.5 seconds so user can see the result first
-        }
         
         // Save to history if logged in
         if (user) {
@@ -502,13 +488,20 @@ export default function AppPage() {
                     {/* Ingredients */}
                     {product.ingredients_text && (
                       <div className="p-5 bg-white/5 rounded-xl border border-zinc-800">
-                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
+                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-4 flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
                           Ingredients
                         </p>
-                        <p className="text-sm leading-relaxed text-zinc-300">
-                          {product.ingredients_text}
-                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {product.ingredients_text.split(',').map((ingredient, idx) => (
+                            <span
+                              key={idx}
+                              className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-full text-sm text-zinc-200 transition-colors border border-white/10"
+                            >
+                              {ingredient.trim()}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
 
@@ -726,7 +719,6 @@ export default function AppPage() {
       <AuthModal 
         isOpen={authModalOpen} 
         onClose={() => setAuthModalOpen(false)} 
-        showSaveMessage={hasScanned && !user}
       />
 
       {/* Barcode Scanner */}
