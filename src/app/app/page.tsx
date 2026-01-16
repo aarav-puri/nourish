@@ -51,6 +51,9 @@ export default function AppPage() {
       setLoading(false)
       if (currentUser) {
         updateRemainingAI()
+      } else {
+        // Not signed in - show auth modal
+        setAuthModalOpen(true)
       }
     })
     const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
@@ -58,6 +61,9 @@ export default function AppPage() {
       setLoading(false)
       if (session?.user) {
         updateRemainingAI()
+      } else {
+        // Not signed in - show auth modal
+        setAuthModalOpen(true)
       }
     })
     return () => subscription.unsubscribe()
@@ -266,6 +272,41 @@ export default function AppPage() {
 
   const moods = ['Tired', 'Stressed', 'Energetic', 'Hungry After Workout', 'Relaxed', 'Focused']
   const diets = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Halal', 'Kosher', 'Gluten-Free']
+
+  // Show loading or sign-in required screen
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-dark flex flex-col items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-6">
+            <Image src="/favicon.png" alt="BarcodeSense" width={64} height={64} />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">Sign in to continue</h1>
+          <p className="text-zinc-400 mb-8">
+            Create a free account to start scanning products and get AI-powered insights.
+          </p>
+          <Button onClick={() => setAuthModalOpen(true)} size="lg">
+            Sign In to Get Started
+          </Button>
+          <Link href="/" className="block mt-4 text-zinc-400 hover:text-white transition-colors">
+            ← Back to Home
+          </Link>
+        </div>
+        <AuthModal 
+          isOpen={authModalOpen} 
+          onClose={() => setAuthModalOpen(false)} 
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-dark">
