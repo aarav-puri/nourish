@@ -85,14 +85,14 @@ export default function HomePage() {
               and smarter alternatives — all powered by AI.
             </p>
             
-            {!authLoading && (
-              <Link href="/app">
-                <Button size="lg" className="group min-w-[200px]">
+            <Link href="/app">
+              <Button size="lg" className="group min-w-[200px] transition-opacity duration-300">
+                <span className={authLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}>
                   {user ? 'Go to App' : 'Start Scanning Free'}
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
-              </Link>
-            )}
+                </span>
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -444,14 +444,14 @@ export default function HomePage() {
           <div className="card p-10">
             <h2 className="text-3xl font-bold mb-4">Ready to shop smarter?</h2>
             <p className="text-zinc-400 mb-8">Start scanning products and get AI-powered insights instantly.</p>
-            {!authLoading && (
-              <Link href="/app">
-                <Button size="lg" className="min-w-[220px]">
+            <Link href="/app">
+              <Button size="lg" className="min-w-[220px] transition-opacity duration-300">
+                <span className={authLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}>
                   {user ? 'Go to App' : 'Try BarcodeSense Free'}
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
-              </Link>
-            )}
+                </span>
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
