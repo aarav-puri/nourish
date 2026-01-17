@@ -193,6 +193,27 @@ export default function HomePage() {
       <section className="py-20 px-4 bg-white/[0.02]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
+            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Built for You</p>
+            <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Created by someone who cares</h2>
+            <p className="text-zinc-400 max-w-2xl mx-auto mb-6">
+              BarcodeSense was built by a developer who wanted to make healthier choices but found 
+              nutrition labels confusing. Now it's here to help you too.
+            </p>
+            <a 
+              href="/about" 
+              className="inline-flex items-center gap-2 text-white hover:text-zinc-300 transition-colors"
+            >
+              <span>Read the story</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Privacy & Security Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Privacy First</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Your data belongs to you</h2>
             <p className="text-zinc-400 max-w-2xl mx-auto">
@@ -326,11 +347,11 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Advanced analytics</span>
+                  <span className="text-zinc-300">Export scan history</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Export scan history</span>
+                  <span className="text-zinc-300">Priority support</span>
                 </li>
               </ul>
             </div>

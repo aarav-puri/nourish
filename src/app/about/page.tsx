@@ -84,11 +84,6 @@ export default function AboutPage() {
               I wanted a simple way to scan products and immediately know what's inside—not just for 
               vegetarians, but for anyone trying to make informed choices about what they eat.
             </p>
-            
-            <blockquote className="border-l-4 border-white/30 pl-6 py-4 my-6 bg-white/5 rounded-r-xl italic">
-              "I built BarcodeSense using vibe coding—coding side-by-side with AI, focusing less on 
-              writing actual code and more on momentum, intuition, and rapid iteration."
-            </blockquote>
 
             <p>
               From there, the concept expanded beyond just checking ingredients. I realized people need 
