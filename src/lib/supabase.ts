@@ -131,8 +131,9 @@ export const db = {
     const user = await auth.getCurrentUser()
     if (!user || !user.email) throw new Error('User not authenticated')
 
-    // Get today's date as YYYY-MM-DD string
-    const today = new Date().toISOString().split('T')[0]
+    // Get today's date in user's local timezone as YYYY-MM-DD string
+    const now = new Date()
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
     // Track by email to prevent abuse from account deletion/recreation
     const { data, error } = await supabase
@@ -153,8 +154,9 @@ export const db = {
     const user = await auth.getCurrentUser()
     if (!user || !user.email) throw new Error('User not authenticated')
 
-    // Get today's date as YYYY-MM-DD string
-    const today = new Date().toISOString().split('T')[0]
+    // Get today's date in user's local timezone as YYYY-MM-DD string
+    const now = new Date()
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
     // Track by email to prevent abuse from account deletion/recreation
     const { data: existing } = await supabase
