@@ -304,7 +304,7 @@ export default function HomePage() {
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold mb-2">Pro</h3>
                 <div className="text-4xl font-bold gradient-text mb-2">
-                  $9.99
+                  $4.99
                   <span className="text-lg text-zinc-400">/mo</span>
                 </div>
                 <p className="text-zinc-400 text-sm">For power users</p>
