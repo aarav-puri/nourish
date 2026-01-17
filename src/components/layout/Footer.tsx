@@ -12,6 +12,12 @@ export default function Footer() {
             <Link href="/terms" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Terms of Service
             </Link>
+            <a 
+              href="mailto:barcodesense@gmail.com" 
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Contact
+            </a>
           </div>
           <p className="text-sm text-zinc-500">
             © {new Date().getFullYear()} BarcodeSense. All rights reserved.

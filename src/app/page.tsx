@@ -386,20 +386,14 @@ export default function HomePage() {
 
             <details className="card p-6 cursor-pointer group">
               <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
-                How can I contact you?
+                What if a product isn't in the database?
                 <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
-                BarcodeSense is created by Aarav Puri. You can visit{' '}
-                <a 
-                  href="https://aaravpuri.org" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-white hover:underline font-medium"
-                >
-                  aaravpuri.org
-                </a>
-                {' '}to learn more and get in touch.
+                While our database covers millions of products worldwide, some items—especially local or newly 
+                released products—may not be available yet. If a product isn't found, you can still manually 
+                enter product details, and our AI can analyze ingredients and nutrition information you provide. 
+                We're constantly expanding our database coverage.
               </p>
             </details>
           </div>

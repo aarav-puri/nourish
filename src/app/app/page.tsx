@@ -37,6 +37,19 @@ export default function AppPage() {
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [manualEntryMode, setManualEntryMode] = useState(false)
+  const [manualProduct, setManualProduct] = useState({
+    product_name: '',
+    brands: '',
+    ingredients_text: '',
+    nutriments: {
+      energy_value: '',
+      fat: '',
+      carbohydrates: '',
+      proteins: ''
+    }
+  })
+  const [resetTime, setResetTime] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -45,6 +58,23 @@ export default function AppPage() {
       setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
     }
     checkMobile()
+    
+    // Calculate time until midnight (reset time)
+    const calculateResetTime = () => {
+      const now = new Date()
+      const tomorrow = new Date(now)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      tomorrow.setHours(0, 0, 0, 0)
+      
+      const diff = tomorrow.getTime() - now.getTime()
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      
+      setResetTime(`${hours}h ${minutes}m`)
+    }
+    
+    calculateResetTime()
+    const interval = setInterval(calculateResetTime, 60000) // Update every minute
     
     auth.getCurrentUser().then((currentUser) => {
       setUser(currentUser)
@@ -66,7 +96,10 @@ export default function AppPage() {
         setAuthModalOpen(true)
       }
     })
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      clearInterval(interval)
+    }
   }, [])
 
   const updateRemainingAI = async () => {
@@ -209,7 +242,7 @@ export default function AppPage() {
       const usedToday = await db.getAIUsageToday()
       
       if (usedToday >= 1) {
-        toast.error('Daily AI limit reached. Come back tomorrow for more insights!')
+        toast.error(`Daily AI limit reached. Resets in ${resetTime}`)
         return
       }
       
@@ -352,13 +385,18 @@ export default function AppPage() {
                   
                   {/* AI Limits */}
                   <div className="px-4 py-3 border-b border-zinc-800 bg-white/5">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-zinc-400" />
                         <span className="text-sm text-zinc-400">AI Insights Left Today</span>
                       </div>
                       <span className="text-sm font-bold text-white">{getRemainingAIInsights()}/1</span>
                     </div>
+                    {remainingAI === 0 && resetTime && (
+                      <p className="text-xs text-zinc-500">
+                        Resets in {resetTime}
+                      </p>
+                    )}
                   </div>
                   
                   <div className="py-2">
@@ -683,12 +721,165 @@ export default function AppPage() {
                     </div>
                   </div>
                 </div>
+              ) : manualEntryMode ? (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold">Enter Product Details</h3>
+                    <button 
+                      onClick={() => {
+                        setManualEntryMode(false)
+                        setManualProduct({
+                          product_name: '',
+                          brands: '',
+                          ingredients_text: '',
+                          nutriments: { energy_value: '', fat: '', carbohydrates: '', proteins: '' }
+                        })
+                      }}
+                      className="text-zinc-400 hover:text-white"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-zinc-400 mb-2">Product Name *</label>
+                      <Input
+                        value={manualProduct.product_name}
+                        onChange={(e) => setManualProduct({...manualProduct, product_name: e.target.value})}
+                        placeholder="e.g., Organic Granola Bar"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-zinc-400 mb-2">Brand (optional)</label>
+                      <Input
+                        value={manualProduct.brands}
+                        onChange={(e) => setManualProduct({...manualProduct, brands: e.target.value})}
+                        placeholder="e.g., Nature Valley"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-zinc-400 mb-2">Ingredients *</label>
+                      <textarea
+                        value={manualProduct.ingredients_text}
+                        onChange={(e) => setManualProduct({...manualProduct, ingredients_text: e.target.value})}
+                        placeholder="e.g., Whole grain oats, honey, almonds, brown sugar..."
+                        className="input-field min-h-[100px] resize-none"
+                        rows={4}
+                      />
+                      <p className="text-xs text-zinc-500 mt-1">Separate ingredients with commas</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-zinc-400 mb-3">Nutrition Facts (per 100g) - Optional</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-zinc-500 mb-1">Energy (kcal)</label>
+                          <Input
+                            type="number"
+                            value={manualProduct.nutriments.energy_value}
+                            onChange={(e) => setManualProduct({
+                              ...manualProduct, 
+                              nutriments: {...manualProduct.nutriments, energy_value: e.target.value}
+                            })}
+                            placeholder="400"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-zinc-500 mb-1">Fat (g)</label>
+                          <Input
+                            type="number"
+                            value={manualProduct.nutriments.fat}
+                            onChange={(e) => setManualProduct({
+                              ...manualProduct, 
+                              nutriments: {...manualProduct.nutriments, fat: e.target.value}
+                            })}
+                            placeholder="15"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-zinc-500 mb-1">Carbs (g)</label>
+                          <Input
+                            type="number"
+                            value={manualProduct.nutriments.carbohydrates}
+                            onChange={(e) => setManualProduct({
+                              ...manualProduct, 
+                              nutriments: {...manualProduct.nutriments, carbohydrates: e.target.value}
+                            })}
+                            placeholder="60"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-zinc-500 mb-1">Protein (g)</label>
+                          <Input
+                            type="number"
+                            value={manualProduct.nutriments.proteins}
+                            onChange={(e) => setManualProduct({
+                              ...manualProduct, 
+                              nutriments: {...manualProduct.nutriments, proteins: e.target.value}
+                            })}
+                            placeholder="8"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => {
+                      if (!manualProduct.product_name || !manualProduct.ingredients_text) {
+                        toast.error('Please fill in product name and ingredients')
+                        return
+                      }
+                      // Convert to product format and set
+                      const formattedProduct = {
+                        ...manualProduct,
+                        barcode: barcode,
+                        nutriments: {
+                          energy_value: parseFloat(manualProduct.nutriments.energy_value) || undefined,
+                          energy_unit: 'kcal',
+                          fat: parseFloat(manualProduct.nutriments.fat) || undefined,
+                          carbohydrates: parseFloat(manualProduct.nutriments.carbohydrates) || undefined,
+                          proteins: parseFloat(manualProduct.nutriments.proteins) || undefined,
+                        }
+                      }
+                      setProduct(formattedProduct as any)
+                      setManualEntryMode(false)
+                      toast.success('Product details saved! Use AI insights below.')
+                    }}
+                    className="w-full"
+                  >
+                    Save & Analyze with AI
+                  </Button>
+                </div>
               ) : (
                 <div className="text-center py-8">
                   <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2">Product Not Found</h3>
-                  <p className="text-zinc-400 mb-4">We couldn't find this product in our database.</p>
-                  <p className="text-sm text-zinc-500">Barcode: {barcode}</p>
+                  <p className="text-zinc-400 mb-2">We couldn't find this product in our database.</p>
+                  <p className="text-sm text-zinc-500 mb-6">Barcode: {barcode}</p>
+                  
+                  <div className="max-w-md mx-auto text-left">
+                    <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl mb-4">
+                      <p className="text-sm text-blue-300 mb-2">
+                        <Sparkles className="w-4 h-4 inline mr-1" />
+                        Want AI insights anyway?
+                      </p>
+                      <p className="text-xs text-zinc-400">
+                        You can manually enter the product details below, and our AI will analyze the ingredients 
+                        and nutrition information you provide. This counts as 1 AI insight.
+                      </p>
+                    </div>
+                    
+                    <Button 
+                      onClick={() => setManualEntryMode(true)}
+                      className="w-full"
+                    >
+                      Enter Product Details Manually
+                    </Button>
+                  </div>
                 </div>
               )}
             </motion.div>

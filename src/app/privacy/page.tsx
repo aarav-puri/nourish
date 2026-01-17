@@ -63,6 +63,23 @@ export default function PrivacyPage() {
               <li>Opt out of non-essential data collection</li>
             </ul>
           </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Contact Us</h2>
+            <p>
+              If you have any questions about this Privacy Policy or how we handle your data, please contact us at{' '}
+              <a 
+                href="mailto:barcodesense@gmail.com"
+                className="text-white hover:underline font-medium"
+              >
+                barcodesense@gmail.com
+              </a>
+            </p>
+          </section>
+
+          <p className="text-sm text-zinc-500 mt-12">
+            Last updated: January 16, 2026
+          </p>
         </div>
       </main>
       <Footer />
