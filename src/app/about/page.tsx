@@ -169,19 +169,15 @@ export default function AboutPage() {
           className="text-center"
         >
           <h2 className="text-2xl font-bold gradient-text mb-6">Ready to discover what's in your food?</h2>
-          <div className="flex items-center justify-center">
-            <Link href="/app">
-              <Button size="lg" className="min-w-[220px]">
-                <Sparkles className="w-5 h-5" />
-                {authLoading ? (
-                  <span className="opacity-0">Try BarcodeSense Free</span>
-                ) : user ? (
-                  'Go to App'
-                ) : (
-                  'Try BarcodeSense Free'
-                )}
-              </Button>
-            </Link>
+          <div className="flex items-center justify-center min-h-[56px]">
+            {!authLoading && (
+              <Link href="/app">
+                <Button size="lg" className="min-w-[220px]">
+                  <Sparkles className="w-5 h-5" />
+                  {user ? 'Go to App' : 'Try BarcodeSense Free'}
+                </Button>
+              </Link>
+            )}
           </div>
         </motion.div>
       </main>
