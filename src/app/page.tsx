@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
   Sparkles, Activity, Leaf, Upload, Smile, CheckSquare, 
@@ -11,6 +11,7 @@ import Footer from '@/components/layout/Footer'
 import Particles from '@/components/Particles'
 import AuthModal from '@/components/auth/AuthModal'
 import Button from '@/components/ui/Button'
+import { auth } from '@/lib/supabase'
 
 const features = [
   { icon: Sparkles, title: 'AI-Powered Analysis', description: 'Get instant insights about any product with advanced AI that understands ingredients, nutrition, and more.' },
@@ -45,6 +46,15 @@ const steps = [
 
 export default function HomePage() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    auth.getCurrentUser().then(setUser)
+    const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
+      setUser(session?.user || null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   return (
     <div className="min-h-screen bg-dark">
@@ -72,7 +82,7 @@ export default function HomePage() {
             
             <Link href="/app">
               <Button size="lg" className="group">
-                Start Scanning Free
+                {user ? 'Go to App' : 'Start Scanning Free'}
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
@@ -429,7 +439,7 @@ export default function HomePage() {
             <p className="text-zinc-400 mb-8">Start scanning products and get AI-powered insights instantly.</p>
             <Link href="/app">
               <Button size="lg">
-                Try BarcodeSense Free
+                {user ? 'Go to App' : 'Try BarcodeSense Free'}
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
