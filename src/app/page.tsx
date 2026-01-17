@@ -47,11 +47,16 @@ const steps = [
 export default function HomePage() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
-    auth.getCurrentUser().then(setUser)
+    auth.getCurrentUser().then((currentUser) => {
+      setUser(currentUser)
+      setAuthLoading(false)
+    })
     const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
       setUser(session?.user || null)
+      setAuthLoading(false)
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -81,8 +86,14 @@ export default function HomePage() {
             </p>
             
             <Link href="/app">
-              <Button size="lg" className="group">
-                {user ? 'Go to App' : 'Start Scanning Free'}
+              <Button size="lg" className="group min-w-[200px]">
+                {authLoading ? (
+                  <span className="opacity-0">Start Scanning Free</span>
+                ) : user ? (
+                  'Go to App'
+                ) : (
+                  'Start Scanning Free'
+                )}
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
@@ -438,8 +449,14 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-4">Ready to shop smarter?</h2>
             <p className="text-zinc-400 mb-8">Start scanning products and get AI-powered insights instantly.</p>
             <Link href="/app">
-              <Button size="lg">
-                {user ? 'Go to App' : 'Try BarcodeSense Free'}
+              <Button size="lg" className="min-w-[220px]">
+                {authLoading ? (
+                  <span className="opacity-0">Try BarcodeSense Free</span>
+                ) : user ? (
+                  'Go to App'
+                ) : (
+                  'Try BarcodeSense Free'
+                )}
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>

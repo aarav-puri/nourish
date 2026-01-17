@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -10,6 +10,7 @@ import Footer from '@/components/layout/Footer'
 import Particles from '@/components/Particles'
 import AuthModal from '@/components/auth/AuthModal'
 import Button from '@/components/ui/Button'
+import { auth } from '@/lib/supabase'
 
 const features = [
   'Surfaces product information instantly',
@@ -22,6 +23,20 @@ const features = [
 
 export default function AboutPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  useEffect(() => {
+    auth.getCurrentUser().then((currentUser) => {
+      setUser(currentUser)
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
+      setUser(session?.user || null)
+      setAuthLoading(false)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   return (
     <div className="min-h-screen bg-dark">
@@ -156,9 +171,15 @@ export default function AboutPage() {
           <h2 className="text-2xl font-bold gradient-text mb-6">Ready to discover what's in your food?</h2>
           <div className="flex items-center justify-center">
             <Link href="/app">
-              <Button size="lg">
+              <Button size="lg" className="min-w-[220px]">
                 <Sparkles className="w-5 h-5" />
-                Try BarcodeSense Free
+                {authLoading ? (
+                  <span className="opacity-0">Try BarcodeSense Free</span>
+                ) : user ? (
+                  'Go to App'
+                ) : (
+                  'Try BarcodeSense Free'
+                )}
               </Button>
             </Link>
           </div>
