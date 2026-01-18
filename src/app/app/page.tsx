@@ -166,11 +166,16 @@ export default function AppPage() {
               handleBarcodeDetected(code)
             } else {
               setProductLoading(false)
-              toast.error('Invalid barcode detected. Please try again or enter manually.')
+              setImagePreview(null)
+              toast.error('Invalid barcode detected. Please try again.')
             }
           } else {
             setProductLoading(false)
-            toast.error('No barcode found. Try better lighting or enter manually.')
+            setImagePreview(null)
+            toast.error('No barcode found in image.', {
+              description: 'Try better lighting, or enter the barcode/product details manually below.',
+              duration: 5000
+            })
           }
         })
       }
@@ -544,25 +549,44 @@ export default function AppPage() {
                   {/* Product Info */}
                   <div className="space-y-4">
                     {/* Product Name & Brand */}
-                    {(product.product_name || product.brands) && (
+                    {((product as any).ai_formatted || product.product_name || product.brands) && (
                       <div className="p-5 bg-gradient-to-br from-white/10 to-white/5 rounded-xl border border-white/10">
-                        {product.product_name && (
+                        {((product as any).ai_formatted?.formatted_name || product.product_name) && (
                           <div className="mb-3">
                             <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1.5">Product Name</p>
-                            <p className="text-lg font-bold text-white">{product.product_name}</p>
+                            <p className="text-lg font-bold text-white">
+                              {(product as any).ai_formatted?.formatted_name || product.product_name}
+                            </p>
                           </div>
                         )}
-                        {product.brands && (
+                        {((product as any).ai_formatted?.formatted_brand || product.brands) && (
                           <div>
                             <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1.5">Brand</p>
-                            <p className="text-base font-semibold text-zinc-200">{product.brands}</p>
+                            <p className="text-base font-semibold text-zinc-200">
+                              {(product as any).ai_formatted?.formatted_brand || product.brands}
+                            </p>
                           </div>
                         )}
                       </div>
                     )}
+                    
+                    {/* Key Highlights */}
+                    {(product as any).ai_formatted?.key_highlights && (product as any).ai_formatted.key_highlights.length > 0 && (
+                      <div className="p-5 bg-gradient-to-br from-white/10 to-white/5 rounded-xl border border-white/10">
+                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-2">Key Highlights</p>
+                        <ul className="space-y-1.5">
+                          {(product as any).ai_formatted.key_highlights.map((highlight: string, idx: number) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
+                              <span className="text-white mt-0.5">•</span>
+                              <span>{highlight}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                     {/* Ingredients */}
-                    {product.ingredients_text && (
+                    {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text) && (
                       <div className="p-5 bg-gradient-to-br from-white/8 to-white/3 rounded-xl border border-white/10 backdrop-blur-sm">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-2">
@@ -571,12 +595,14 @@ export default function AppPage() {
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-white">Ingredients</p>
-                              <p className="text-xs text-zinc-500">{product.ingredients_text.split(',').length} items</p>
+                              <p className="text-xs text-zinc-500">
+                                {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text).split(',').length} items
+                              </p>
                             </div>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {product.ingredients_text.split(',').map((ingredient, idx) => {
+                          {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text).split(',').map((ingredient: string, idx: number) => {
                             const trimmed = ingredient.trim().toLowerCase()
                             const isFirst = idx < 3
                             return (
@@ -837,24 +863,38 @@ export default function AppPage() {
                   <p className="text-zinc-400 mb-2">We couldn't find this product in our database.</p>
                   <p className="text-sm text-zinc-500 mb-6">Barcode: {barcode}</p>
                   
-                  <div className="max-w-md mx-auto text-left">
-                    <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl mb-4">
+                  <div className="max-w-md mx-auto space-y-4">
+                    <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-left">
                       <p className="text-sm text-blue-300 mb-2">
                         <Sparkles className="w-4 h-4 inline mr-1" />
-                        Want AI insights anyway?
+                        What would you like to do?
                       </p>
                       <p className="text-xs text-zinc-400">
-                        You can manually enter the product details below, and our AI will analyze the ingredients 
-                        and nutrition information you provide. This counts as 1 AI insight.
+                        You can try entering the barcode again, or manually enter product details for AI analysis.
                       </p>
                     </div>
                     
-                    <Button 
-                      onClick={() => setManualEntryMode(true)}
-                      className="w-full"
-                    >
-                      Enter Product Details Manually
-                    </Button>
+                    <div className="grid gap-3">
+                      <Button 
+                        onClick={() => {
+                          setShowResult(false)
+                          setBarcode('')
+                        }}
+                        variant="secondary"
+                        className="w-full"
+                      >
+                        <Search className="w-5 h-5" />
+                        Try Different Barcode
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => setManualEntryMode(true)}
+                        className="w-full"
+                      >
+                        <Sparkles className="w-5 h-5" />
+                        Enter Product Details Manually
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

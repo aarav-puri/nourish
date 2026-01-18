@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package } from 'lucide-react'
+import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import { toast } from 'sonner'
@@ -22,6 +22,7 @@ export default function HistoryPage() {
   const [products, setProducts] = useState<ScannedProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [clearingAll, setClearingAll] = useState(false)
 
   useEffect(() => {
     checkAuthAndLoadHistory()
@@ -63,6 +64,21 @@ export default function HistoryPage() {
     }
   }
 
+  const handleClearAll = async () => {
+    if (!confirm('Are you sure you want to clear all scan history? This action cannot be undone.')) return
+    
+    setClearingAll(true)
+    try {
+      await db.clearAllScannedProducts()
+      setProducts([])
+      toast.success('All history cleared')
+    } catch (err) {
+      toast.error('Failed to clear history')
+    } finally {
+      setClearingAll(false)
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -77,12 +93,30 @@ export default function HistoryPage() {
     <div className="min-h-screen bg-dark">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-dark-card/95 backdrop-blur-lg border-b border-zinc-800">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/app" className="btn-ghost flex items-center gap-2">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="hidden sm:inline">Back</span>
-          </Link>
-          <h1 className="text-xl font-bold gradient-text">Scan History</h1>
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/app" className="btn-ghost flex items-center gap-2">
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline">Back</span>
+            </Link>
+            <h1 className="text-xl font-bold gradient-text">Scan History</h1>
+          </div>
+          {!loading && products.length > 0 && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleClearAll}
+              disabled={clearingAll}
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            >
+              {clearingAll ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">Clear All</span>
+            </Button>
+          )}
         </div>
       </header>
 

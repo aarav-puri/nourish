@@ -127,6 +127,18 @@ export const db = {
     if (error) throw error
   },
 
+  async clearAllScannedProducts() {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { error } = await supabase
+      .from('scanned_products')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  },
+
   async getAIUsageToday() {
     const user = await auth.getCurrentUser()
     if (!user || !user.email) throw new Error('User not authenticated')

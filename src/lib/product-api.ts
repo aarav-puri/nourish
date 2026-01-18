@@ -21,6 +21,12 @@ export interface ProductData {
     packaging?: string
     nutriscore_grade?: string
     ecoscore_grade?: string
+    ai_formatted?: {
+      formatted_name?: string
+      formatted_brand?: string
+      formatted_ingredients?: string
+      key_highlights?: string[]
+    }
   }
 }
 
