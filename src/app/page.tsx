@@ -459,7 +459,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-4">Ready to shop smarter?</h2>
             <p className="text-zinc-400 mb-8">Start scanning products and get AI-powered insights instantly.</p>
             <Link href="/app">
-              <Button size="lg" className="min-w-[220px] relative overflow-hidden">
+              <Button size="lg" className="min-w-[260px] relative overflow-hidden">
                 {authLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-2 h-2 bg-black rounded-full animate-pulse" />
