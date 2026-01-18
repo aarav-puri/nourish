@@ -69,9 +69,17 @@ export default function HistoryPage() {
     
     setDeleting(id)
     try {
-      await db.deleteScannedProduct(id)
-      setProducts(products.filter((p) => p.id !== id))
-      toast.success('Item deleted')
+      const product = products.find(p => p.id === id)
+      if (product) {
+        // Delete AI insights for this product first
+        await db.deleteAIInsightsByBarcode(product.barcode)
+        // Then delete the product
+        await db.deleteScannedProduct(id)
+        // Update UI
+        setProducts(products.filter((p) => p.id !== id))
+        setInsights(insights.filter((i) => i.barcode !== product.barcode))
+        toast.success('Item deleted')
+      }
     } catch (err) {
       toast.error('Failed to delete item')
     } finally {
@@ -84,8 +92,13 @@ export default function HistoryPage() {
     
     setClearingAll(true)
     try {
+      // Delete all AI insights first
+      await db.clearAllAIInsights()
+      // Then delete all products
       await db.clearAllScannedProducts()
+      // Update UI
       setProducts([])
+      setInsights([])
       toast.success('All history cleared')
     } catch (err) {
       toast.error('Failed to clear history')

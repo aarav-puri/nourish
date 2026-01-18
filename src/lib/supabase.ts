@@ -253,4 +253,29 @@ export const db = {
 
     if (error) throw error
   },
+
+  async deleteAIInsightsByBarcode(barcode: string) {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { error } = await supabase
+      .from('ai_insights')
+      .delete()
+      .eq('barcode', barcode)
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  },
+
+  async clearAllAIInsights() {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { error } = await supabase
+      .from('ai_insights')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  },
 }
