@@ -166,16 +166,17 @@ export default function AppPage() {
               handleBarcodeDetected(code)
             } else {
               setProductLoading(false)
-              setImagePreview(null)
-              toast.error('Invalid barcode detected. Please try again.')
+              setProduct(null)
+              setShowResult(true)
+              setBarcode('')
+              toast.error('Invalid barcode detected.')
             }
           } else {
             setProductLoading(false)
-            setImagePreview(null)
-            toast.error('No barcode found in image.', {
-              description: 'Try better lighting, or enter the barcode/product details manually below.',
-              duration: 5000
-            })
+            setProduct(null)
+            setShowResult(true)
+            setBarcode('')
+            toast.error('No barcode found in image.')
           }
         })
       }
@@ -203,6 +204,7 @@ export default function AppPage() {
     }
 
     setProductLoading(true)
+    setManualEntryMode(false) // Reset manual entry mode when searching
     try {
       const data = await fetchProductInfo(code)
       
@@ -303,6 +305,7 @@ export default function AppPage() {
     setProduct(null)
     setShowResult(false)
     setAiResult(null)
+    setManualEntryMode(false) // Reset manual entry mode
   }
 
   const moods = ['Tired', 'Stressed', 'Energetic', 'Hungry After Workout', 'Relaxed', 'Focused']
@@ -464,7 +467,7 @@ export default function AppPage() {
         </motion.div>
 
         {/* Image Preview */}
-        {imagePreview && (
+        {imagePreview && !showResult && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -859,9 +862,15 @@ export default function AppPage() {
               ) : (
                 <div className="text-center py-8">
                   <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Product Not Found</h3>
-                  <p className="text-zinc-400 mb-2">We couldn't find this product in our database.</p>
-                  <p className="text-sm text-zinc-500 mb-6">Barcode: {barcode}</p>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {barcode ? 'Product Not Found' : 'No Barcode Detected'}
+                  </h3>
+                  <p className="text-zinc-400 mb-2">
+                    {barcode 
+                      ? "We couldn't find this product in our database." 
+                      : "We couldn't detect a barcode in the uploaded image."}
+                  </p>
+                  {barcode && <p className="text-sm text-zinc-500 mb-6">Barcode: {barcode}</p>}
                   
                   <div className="max-w-md mx-auto space-y-4">
                     <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-left">
@@ -870,7 +879,9 @@ export default function AppPage() {
                         What would you like to do?
                       </p>
                       <p className="text-xs text-zinc-400">
-                        You can try entering the barcode again, or manually enter product details for AI analysis.
+                        {barcode 
+                          ? 'You can try entering the barcode again, or manually enter product details for AI analysis.'
+                          : 'You can manually enter the barcode or full product details for AI analysis.'}
                       </p>
                     </div>
                     
@@ -879,12 +890,13 @@ export default function AppPage() {
                         onClick={() => {
                           setShowResult(false)
                           setBarcode('')
+                          setImagePreview(null)
                         }}
                         variant="secondary"
                         className="w-full"
                       >
                         <Search className="w-5 h-5" />
-                        Try Different Barcode
+                        {barcode ? 'Try Different Barcode' : 'Enter Barcode Manually'}
                       </Button>
                       
                       <Button 
