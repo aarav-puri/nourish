@@ -266,22 +266,27 @@ export default function AppPage() {
     try {
       let result: string
       let title: string
+      let insightType: string
 
       switch (feature) {
         case 'alternatives':
           title = 'Healthier Alternatives'
+          insightType = 'alternatives'
           result = await aiService.getHealthierSubstitutes(product as Product)
           break
         case 'mood':
           title = `Recommendations for ${mood}`
+          insightType = `mood_${mood?.toLowerCase().replace(/\s+/g, '_')}`
           result = await aiService.getMoodBasedRecommendations(mood!, product as Product)
           break
         case 'diet':
           title = 'Diet Compatibility'
+          insightType = 'diet_compatibility'
           result = await aiService.analyzeDietCompatibility(product as Product, selectedDiets)
           break
         case 'eco':
           title = 'Environmental Impact'
+          insightType = 'eco_impact'
           result = await aiService.analyzeEcoImpact(product as Product)
           break
         default:
@@ -292,6 +297,19 @@ export default function AppPage() {
       const cleanResult = result.replace(/```json\s*/g, '').replace(/```\s*/g, '')
       const parsed = JSON.parse(cleanResult)
       setAiResult({ title, content: parsed })
+
+      // Save AI insight to database
+      try {
+        await db.saveAIInsight(
+          barcode,
+          product.product_name || 'Unknown Product',
+          insightType,
+          { title, content: parsed }
+        )
+      } catch (err) {
+        console.error('Failed to save AI insight:', err)
+        // Don't show error to user, insight is still displayed
+      }
     } catch (err) {
       toast.error('AI analysis failed. Please try again.')
     } finally {

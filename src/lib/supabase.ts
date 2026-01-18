@@ -200,4 +200,23 @@ export const db = {
       if (error) throw error
     }
   },
+
+  async saveAIInsight(barcode: string, productName: string, insightType: string, insightData: any) {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { data, error } = await supabase
+      .from('ai_insights')
+      .insert([{
+        user_id: user.id,
+        barcode,
+        product_name: productName,
+        insight_type: insightType,
+        insight_data: insightData,
+      }])
+      .select()
+
+    if (error) throw error
+    return data
+  },
 }
