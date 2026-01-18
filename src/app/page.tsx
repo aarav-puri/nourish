@@ -86,7 +86,7 @@ export default function HomePage() {
             </p>
             
             <Link href="/app">
-              <Button size="lg" className="group min-w-[200px] relative overflow-hidden">
+              <Button size="lg" className="group min-w-[240px] relative overflow-hidden">
                 {authLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-2 h-2 bg-black rounded-full animate-pulse" />
