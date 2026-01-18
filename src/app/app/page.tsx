@@ -926,13 +926,10 @@ export default function AppPage() {
             <Upload className="w-6 h-6" />
             <span className="text-xs">Scan</span>
           </Link>
-          <button
-            onClick={() => user ? null : setAuthModalOpen(true)}
-            className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors"
-          >
-            <User className="w-6 h-6" />
-            <span className="text-xs">Profile</span>
-          </button>
+          <Link href="/history" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors">
+            <History className="w-6 h-6" />
+            <span className="text-xs">History</span>
+          </Link>
         </div>
       </nav>
 
