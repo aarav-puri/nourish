@@ -39,7 +39,7 @@ Return JSON with these exact keys:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral-small-2409',
+        model: 'devstral-2501',
         messages: [
           {
             role: 'system',
