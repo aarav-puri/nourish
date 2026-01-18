@@ -219,4 +219,38 @@ export const db = {
     if (error) throw error
     return data
   },
+
+  async getAIInsights(barcode?: string, limit = 50) {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    let query = supabase
+      .from('ai_insights')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (barcode) {
+      query = query.eq('barcode', barcode)
+    }
+
+    const { data, error } = await query
+
+    if (error) throw error
+    return data
+  },
+
+  async deleteAIInsight(id: string) {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { error } = await supabase
+      .from('ai_insights')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  },
 }

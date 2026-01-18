@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash } from 'lucide-react'
+import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash, Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import { toast } from 'sonner'
@@ -17,9 +17,20 @@ interface ScannedProduct {
   scanned_at: string
 }
 
+interface AIInsight {
+  id: string
+  barcode: string
+  product_name: string
+  insight_type: string
+  insight_data: any
+  created_at: string
+}
+
 export default function HistoryPage() {
   const router = useRouter()
   const [products, setProducts] = useState<ScannedProduct[]>([])
+  const [insights, setInsights] = useState<AIInsight[]>([])
+  const [expandedProduct, setExpandedProduct] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [clearingAll, setClearingAll] = useState(false)
@@ -40,8 +51,12 @@ export default function HistoryPage() {
 
   const loadHistory = async () => {
     try {
-      const data = await db.getScannedProducts()
-      setProducts(data || [])
+      const [productsData, insightsData] = await Promise.all([
+        db.getScannedProducts(),
+        db.getAIInsights()
+      ])
+      setProducts(productsData || [])
+      setInsights(insightsData || [])
     } catch (err: any) {
       toast.error('Failed to load history')
     } finally {
@@ -87,6 +102,25 @@ export default function HistoryPage() {
       hour: '2-digit',
       minute: '2-digit',
     })
+  }
+
+  const getProductInsights = (barcode: string) => {
+    return insights.filter(insight => insight.barcode === barcode)
+  }
+
+  const formatInsightType = (type: string) => {
+    if (type === 'alternatives') return 'Healthier Alternatives'
+    if (type === 'diet_compatibility') return 'Diet Compatibility'
+    if (type === 'eco_impact') return 'Environmental Impact'
+    if (type.startsWith('mood_')) {
+      const mood = type.replace('mood_', '').replace(/_/g, ' ')
+      return `Mood: ${mood.charAt(0).toUpperCase() + mood.slice(1)}`
+    }
+    return type
+  }
+
+  const toggleProductExpansion = (productId: string) => {
+    setExpandedProduct(expandedProduct === productId ? null : productId)
   }
 
   return (
@@ -141,55 +175,111 @@ export default function HistoryPage() {
             <p className="text-sm text-zinc-500">{products.length} products scanned</p>
             
             <AnimatePresence>
-              {products.map((product, i) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="card flex items-start gap-4"
-                >
-                  {/* Product Image */}
-                  {product.product_data?.image_url ? (
-                    <img
-                      src={product.product_data.image_url}
-                      alt={product.product_name}
-                      className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                      <Package className="w-8 h-8 text-zinc-600" />
-                    </div>
-                  )}
-
-                  {/* Product Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">{product.product_name}</h3>
-                    <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
-                      <Barcode className="w-4 h-4" />
-                      <span>{product.barcode}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-zinc-500 mt-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{formatDate(product.scanned_at)}</span>
-                    </div>
-                  </div>
-
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    disabled={deleting === product.id}
-                    className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+              {products.map((product, i) => {
+                const productInsights = getProductInsights(product.barcode)
+                const isExpanded = expandedProduct === product.id
+                
+                return (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="card"
                   >
-                    {deleting === product.id ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-5 h-5" />
-                    )}
-                  </button>
-                </motion.div>
-              ))}
+                    <div className="flex items-start gap-4">
+                      {/* Product Image */}
+                      {product.product_data?.image_url ? (
+                        <img
+                          src={product.product_data.image_url}
+                          alt={product.product_name}
+                          className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                          <Package className="w-8 h-8 text-zinc-600" />
+                        </div>
+                      )}
+
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{product.product_name}</h3>
+                        <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
+                          <Barcode className="w-4 h-4" />
+                          <span>{product.barcode}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-zinc-500 mt-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(product.scanned_at)}</span>
+                        </div>
+                        
+                        {/* AI Insights Badge */}
+                        {productInsights.length > 0 && (
+                          <button
+                            onClick={() => toggleProductExpansion(product.id)}
+                            className="flex items-center gap-2 mt-3 px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-lg text-sm text-purple-300 hover:bg-purple-500/30 transition-colors"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            <span>{productInsights.length} AI Insight{productInsights.length > 1 ? 's' : ''}</span>
+                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        disabled={deleting === product.id}
+                        className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      >
+                        {deleting === product.id ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Expanded AI Insights */}
+                    <AnimatePresence>
+                      {isExpanded && productInsights.length > 0 && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-4 pt-4 border-t border-zinc-800 space-y-3">
+                            {productInsights.map((insight) => (
+                              <div
+                                key={insight.id}
+                                className="p-4 bg-white/5 rounded-xl border border-white/10"
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4 text-purple-400" />
+                                    <span className="text-sm font-semibold text-purple-300">
+                                      {formatInsightType(insight.insight_type)}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-zinc-500">
+                                    {formatDate(insight.created_at)}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-zinc-400">
+                                  {insight.insight_data?.title || 'AI Insight'}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                )
+              })}
             </AnimatePresence>
           </div>
         )}
