@@ -185,6 +185,15 @@ body {
   @apply w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin;
 }
 
+/* Animation delays for loading dots */
+.delay-75 {
+  animation-delay: 75ms;
+}
+
+.delay-150 {
+  animation-delay: 150ms;
+}
+
 /* Score badges */
 .score-badge {
   @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium;

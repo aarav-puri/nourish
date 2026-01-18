@@ -86,15 +86,25 @@ export default function HomePage() {
             </p>
             
             <Link href="/app">
-              <Button size="lg" className="group min-w-[200px] relative">
-                <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-500 ${authLoading || user ? 'opacity-0' : 'opacity-100'}`}>
-                  Start Scanning Free
-                  <ArrowRight className="w-5 h-5" />
-                </span>
-                <span className={`flex items-center justify-center gap-2 transition-opacity duration-500 ${authLoading || !user ? 'opacity-0' : 'opacity-100'}`}>
-                  Go to App
-                  <ArrowRight className="w-5 h-5" />
-                </span>
+              <Button size="lg" className="group min-w-[200px] relative overflow-hidden">
+                {authLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 bg-black rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-75" />
+                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-150" />
+                  </span>
+                ) : (
+                  <>
+                    <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
+                      Start Scanning Free
+                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </span>
+                    <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+                      Go to App
+                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </>
+                )}
               </Button>
             </Link>
           </div>
@@ -449,15 +459,25 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-4">Ready to shop smarter?</h2>
             <p className="text-zinc-400 mb-8">Start scanning products and get AI-powered insights instantly.</p>
             <Link href="/app">
-              <Button size="lg" className="min-w-[220px] relative">
-                <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-500 ${authLoading || user ? 'opacity-0' : 'opacity-100'}`}>
-                  Try BarcodeSense Free
-                  <ArrowRight className="w-5 h-5" />
-                </span>
-                <span className={`flex items-center justify-center gap-2 transition-opacity duration-500 ${authLoading || !user ? 'opacity-0' : 'opacity-100'}`}>
-                  Go to App
-                  <ArrowRight className="w-5 h-5" />
-                </span>
+              <Button size="lg" className="min-w-[220px] relative overflow-hidden">
+                {authLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 bg-black rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-75" />
+                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-150" />
+                  </span>
+                ) : (
+                  <>
+                    <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
+                      Try BarcodeSense Free
+                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </span>
+                    <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+                      Go to App
+                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </>
+                )}
               </Button>
             </Link>
           </div>
