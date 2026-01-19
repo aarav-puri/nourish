@@ -125,6 +125,7 @@ export default function HistoryPage() {
     if (type === 'alternatives') return 'Healthier Alternatives'
     if (type === 'diet_compatibility') return 'Diet Compatibility'
     if (type === 'eco_impact') return 'Environmental Impact'
+    if (type === 'recipe_suggestions') return 'Recipe Ideas'
     if (type.startsWith('mood_')) {
       const mood = type.replace('mood_', '').replace(/_/g, ' ')
       return `Mood: ${mood.charAt(0).toUpperCase() + mood.slice(1)}`
@@ -305,6 +306,59 @@ function AIResultDisplay({ content }: { content: any }) {
   if (!content) return <p className="text-sm text-zinc-400">No data available</p>
 
   if (Array.isArray(content)) {
+    // Check if it's recipes (has recipe_name)
+    if (content[0]?.recipe_name) {
+      return (
+        <div className="space-y-3">
+          {content.map((recipe, i) => (
+            <div key={i} className="p-3 bg-white/5 rounded-lg border border-white/10">
+              <div className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  {i + 1}
+                </span>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm mb-1">{recipe.recipe_name}</h4>
+                  <p className="text-xs text-zinc-400 mb-2">{recipe.description}</p>
+                  
+                  <div className="flex items-center gap-3 text-xs text-zinc-500 mb-2">
+                    <span className={`px-2 py-0.5 rounded ${
+                      recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                      recipe.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-red-500/20 text-red-400'
+                    }`}>
+                      {recipe.difficulty}
+                    </span>
+                    <span>⏱️ {recipe.prep_time} min</span>
+                    {recipe.calories && <span>🔥 {recipe.calories} cal</span>}
+                  </div>
+                  
+                  {recipe.other_ingredients && (
+                    <div className="mb-2">
+                      <p className="text-xs text-zinc-500 mb-1">Other ingredients:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {recipe.other_ingredients.slice(0, 4).map((ing: string, idx: number) => (
+                          <span key={idx} className="text-xs px-1.5 py-0.5 bg-white/5 rounded">
+                            {ing}
+                          </span>
+                        ))}
+                        {recipe.other_ingredients.length > 4 && (
+                          <span className="text-xs text-zinc-500">+{recipe.other_ingredients.length - 4} more</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {recipe.health_benefits && (
+                    <p className="text-xs text-zinc-400">{recipe.health_benefits}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    
     // Alternatives or Mood recommendations
     return (
       <div className="space-y-3">

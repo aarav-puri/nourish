@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
-  Sparkles, Activity, Leaf, Upload, Smile, CheckSquare, 
+  Sparkles, Activity, Leaf, Upload, CheckSquare, ChefHat,
   ArrowRight, Check, X, Minus
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
@@ -15,11 +15,11 @@ import { auth } from '@/lib/supabase'
 
 const features = [
   { icon: Sparkles, title: 'AI-Powered Analysis', description: 'Get instant insights about any product with advanced AI that understands ingredients, nutrition, and more.' },
-  { icon: Activity, title: 'Health Score', description: 'See how healthy a product really is with our comprehensive scoring system based on ingredients and nutrition.' },
-  { icon: Leaf, title: 'Eco Impact', description: 'Understand the environmental footprint of your purchases and make more sustainable choices.' },
+  { icon: Activity, title: 'Healthier Alternatives', description: 'Discover better product options with similar flavors and improved nutritional profiles.' },
+  { icon: Leaf, title: 'Eco Impact Score', description: 'Understand the environmental footprint of your purchases and make more sustainable choices.' },
   { icon: Upload, title: 'Instant Scanning', description: 'Upload a photo or enter a barcode manually — get results in seconds from our global product database.' },
-  { icon: Smile, title: 'Mood Recommendations', description: 'Get personalized product suggestions based on your current mood and preferences.' },
   { icon: CheckSquare, title: 'Diet Compatibility', description: 'Check if products match your dietary restrictions — vegan, gluten-free, keto, and more.' },
+  { icon: ChefHat, title: 'Recipe Ideas', description: 'Get creative recipe suggestions using the products you scan as key ingredients.' },
 ]
 
 const stats = [
@@ -418,8 +418,9 @@ export default function HomePage() {
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
                 AI insights are advanced analyses powered by artificial intelligence that help you understand 
-                products better. This includes health scores, healthier alternatives, diet compatibility checks 
-                (vegan, keto, gluten-free, etc.), mood-based recommendations, and environmental impact assessments.
+                products better. This includes finding healthier alternatives, checking diet compatibility 
+                (vegan, keto, gluten-free, etc.), analyzing environmental impact, and generating creative 
+                recipe ideas using scanned products. You also get general mood-based food recommendations.
               </p>
             </details>
 

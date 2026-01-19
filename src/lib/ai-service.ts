@@ -151,4 +151,24 @@ Format as JSON object.`
 
     return await callAI(prompt, 'You are a nutrition expert. Be balanced and helpful. Always respond with valid JSON.')
   },
+
+  async getRecipeSuggestions(product: Product) {
+    const prompt = `
+Product: ${product.product_name || product.name}
+Ingredients: ${product.ingredients_text || 'Not available'}
+Categories: ${product.categories || 'Not available'}
+
+Suggest 3 creative and practical recipes that can be made using this product as a key ingredient. For each recipe provide:
+1. recipe_name: Name of the recipe
+2. description: Brief 1-sentence description
+3. difficulty: "Easy", "Medium", or "Hard"
+4. prep_time: Estimated time in minutes
+5. calories: Estimated calories per serving
+6. other_ingredients: Array of 4-6 other main ingredients needed
+7. health_benefits: Brief explanation of nutritional benefits
+
+Format as JSON array with these exact keys.`
+
+    return await callAI(prompt, 'You are a creative chef and nutritionist. Provide practical, delicious recipes. Always respond with valid JSON.')
+  },
 }

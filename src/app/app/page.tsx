@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Upload, Search, ArrowLeft, X, Home, User, Sparkles, 
   Activity, Smile, CheckSquare, Leaf, Loader2, AlertCircle,
-  Check, ChevronDown, LogOut, History
+  Check, ChevronDown, LogOut, History, ChefHat
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import { fetchProductInfo, ProductData } from '@/lib/product-api'
@@ -289,6 +289,11 @@ export default function AppPage() {
           insightType = 'eco_impact'
           result = await aiService.analyzeEcoImpact(product as Product)
           break
+        case 'recipes':
+          title = 'Recipe Ideas'
+          insightType = 'recipe_suggestions'
+          result = await aiService.getRecipeSuggestions(product as Product)
+          break
         default:
           return
       }
@@ -532,6 +537,28 @@ export default function AppPage() {
           </div>
         </div>
 
+        {/* General Insights Section */}
+        {!showResult && !productLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="card mb-6"
+          >
+            <h3 className="text-lg font-semibold mb-3">
+              General Insights
+            </h3>
+            <p className="text-sm text-zinc-400 mb-4">Get personalized food recommendations based on your mood</p>
+            <Button
+              variant="secondary"
+              onClick={() => setMoodModalOpen(true)}
+              className="w-full"
+            >
+              <Smile className="w-5 h-5" />
+              Get Mood-Based Recommendations
+            </Button>
+          </motion.div>
+        )}
+
         {/* Loading State */}
         {productLoading && (
           <div className="card text-center py-12">
@@ -716,15 +743,6 @@ export default function AppPage() {
                       </Button>
                       <Button
                         variant="secondary"
-                        onClick={() => setMoodModalOpen(true)}
-                        disabled={aiLoading}
-                        className="flex-col h-auto py-4"
-                      >
-                        <Smile className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Mood Recommendations</span>
-                      </Button>
-                      <Button
-                        variant="secondary"
                         onClick={() => setDietModalOpen(true)}
                         disabled={aiLoading}
                         className="flex-col h-auto py-4"
@@ -740,6 +758,15 @@ export default function AppPage() {
                       >
                         <Leaf className="w-6 h-6 mb-2" />
                         <span className="text-sm">Eco Score</span>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleAIFeature('recipes')}
+                        disabled={aiLoading}
+                        className="flex-col h-auto py-4"
+                      >
+                        <ChefHat className="w-6 h-6 mb-2" />
+                        <span className="text-sm">Recipe Ideas</span>
                       </Button>
                     </div>
                   </div>
@@ -1042,6 +1069,56 @@ export default function AppPage() {
 // AI Result Display Component
 function AIResultDisplay({ content }: { content: any }) {
   if (Array.isArray(content)) {
+    // Check if it's recipes (has recipe_name)
+    if (content[0]?.recipe_name) {
+      return (
+        <div className="space-y-4">
+          {content.map((recipe, i) => (
+            <div key={i} className="p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="flex items-start gap-3">
+                <span className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  {i + 1}
+                </span>
+                <div className="flex-1">
+                  <h4 className="font-semibold mb-1">{recipe.recipe_name}</h4>
+                  <p className="text-sm text-zinc-400 mb-3">{recipe.description}</p>
+                  
+                  <div className="flex items-center gap-4 text-xs text-zinc-500 mb-3">
+                    <span className={`px-2 py-1 rounded ${
+                      recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                      recipe.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-red-500/20 text-red-400'
+                    }`}>
+                      {recipe.difficulty}
+                    </span>
+                    <span>⏱️ {recipe.prep_time} min</span>
+                    {recipe.calories && <span>🔥 {recipe.calories} cal</span>}
+                  </div>
+                  
+                  {recipe.other_ingredients && (
+                    <div className="mb-3">
+                      <p className="text-xs text-zinc-500 mb-1">Other ingredients needed:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {recipe.other_ingredients.map((ing: string, idx: number) => (
+                          <span key={idx} className="text-xs px-2 py-0.5 bg-white/5 rounded">
+                            {ing}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {recipe.health_benefits && (
+                    <p className="text-xs text-zinc-400">{recipe.health_benefits}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    
     // Alternatives or Mood recommendations
     return (
       <div className="space-y-4">
