@@ -68,14 +68,19 @@ Format as JSON array with these exact keys.`
     return await callAI(prompt, 'You are a nutrition expert. Provide practical, realistic food substitutions. Always respond with valid JSON.')
   },
 
-  async getMoodBasedRecommendations(mood: string, currentProduct: Product) {
-    const prompt = `
-User mood: ${mood}
-Current product nutrition:
+  async getMoodBasedRecommendations(mood: string, currentProduct?: Product) {
+    const productContext = currentProduct ? `
+Current product context:
+- Product: ${currentProduct.product_name || currentProduct.name || 'Unknown'}
 - Calories: ${currentProduct.nutriments?.energy_value || 'N/A'}
 - Protein: ${currentProduct.nutriments?.proteins || 'N/A'}g
 - Carbs: ${currentProduct.nutriments?.carbohydrates || 'N/A'}g
 - Sugar: ${currentProduct.nutriments?.sugars || 'N/A'}g
+` : ''
+
+    const prompt = `
+User mood: ${mood}
+${productContext}
 
 Based on this mood, recommend 3 foods that would help. For each recommendation provide:
 1. food_name: Name of the food

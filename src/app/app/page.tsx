@@ -232,7 +232,8 @@ export default function AppPage() {
   }
 
   const handleAIFeature = async (feature: string, mood?: string) => {
-    if (!product) return
+    // Mood-based recommendations don't require a product
+    if (!product && feature !== 'mood') return
     
     // Non-signed-in users must sign in to use AI features
     if (!user) {
@@ -277,7 +278,7 @@ export default function AppPage() {
         case 'mood':
           title = `Recommendations for ${mood}`
           insightType = `mood_${mood?.toLowerCase().replace(/\s+/g, '_')}`
-          result = await aiService.getMoodBasedRecommendations(mood!, product as Product)
+          result = await aiService.getMoodBasedRecommendations(mood!, product as Product | undefined)
           break
         case 'diet':
           title = 'Diet Compatibility'
@@ -303,17 +304,19 @@ export default function AppPage() {
       const parsed = JSON.parse(cleanResult)
       setAiResult({ title, content: parsed })
 
-      // Save AI insight to database
-      try {
-        await db.saveAIInsight(
-          barcode,
-          product.product_name || 'Unknown Product',
-          insightType,
-          { title, content: parsed }
-        )
-      } catch (err) {
-        console.error('Failed to save AI insight:', err)
-        // Don't show error to user, insight is still displayed
+      // Save AI insight to database (only if we have a product/barcode)
+      if (product && barcode) {
+        try {
+          await db.saveAIInsight(
+            barcode,
+            product.product_name || 'Unknown Product',
+            insightType,
+            { title, content: parsed }
+          )
+        } catch (err) {
+          console.error('Failed to save AI insight:', err)
+          // Don't show error to user, insight is still displayed
+        }
       }
     } catch (err) {
       toast.error('AI analysis failed. Please try again.')
@@ -743,12 +746,12 @@ export default function AppPage() {
                       </Button>
                       <Button
                         variant="secondary"
-                        onClick={() => setDietModalOpen(true)}
+                        onClick={() => handleAIFeature('recipes')}
                         disabled={aiLoading}
                         className="flex-col h-auto py-4"
                       >
-                        <CheckSquare className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Diet Compatibility</span>
+                        <ChefHat className="w-6 h-6 mb-2" />
+                        <span className="text-sm">Recipe Ideas</span>
                       </Button>
                       <Button
                         variant="secondary"
@@ -761,12 +764,12 @@ export default function AppPage() {
                       </Button>
                       <Button
                         variant="secondary"
-                        onClick={() => handleAIFeature('recipes')}
+                        onClick={() => setDietModalOpen(true)}
                         disabled={aiLoading}
                         className="flex-col h-auto py-4"
                       >
-                        <ChefHat className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Recipe Ideas</span>
+                        <CheckSquare className="w-6 h-6 mb-2" />
+                        <span className="text-sm">Diet Compatibility</span>
                       </Button>
                     </div>
                   </div>
