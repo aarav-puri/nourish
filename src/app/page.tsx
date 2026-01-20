@@ -23,9 +23,9 @@ const features = [
 ]
 
 const stats = [
-  { value: '55%', label: 'of daily calories Americans consume come from ultra-processed foods', source: 'Johns Hopkins University' },
+  { value: '73%', label: 'of U.S. food supply is ultra-processed', source: 'Northeastern University' },
+  { value: '60%', label: 'of adults have low nutrition literacy', source: 'Journal of Nutrition Education' },
   { value: '32', label: 'harmful health effects linked to ultra-processed foods', source: 'BMJ Study' },
-  { value: '51%', label: "of people don't fully understand nutrition labels", source: 'Food Health Research' },
 ]
 
 const comparison = [
@@ -118,7 +118,7 @@ export default function HomePage() {
             <h2 className="text-3xl md:text-4xl font-bold gradient-text">Why informed choices matter</h2>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
             {stats.map((stat, i) => (
               <div key={i} className="card text-center">
                 <div className="text-5xl font-bold gradient-text mb-4">{stat.value}</div>
@@ -126,6 +126,16 @@ export default function HomePage() {
                 <p className="text-xs text-zinc-600">Source: {stat.source}</p>
               </div>
             ))}
+          </div>
+          
+          <div className="text-center">
+            <Link 
+              href="/blog/nutrition-literacy-upf-crisis"
+              className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              <span>Read the full research</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -371,7 +381,7 @@ export default function HomePage() {
                   <span className="text-zinc-300">
                     <strong className="text-white">10 AI insights per day</strong>
                     <span className="block text-sm text-zinc-500 mt-1">
-                      300 insights per month
+                      ~300 insights per month
                     </span>
                   </span>
                 </li>

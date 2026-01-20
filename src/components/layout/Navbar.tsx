@@ -46,9 +46,9 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
   }
 
   const navLinks = [
-    { href: '/#how-it-works', label: 'How It Works' },
     { href: '/#features', label: 'Features' },
     { href: '/#pricing', label: 'Pricing' },
+    { href: '/blog', label: 'Blog' },
     { href: '/about', label: 'About' },
   ]
 
