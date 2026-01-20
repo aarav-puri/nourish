@@ -126,27 +126,6 @@ export default function BlogPage() {
             ))}
           </div>
         </div>
-
-        {/* Newsletter CTA */}
-        <div className="card p-8 text-center">
-          <h3 className="text-2xl font-bold mb-3">Stay Updated</h3>
-          <p className="text-zinc-400 mb-6 max-w-xl mx-auto">
-            Get notified when we publish new research and insights about nutrition, health, and making better food choices.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/30 transition-colors"
-            />
-            <button className="px-6 py-3 bg-gradient-to-r from-white to-zinc-400 text-dark font-semibold rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap">
-              Subscribe
-            </button>
-          </div>
-          <p className="text-xs text-zinc-600 mt-4">
-            Coming soon. We'll never spam you or share your email.
-          </p>
-        </div>
       </div>
 
       <Footer />
