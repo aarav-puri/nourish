@@ -69,10 +69,10 @@ export default function PrivacyPage() {
             <p>
               If you have any questions about this Privacy Policy or how we handle your data, please contact us at{' '}
               <a 
-                href="mailto:barcodesense@gmail.com"
+                href="mailto:barcodesenseofficial@gmail.com"
                 className="text-white hover:underline font-medium"
               >
-                barcodesense@gmail.com
+                barcodesenseofficial@gmail.com
               </a>
             </p>
           </section>

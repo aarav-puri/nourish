@@ -470,7 +470,29 @@ export default function AppPage() {
             <div className="text-center py-6">
               <Upload className="w-12 h-12 text-zinc-500 mx-auto mb-3" />
               <h3 className="text-lg font-semibold mb-1">Upload Image</h3>
-              <p className="text-zinc-400 text-sm">Choose from gallery</p>
+              <p className="text-zinc-400 text-sm mb-4">Choose from gallery</p>
+              
+              {/* Upload Guidelines */}
+              <div className="max-w-sm mx-auto space-y-2 pt-4 border-t border-zinc-800">
+                <ul className="space-y-1.5 text-xs text-zinc-400">
+                  <li className="flex items-center justify-center gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span>Ensure barcode is clearly visible and in focus</span>
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span>Use good lighting (avoid shadows and glare)</span>
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span>Keep barcode horizontal and centered</span>
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span>Capture the entire barcode without cropping</span>
+                  </li>
+                </ul>
+              </div>
             </div>
             <input
               ref={fileInputRef}

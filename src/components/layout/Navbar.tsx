@@ -53,35 +53,37 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
   ]
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-dark/95 backdrop-blur-lg' : 'bg-transparent'
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
+      isScrolled ? 'bg-dark/95 backdrop-blur-lg border-zinc-800' : 'bg-dark/80 backdrop-blur-sm border-zinc-800/50'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl overflow-hidden">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-lg overflow-hidden">
               <Image
                 src="/favicon.png"
                 alt="BarcodeSense"
-                width={40}
-                height={40}
+                width={32}
+                height={32}
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="font-bold text-xl text-white">
+            <span className="font-semibold text-base text-white">
               BarcodeSense
             </span>
           </Link>
 
           {/* Desktop Navigation - Centered */}
-          <div className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
+          <div className="hidden md:flex items-center gap-1 absolute left-1/2 transform -translate-x-1/2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-white ${
-                  pathname === link.href ? 'text-white' : 'text-zinc-400'
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  pathname === link.href 
+                    ? 'text-white bg-white/10' 
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 {link.label}
@@ -98,10 +100,13 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
                 <Button size="sm">Go to App</Button>
               </Link>
             ) : (
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" onClick={onAuthClick}>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={onAuthClick}
+                  className="px-3 py-1.5 text-sm font-medium text-zinc-300 hover:text-white rounded-md hover:bg-white/5 transition-colors"
+                >
                   Sign In
-                </Button>
+                </button>
                 <Link href="/app">
                   <Button size="sm">Try Free</Button>
                 </Link>

@@ -13,7 +13,7 @@ export default function Footer() {
               Terms of Service
             </Link>
             <a 
-              href="mailto:barcodesense@gmail.com" 
+              href="mailto:barcodesenseofficial@gmail.com" 
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
               Contact

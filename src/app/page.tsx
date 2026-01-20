@@ -76,7 +76,7 @@ export default function HomePage() {
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Know what you're buying with{' '}
-              <span className="gradient-text">AI insights</span>
+              <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">AI insights</span>
             </h1>
             
             <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">

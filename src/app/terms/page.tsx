@@ -81,10 +81,10 @@ export default function TermsPage() {
             <p>
               For questions about these Terms of Service, please contact us at{' '}
               <a 
-                href="mailto:barcodesense@gmail.com"
+                href="mailto:barcodesenseofficial@gmail.com"
                 className="text-white hover:underline font-medium"
               >
-                barcodesense@gmail.com
+                barcodesenseofficial@gmail.com
               </a>
             </p>
           </section>
