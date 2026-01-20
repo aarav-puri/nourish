@@ -1,12 +1,21 @@
 const API_URL = '/api/ai'
-const MODEL = 'google/gemini-3-flash-preview'
+const MODELS = ['google/gemini-3-flash-preview', 'google/gemini-2.5-flash']
+let currentModelIndex = 0
+
+function getNextModel() {
+  const model = MODELS[currentModelIndex]
+  currentModelIndex = (currentModelIndex + 1) % MODELS.length
+  return model
+}
 
 async function callAI(prompt: string, systemPrompt = 'You are a helpful food and nutrition assistant.') {
+  const model = getNextModel()
+  
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: MODEL,
+      model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
