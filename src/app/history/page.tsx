@@ -126,10 +126,6 @@ export default function HistoryPage() {
     if (type === 'diet_compatibility') return 'Diet Compatibility'
     if (type === 'eco_impact') return 'Environmental Impact'
     if (type === 'recipe_suggestions') return 'Recipe Ideas'
-    if (type.startsWith('mood_')) {
-      const mood = type.replace('mood_', '').replace(/_/g, ' ')
-      return `Mood: ${mood.charAt(0).toUpperCase() + mood.slice(1)}`
-    }
     return type
   }
 

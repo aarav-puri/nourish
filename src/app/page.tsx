@@ -30,10 +30,9 @@ const stats = [
 
 const comparison = [
   { feature: 'AI-Powered Analysis', barcodesense: true, manual: false, basic: false },
-  { feature: 'Health Score Analysis', barcodesense: true, manual: false, basic: 'partial' },
-  { feature: 'Eco Impact Tracking', barcodesense: true, manual: false, basic: false },
-  { feature: 'Smart Alternatives', barcodesense: true, manual: false, basic: false },
-  { feature: 'Mood-Based Recommendations', barcodesense: true, manual: false, basic: false },
+  { feature: 'Healthier Alternatives', barcodesense: true, manual: false, basic: false },
+  { feature: 'Recipe Ideas', barcodesense: true, manual: false, basic: false },
+  { feature: 'Eco Impact Score', barcodesense: true, manual: false, basic: false },
   { feature: 'Diet Compatibility Check', barcodesense: true, manual: 'partial', basic: 'partial' },
   { feature: 'Instant Results', barcodesense: true, manual: false, basic: true },
 ]
@@ -420,7 +419,7 @@ export default function HomePage() {
                 AI insights are advanced analyses powered by artificial intelligence that help you understand 
                 products better. This includes finding healthier alternatives, checking diet compatibility 
                 (vegan, keto, gluten-free, etc.), analyzing environmental impact, and generating creative 
-                recipe ideas using scanned products. You also get general mood-based food recommendations.
+                recipe ideas using scanned products.
               </p>
             </details>
 

@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Upload, Search, ArrowLeft, X, Home, User, Sparkles, 
-  Activity, Smile, CheckSquare, Leaf, Loader2, AlertCircle,
+  Activity, CheckSquare, Leaf, Loader2, AlertCircle,
   Check, ChevronDown, LogOut, History, ChefHat
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
@@ -31,7 +31,6 @@ export default function AppPage() {
   const [showResult, setShowResult] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiResult, setAiResult] = useState<{ title: string; content: any } | null>(null)
-  const [moodModalOpen, setMoodModalOpen] = useState(false)
   const [dietModalOpen, setDietModalOpen] = useState(false)
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
   const [isMobile, setIsMobile] = useState(false)
@@ -232,8 +231,8 @@ export default function AppPage() {
   }
 
   const handleAIFeature = async (feature: string, mood?: string) => {
-    // Mood-based recommendations don't require a product
-    if (!product && feature !== 'mood') return
+    // All features require a product
+    if (!product) return
     
     // Non-signed-in users must sign in to use AI features
     if (!user) {
@@ -261,7 +260,6 @@ export default function AppPage() {
     }
     
     setAiLoading(true)
-    setMoodModalOpen(false)
     setDietModalOpen(false)
 
     try {
@@ -274,11 +272,6 @@ export default function AppPage() {
           title = 'Healthier Alternatives'
           insightType = 'alternatives'
           result = await aiService.getHealthierSubstitutes(product as Product)
-          break
-        case 'mood':
-          title = `Recommendations for ${mood}`
-          insightType = `mood_${mood?.toLowerCase().replace(/\s+/g, '_')}`
-          result = await aiService.getMoodBasedRecommendations(mood!, product as Product | undefined)
           break
         case 'diet':
           title = 'Diet Compatibility'
@@ -304,19 +297,17 @@ export default function AppPage() {
       const parsed = JSON.parse(cleanResult)
       setAiResult({ title, content: parsed })
 
-      // Save AI insight to database (only if we have a product/barcode)
-      if (product && barcode) {
-        try {
-          await db.saveAIInsight(
-            barcode,
-            product.product_name || 'Unknown Product',
-            insightType,
-            { title, content: parsed }
-          )
-        } catch (err) {
-          console.error('Failed to save AI insight:', err)
-          // Don't show error to user, insight is still displayed
-        }
+      // Save AI insight to database
+      try {
+        await db.saveAIInsight(
+          barcode,
+          product.product_name || 'Unknown Product',
+          insightType,
+          { title, content: parsed }
+        )
+      } catch (err) {
+        console.error('Failed to save AI insight:', err)
+        // Don't show error to user, insight is still displayed
       }
     } catch (err) {
       toast.error('AI analysis failed. Please try again.')
@@ -334,7 +325,6 @@ export default function AppPage() {
     setManualEntryMode(false) // Reset manual entry mode
   }
 
-  const moods = ['Tired', 'Stressed', 'Energetic', 'Hungry After Workout', 'Relaxed', 'Focused']
   const diets = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Halal', 'Kosher', 'Gluten-Free']
 
   // Show loading or sign-in required screen
@@ -539,28 +529,6 @@ export default function AppPage() {
             </Button>
           </div>
         </div>
-
-        {/* General Insights Section */}
-        {!showResult && !productLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="card mb-6"
-          >
-            <h3 className="text-lg font-semibold mb-3">
-              General Insights
-            </h3>
-            <p className="text-sm text-zinc-400 mb-4">Get personalized food recommendations based on your mood</p>
-            <Button
-              variant="secondary"
-              onClick={() => setMoodModalOpen(true)}
-              className="w-full"
-            >
-              <Smile className="w-5 h-5" />
-              Get Mood-Based Recommendations
-            </Button>
-          </motion.div>
-        )}
 
         {/* Loading State */}
         {productLoading && (
@@ -980,22 +948,6 @@ export default function AppPage() {
           </Link>
         </div>
       </nav>
-
-      {/* Mood Selection Modal */}
-      <Modal isOpen={moodModalOpen} onClose={() => setMoodModalOpen(false)} title="How are you feeling?">
-        <div className="grid grid-cols-2 gap-3">
-          {moods.map((mood) => (
-            <Button
-              key={mood}
-              variant="secondary"
-              onClick={() => handleAIFeature('mood', mood)}
-              className="py-4"
-            >
-              {mood}
-            </Button>
-          ))}
-        </div>
-      </Modal>
 
       {/* Diet Selection Modal */}
       <Modal isOpen={dietModalOpen} onClose={() => setDietModalOpen(false)} title="Select Diets to Check">
