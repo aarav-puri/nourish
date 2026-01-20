@@ -33,6 +33,7 @@ export default function AppPage() {
   const [aiResult, setAiResult] = useState<{ title: string; content: any } | null>(null)
   const [dietModalOpen, setDietModalOpen] = useState(false)
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [manualEntryMode, setManualEntryMode] = useState(false)
   const [manualProduct, setManualProduct] = useState({
@@ -374,9 +375,9 @@ export default function AppPage() {
           </Link>
           
           {loading ? (
-            <div className="w-32 h-10"></div>
+            <div className="w-32 h-10 hidden md:block"></div>
           ) : user ? (
-            <div className="relative">
+            <div className="relative hidden md:block">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-dark-elevated border border-zinc-700 hover:border-zinc-500 transition-colors"
@@ -964,10 +965,13 @@ export default function AppPage() {
             <Upload className="w-6 h-6" />
             <span className="text-xs">Scan</span>
           </Link>
-          <Link href="/history" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors">
-            <History className="w-6 h-6" />
-            <span className="text-xs">History</span>
-          </Link>
+          <button 
+            onClick={() => setProfileModalOpen(true)}
+            className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors"
+          >
+            <User className="w-6 h-6" />
+            <span className="text-xs">Profile</span>
+          </button>
         </div>
       </nav>
 
@@ -1011,6 +1015,51 @@ export default function AppPage() {
             className="w-full"
           >
             Check Compatibility
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Profile Modal (Mobile) */}
+      <Modal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} title="Profile">
+        <div className="space-y-4">
+          <div className="p-4 bg-white/5 rounded-xl border border-zinc-800">
+            <p className="text-sm text-zinc-400 mb-1">Signed in as</p>
+            <p className="text-sm font-medium">{user?.email}</p>
+          </div>
+          
+          {/* AI Limits */}
+          <div className="p-4 bg-white/5 rounded-xl border border-zinc-800">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-zinc-400" />
+                <span className="text-sm text-zinc-400">AI Insights Left Today</span>
+              </div>
+              <span className="text-sm font-bold text-white">{getRemainingAIInsights()}/1</span>
+            </div>
+            {remainingAI === 0 && resetTime && (
+              <p className="text-xs text-zinc-500">
+                Resets in {resetTime}
+              </p>
+            )}
+          </div>
+          
+          <Link href="/history" onClick={() => setProfileModalOpen(false)}>
+            <Button variant="secondary" className="w-full">
+              <History className="w-4 h-4" />
+              Scan History
+            </Button>
+          </Link>
+          
+          <Button
+            onClick={() => {
+              handleLogout()
+              setProfileModalOpen(false)
+            }}
+            variant="secondary"
+            className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
           </Button>
         </div>
       </Modal>
