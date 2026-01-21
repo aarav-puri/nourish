@@ -29,7 +29,7 @@ export default function BlogPage() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-zinc-300 mb-6">
             <FileText className="w-4 h-4" />
-            Blog & Research
+            Blog
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold mb-6">

@@ -1084,18 +1084,18 @@ export default function AppPage() {
 
       {/* Profile Modal (Mobile) */}
       <Modal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} title="Profile">
-        <div className="space-y-4">
-          <div className="p-4 bg-white/5 rounded-xl border border-zinc-800">
-            <p className="text-sm text-zinc-400 mb-1">Signed in as</p>
-            <p className="text-sm font-medium">{user?.email}</p>
+        <div className="space-y-3">
+          <div className="p-3 bg-white/5 rounded-xl border border-zinc-800">
+            <p className="text-xs text-zinc-400 mb-1">Signed in as</p>
+            <p className="text-sm font-medium truncate">{user?.email}</p>
           </div>
           
           {/* AI Limits */}
-          <div className="p-4 bg-white/5 rounded-xl border border-zinc-800">
-            <div className="flex items-center justify-between mb-2">
+          <div className="p-3 bg-white/5 rounded-xl border border-zinc-800">
+            <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-zinc-400" />
-                <span className="text-sm text-zinc-400">AI Insights Left Today</span>
+                <span className="text-xs text-zinc-400">AI Insights Left Today</span>
               </div>
               <span className="text-sm font-bold text-white">{getRemainingAIInsights()}/1</span>
             </div>
@@ -1106,10 +1106,10 @@ export default function AppPage() {
             )}
           </div>
           
-          <Link href="/history" onClick={() => setProfileModalOpen(false)}>
-            <Button variant="secondary" className="w-full">
+          <Link href="/history" onClick={() => setProfileModalOpen(false)} className="block">
+            <Button variant="secondary" className="w-full justify-center">
               <History className="w-4 h-4" />
-              Scan History
+              <span>History</span>
             </Button>
           </Link>
           
@@ -1119,10 +1119,10 @@ export default function AppPage() {
               setProfileModalOpen(false)
             }}
             variant="secondary"
-            className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 justify-center"
           >
             <LogOut className="w-4 h-4" />
-            Sign Out
+            <span>Sign Out</span>
           </Button>
         </div>
       </Modal>
