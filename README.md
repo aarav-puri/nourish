@@ -1,4 +1,5 @@
 # BarcodeSense
+
 BarcodeSense is a web application that allows users to scan barcodes, analyze their health scores, and find alternatives to products.
 
 ## Features
