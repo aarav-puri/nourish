@@ -29,7 +29,16 @@ BarcodeSense supports multiple ways to scan products:
    - Select a photo from your gallery
    - The app will detect the barcode from the image
 
-3. **Manual Entry**
+3. **Drag & Drop** (New!)
+   - Drag an image file directly onto the upload area
+   - The barcode will be automatically detected
+
+4. **Copy & Paste** (New!)
+   - Copy an image to your clipboard (Ctrl/Cmd+C)
+   - Paste it anywhere on the scan page (Ctrl/Cmd+V)
+   - Instant barcode detection
+
+5. **Manual Entry**
    - Type or paste the barcode number
    - Click "Search" to look up the product
 

@@ -184,6 +184,58 @@ export default function AppPage() {
     reader.readAsDataURL(file)
   }, [user])
 
+  // Handle drag and drop
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const files = Array.from(e.dataTransfer.files)
+    const imageFile = files.find(file => file.type.startsWith('image/'))
+    
+    if (imageFile) {
+      handleImageUpload(imageFile)
+    } else {
+      toast.error('Please drop an image file')
+    }
+  }, [handleImageUpload])
+
+  // Handle paste
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile()
+          if (file) {
+            handleImageUpload(file)
+            toast.success('Image pasted! Scanning...')
+          }
+          break
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [handleImageUpload])
+
   const handleBarcodeDetected = async (code: string) => {
     setBarcode(code)
     toast.success(`Barcode detected: ${code}`)
@@ -463,15 +515,30 @@ export default function AppPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          {/* Upload Image */}
+          {/* Upload Image with Drag & Drop */}
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="card cursor-pointer hover:border-zinc-500 transition-colors"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`card cursor-pointer transition-all duration-200 ${
+              isDragging 
+                ? 'border-emerald-500 bg-emerald-500/10 scale-[1.02]' 
+                : 'hover:border-zinc-500'
+            }`}
           >
             <div className="text-center py-6">
-              <Upload className="w-12 h-12 text-zinc-500 mx-auto mb-3" />
-              <h3 className="text-lg font-semibold mb-1">Upload Image</h3>
-              <p className="text-zinc-400 text-sm mb-4">Choose from gallery</p>
+              <Upload className={`w-12 h-12 mx-auto mb-3 transition-colors ${
+                isDragging ? 'text-emerald-400' : 'text-zinc-500'
+              }`} />
+              <h3 className="text-lg font-semibold mb-1">
+                {isDragging ? 'Drop image here' : 'Upload Image'}
+              </h3>
+              <p className="text-zinc-400 text-sm mb-4">
+                {isDragging 
+                  ? 'Release to scan barcode' 
+                  : 'Click, drag & drop, or paste (Ctrl/Cmd+V)'}
+              </p>
               
               {/* Upload Guidelines */}
               <div className="max-w-sm mx-auto space-y-2 pt-4 border-t border-zinc-800">
