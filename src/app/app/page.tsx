@@ -553,10 +553,6 @@ export default function AppPage() {
                   </li>
                   <li className="flex items-center justify-center gap-2">
                     <span className="text-green-400">✓</span>
-                    <span>Keep barcode horizontal and centered</span>
-                  </li>
-                  <li className="flex items-center justify-center gap-2">
-                    <span className="text-green-400">✓</span>
                     <span>Capture the entire barcode without cropping</span>
                   </li>
                 </ul>
