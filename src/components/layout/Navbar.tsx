@@ -138,24 +138,8 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-3 border-t border-zinc-800">
-              {user ? (
-                <>
-                  <Link
-                    href="/history"
-                    className="flex items-center justify-center px-4 py-2 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <History className="w-5 h-5" />
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center justify-center px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </button>
-                </>
-              ) : (
+            {!user && (
+              <div className="pt-3 border-t border-zinc-800">
                 <div className="flex flex-col gap-2">
                   <Button variant="secondary" onClick={onAuthClick} className="w-full">
                     Sign In
@@ -164,8 +148,8 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
                     <Button className="w-full">Try Free</Button>
                   </Link>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
