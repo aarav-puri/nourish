@@ -402,36 +402,7 @@ export default function ResearchPage() {
           </div>
         </section>
 
-        {/* Author Section */}
-        <section className="mb-12">
-          <div className="card p-6">
-            <div className="flex items-center gap-4">
-              <img 
-                src="/ap.jpeg" 
-                alt="Aarav Puri" 
-                className="w-16 h-16 rounded-full object-cover"
-              />
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Aarav Puri</h3>
-                <p className="text-sm text-zinc-400">Creator of BarcodeSense</p>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Full Research Paper Link */}
-        <div className="card p-6 text-center mb-12">
-          <p className="text-zinc-400 mb-4">Want to dive deeper into the research?</p>
-          <a 
-            href="https://drive.google.com/file/d/1db22oJUGqqbMJbUB1T1_O1MlivaVX7nS/view?usp=sharing" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <FileText className="w-5 h-5" />
-            Read Full Research Paper
-          </a>
-        </div>
 
         {/* CTA */}
         <div className="card p-8 text-center">
