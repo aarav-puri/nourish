@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Upload, Search, ArrowLeft, X, Home, User, Sparkles, 
   Activity, CheckSquare, Leaf, Loader2, AlertCircle,
-  Check, ChevronDown, LogOut, History, ChefHat
+  Check, ChevronDown, LogOut, History, ChefHat, ScanLine
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import { fetchProductInfo, ProductData } from '@/lib/product-api'
@@ -501,12 +501,16 @@ export default function AppPage() {
 
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/" className="btn-ghost flex items-center gap-2">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 mb-8">
+          <Link href="/" className="btn-ghost flex items-center gap-2 justify-self-start">
             <ArrowLeft className="w-5 h-5" />
             <span className="hidden sm:inline">Back</span>
           </Link>
-          <h1 className="text-2xl font-bold gradient-text">Scan Your Product</h1>
+          <h1 className="text-2xl font-bold text-center text-white flex items-center justify-center gap-2 justify-self-center">
+            <ScanLine className="w-6 h-6 text-white" />
+            <span>Scan Your Product</span>
+          </h1>
+          <div aria-hidden />
         </div>
 
         {/* Scan Options */}

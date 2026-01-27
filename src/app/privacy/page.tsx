@@ -38,9 +38,34 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. Data Storage</h2>
-            <p>
-              Your data is stored securely using industry-standard encryption and security measures. 
-              We implement best practices to protect your information.
+            <p className="mb-4">
+              We take the security of your data seriously and implement industry-standard security measures:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <span className="text-white font-medium">Encryption in Transit (TLS):</span>{' '}
+                All data transmitted between your device and our servers is encrypted using Transport Layer Security (TLS)
+              </li>
+              <li>
+                <span className="text-white font-medium">Encryption at Rest (AES-256):</span>{' '}
+                All data stored in our database is encrypted using AES-256 encryption
+              </li>
+              <li>
+                <span className="text-white font-medium">Secure Infrastructure:</span>{' '}
+                We use Supabase, an enterprise-grade database platform with built-in security features
+              </li>
+              <li>
+                <span className="text-white font-medium">Row-Level Security:</span>{' '}
+                Your data is isolated and protected with database-level access controls
+              </li>
+              <li>
+                <span className="text-white font-medium">Regular Backups:</span>{' '}
+                Your information is regularly backed up to prevent data loss
+              </li>
+            </ul>
+            <p className="mt-4">
+              While we implement robust security measures, no method of transmission over the Internet or electronic storage is 100% secure.
+              We continuously monitor and update our security practices.
             </p>
           </section>
 
@@ -78,7 +103,7 @@ export default function PrivacyPage() {
           </section>
 
           <p className="text-sm text-zinc-500 mt-12">
-            Last updated: January 16, 2026
+            Last updated: January 26, 2026
           </p>
         </div>
       </main>
