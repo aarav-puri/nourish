@@ -44,6 +44,15 @@ export default function ResearchPage() {
           <p className="text-xl text-zinc-400 mb-6">
             Understanding the growing health crisis and why tools like BarcodeSense matter
           </p>
+
+          {/* Featured Image */}
+          <div className="rounded-xl overflow-hidden mb-8">
+            <img 
+              src="/blogimage1.png" 
+              alt="Nutrition Literacy and Ultra-Processed Foods" 
+              className="w-full h-auto object-cover"
+            />
+          </div>
         </div>
 
         {/* Key Statistics */}
