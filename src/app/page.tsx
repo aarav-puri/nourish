@@ -79,8 +79,7 @@ export default function HomePage() {
             </h1>
             
             <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
-              Scan any barcode and instantly discover ingredients, health scores, eco-impact, 
-              and smarter alternatives — all powered by AI.
+              Scan. Learn. Eat Better.
             </p>
             
             <Link href="/app">
