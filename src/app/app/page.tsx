@@ -4,8 +4,8 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Upload, Search, ArrowLeft, X, Home, User, Sparkles, 
+import {
+  Upload, Search, ArrowLeft, X, Home, User, Sparkles,
   Activity, CheckSquare, Leaf, Loader2, AlertCircle,
   Check, ChevronDown, LogOut, History, ChefHat, ScanLine
 } from 'lucide-react'
@@ -56,24 +56,24 @@ export default function AppPage() {
       setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
     }
     checkMobile()
-    
+
     // Calculate time until midnight (reset time)
     const calculateResetTime = () => {
       const now = new Date()
       const tomorrow = new Date(now)
       tomorrow.setDate(tomorrow.getDate() + 1)
       tomorrow.setHours(0, 0, 0, 0)
-      
+
       const diff = tomorrow.getTime() - now.getTime()
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      
+
       setResetTime(`${hours}h ${minutes}m`)
     }
-    
+
     calculateResetTime()
     const interval = setInterval(calculateResetTime, 60000) // Update every minute
-    
+
     auth.getCurrentUser().then((currentUser) => {
       setUser(currentUser)
       setLoading(false)
@@ -140,7 +140,7 @@ export default function AppPage() {
       // Use Quagga for barcode detection
       if (typeof window !== 'undefined') {
         const Quagga = (await import('quagga')).default
-        
+
         Quagga.decodeSingle({
           src: imageSrc,
           numOfWorkers: 0,
@@ -206,7 +206,7 @@ export default function AppPage() {
 
     const files = Array.from(e.dataTransfer.files)
     const imageFile = files.find(file => file.type.startsWith('image/'))
-    
+
     if (imageFile) {
       handleImageUpload(imageFile)
     } else {
@@ -259,14 +259,14 @@ export default function AppPage() {
     setManualEntryMode(false) // Reset manual entry mode when searching
     try {
       const data = await fetchProductInfo(code)
-      
+
       if (data.status === 0 || !data.product || Object.keys(data.product).length === 0) {
         setProduct(null)
         setShowResult(true)
       } else {
         setProduct(data.product)
         setShowResult(true)
-        
+
         // Save to history if logged in
         if (user) {
           try {
@@ -286,23 +286,23 @@ export default function AppPage() {
   const handleAIFeature = async (feature: string, mood?: string) => {
     // All features require a product
     if (!product) return
-    
+
     // Non-signed-in users must sign in to use AI features
     if (!user) {
       toast.error('Sign in to unlock AI insights.')
       setTimeout(() => setAuthModalOpen(true), 500)
       return
     }
-    
+
     // Check AI usage limit (1 per day for signed-in users)
     try {
       const usedToday = await db.getAIUsageToday()
-      
+
       if (usedToday >= 1) {
         toast.error(`Daily AI limit reached. Resets in ${resetTime}`)
         return
       }
-      
+
       // Increment usage in database
       await db.incrementAIUsage()
       await updateRemainingAI() // Update the UI
@@ -311,7 +311,7 @@ export default function AppPage() {
       toast.error('Failed to check AI usage. Please try again.')
       return
     }
-    
+
     setAiLoading(true)
     setDietModalOpen(false)
 
@@ -407,9 +407,9 @@ export default function AppPage() {
             ← Back to Home
           </Link>
         </div>
-        <AuthModal 
-          isOpen={authModalOpen} 
-          onClose={() => setAuthModalOpen(false)} 
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
         />
       </div>
     )
@@ -425,7 +425,7 @@ export default function AppPage() {
               <Image src="/favicon.png" alt="BarcodeSense" width={40} height={40} />
             </div>
           </Link>
-          
+
           {loading ? (
             <div className="w-32 h-10 hidden md:block"></div>
           ) : user ? (
@@ -456,7 +456,7 @@ export default function AppPage() {
                     <p className="text-sm text-zinc-400">Signed in as</p>
                     <p className="text-sm font-medium truncate">{user.email}</p>
                   </div>
-                  
+
                   {/* AI Limits */}
                   <div className="px-4 py-3 border-b border-zinc-800 bg-white/5">
                     <div className="flex items-center justify-between mb-2">
@@ -472,7 +472,7 @@ export default function AppPage() {
                       </p>
                     )}
                   </div>
-                  
+
                   <div className="py-2">
                     <Link
                       href="/history"
@@ -525,42 +525,23 @@ export default function AppPage() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`card cursor-pointer transition-all duration-200 ${
-              isDragging 
-                ? 'border-emerald-500 bg-emerald-500/10 scale-[1.02]' 
+            className={`card cursor-pointer transition-all duration-200 ${isDragging
+                ? 'border-emerald-500 bg-emerald-500/10 scale-[1.02]'
                 : 'hover:border-zinc-500'
-            }`}
+              }`}
           >
             <div className="text-center py-6">
-              <Upload className={`w-12 h-12 mx-auto mb-3 transition-colors ${
-                isDragging ? 'text-emerald-400' : 'text-zinc-500'
-              }`} />
+              <Upload className={`w-12 h-12 mx-auto mb-3 transition-colors ${isDragging ? 'text-emerald-400' : 'text-zinc-500'
+                }`} />
               <h3 className="text-lg font-semibold mb-1">
                 {isDragging ? 'Drop image here' : 'Upload Image'}
               </h3>
               <p className="text-zinc-400 text-sm mb-4">
-                {isDragging 
-                  ? 'Release to scan barcode' 
+                {isDragging
+                  ? 'Release to scan barcode'
                   : 'Click, drag & drop, or paste (Ctrl/Cmd+V)'}
               </p>
-              
-              {/* Upload Guidelines */}
-              <div className="max-w-sm mx-auto space-y-2 pt-4 border-t border-zinc-800">
-                <ul className="space-y-1.5 text-xs text-zinc-400">
-                  <li className="flex items-center justify-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Ensure barcode is clearly visible and in focus</span>
-                  </li>
-                  <li className="flex items-center justify-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Use good lighting (avoid shadows and glare)</span>
-                  </li>
-                  <li className="flex items-center justify-center gap-2">
-                    <span className="text-green-400">✓</span>
-                    <span>Capture the entire barcode without cropping</span>
-                  </li>
-                </ul>
-              </div>
+
             </div>
             <input
               ref={fileInputRef}
@@ -678,7 +659,7 @@ export default function AppPage() {
                         )}
                       </div>
                     )}
-                    
+
                     {/* Key Highlights */}
                     {(product as any).ai_formatted?.key_highlights && (product as any).ai_formatted.key_highlights.length > 0 && (
                       <div className="p-5 bg-gradient-to-br from-white/10 to-white/5 rounded-xl border border-white/10">
@@ -718,8 +699,8 @@ export default function AppPage() {
                               <span
                                 key={idx}
                                 className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 cursor-default
-                                  ${isFirst 
-                                    ? 'bg-gradient-to-r from-white/15 to-white/10 text-white font-medium border border-white/20 shadow-sm' 
+                                  ${isFirst
+                                    ? 'bg-gradient-to-r from-white/15 to-white/10 text-white font-medium border border-white/20 shadow-sm'
                                     : 'bg-white/5 text-zinc-300 border border-white/5 hover:bg-white/10 hover:border-white/15'
                                   }`}
                               >
@@ -836,7 +817,7 @@ export default function AppPage() {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-semibold">Enter Product Details</h3>
-                    <button 
+                    <button
                       onClick={() => {
                         setManualEntryMode(false)
                         setManualProduct({
@@ -857,7 +838,7 @@ export default function AppPage() {
                       <label className="block text-sm text-zinc-400 mb-2">Product Name *</label>
                       <Input
                         value={manualProduct.product_name}
-                        onChange={(e) => setManualProduct({...manualProduct, product_name: e.target.value})}
+                        onChange={(e) => setManualProduct({ ...manualProduct, product_name: e.target.value })}
                         placeholder="e.g., Organic Granola Bar"
                       />
                     </div>
@@ -866,7 +847,7 @@ export default function AppPage() {
                       <label className="block text-sm text-zinc-400 mb-2">Brand (optional)</label>
                       <Input
                         value={manualProduct.brands}
-                        onChange={(e) => setManualProduct({...manualProduct, brands: e.target.value})}
+                        onChange={(e) => setManualProduct({ ...manualProduct, brands: e.target.value })}
                         placeholder="e.g., Nature Valley"
                       />
                     </div>
@@ -875,7 +856,7 @@ export default function AppPage() {
                       <label className="block text-sm text-zinc-400 mb-2">Ingredients *</label>
                       <textarea
                         value={manualProduct.ingredients_text}
-                        onChange={(e) => setManualProduct({...manualProduct, ingredients_text: e.target.value})}
+                        onChange={(e) => setManualProduct({ ...manualProduct, ingredients_text: e.target.value })}
                         placeholder="e.g., Whole grain oats, honey, almonds, brown sugar..."
                         className="input-field min-h-[100px] resize-none"
                         rows={4}
@@ -892,8 +873,8 @@ export default function AppPage() {
                             type="number"
                             value={manualProduct.nutriments.energy_value}
                             onChange={(e) => setManualProduct({
-                              ...manualProduct, 
-                              nutriments: {...manualProduct.nutriments, energy_value: e.target.value}
+                              ...manualProduct,
+                              nutriments: { ...manualProduct.nutriments, energy_value: e.target.value }
                             })}
                             placeholder="400"
                           />
@@ -904,8 +885,8 @@ export default function AppPage() {
                             type="number"
                             value={manualProduct.nutriments.fat}
                             onChange={(e) => setManualProduct({
-                              ...manualProduct, 
-                              nutriments: {...manualProduct.nutriments, fat: e.target.value}
+                              ...manualProduct,
+                              nutriments: { ...manualProduct.nutriments, fat: e.target.value }
                             })}
                             placeholder="15"
                           />
@@ -916,8 +897,8 @@ export default function AppPage() {
                             type="number"
                             value={manualProduct.nutriments.carbohydrates}
                             onChange={(e) => setManualProduct({
-                              ...manualProduct, 
-                              nutriments: {...manualProduct.nutriments, carbohydrates: e.target.value}
+                              ...manualProduct,
+                              nutriments: { ...manualProduct.nutriments, carbohydrates: e.target.value }
                             })}
                             placeholder="60"
                           />
@@ -928,8 +909,8 @@ export default function AppPage() {
                             type="number"
                             value={manualProduct.nutriments.proteins}
                             onChange={(e) => setManualProduct({
-                              ...manualProduct, 
-                              nutriments: {...manualProduct.nutriments, proteins: e.target.value}
+                              ...manualProduct,
+                              nutriments: { ...manualProduct.nutriments, proteins: e.target.value }
                             })}
                             placeholder="8"
                           />
@@ -972,12 +953,12 @@ export default function AppPage() {
                     {barcode ? 'Product Not Found' : 'No Barcode Detected'}
                   </h3>
                   <p className="text-zinc-400 mb-2">
-                    {barcode 
-                      ? "We couldn't find this product in our database." 
+                    {barcode
+                      ? "We couldn't find this product in our database."
                       : "We couldn't detect a barcode in the uploaded image."}
                   </p>
                   {barcode && <p className="text-sm text-zinc-500 mb-6">Barcode: {barcode}</p>}
-                  
+
                   <div className="max-w-md mx-auto space-y-4">
                     <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-left">
                       <p className="text-sm text-blue-300 mb-2">
@@ -985,14 +966,14 @@ export default function AppPage() {
                         What would you like to do?
                       </p>
                       <p className="text-xs text-zinc-400">
-                        {barcode 
+                        {barcode
                           ? 'You can try entering the barcode again, or manually enter product details for AI analysis.'
                           : 'You can manually enter the barcode or full product details for AI analysis.'}
                       </p>
                     </div>
-                    
+
                     <div className="grid gap-3">
-                      <Button 
+                      <Button
                         onClick={() => {
                           setShowResult(false)
                           setBarcode('')
@@ -1004,8 +985,8 @@ export default function AppPage() {
                         <Search className="w-5 h-5" />
                         {barcode ? 'Try Different Barcode' : 'Enter Barcode Manually'}
                       </Button>
-                      
-                      <Button 
+
+                      <Button
                         onClick={() => setManualEntryMode(true)}
                         className="w-full"
                       >
@@ -1032,7 +1013,7 @@ export default function AppPage() {
             <Upload className="w-6 h-6" />
             <span className="text-xs">Scan</span>
           </Link>
-          <button 
+          <button
             onClick={() => setProfileModalOpen(true)}
             className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors"
           >
@@ -1049,11 +1030,10 @@ export default function AppPage() {
             {diets.map((diet) => (
               <label
                 key={diet}
-                className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
-                  selectedDiets.includes(diet)
+                className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${selectedDiets.includes(diet)
                     ? 'border-white bg-white/10'
                     : 'border-zinc-700 hover:border-zinc-500'
-                }`}
+                  }`}
               >
                 <input
                   type="checkbox"
@@ -1067,9 +1047,8 @@ export default function AppPage() {
                   }}
                   className="sr-only"
                 />
-                <div className={`w-5 h-5 rounded border flex items-center justify-center ${
-                  selectedDiets.includes(diet) ? 'bg-white border-white' : 'border-zinc-600'
-                }`}>
+                <div className={`w-5 h-5 rounded border flex items-center justify-center ${selectedDiets.includes(diet) ? 'bg-white border-white' : 'border-zinc-600'
+                  }`}>
                   {selectedDiets.includes(diet) && <Check className="w-3 h-3 text-dark" />}
                 </div>
                 <span>{diet}</span>
@@ -1093,7 +1072,7 @@ export default function AppPage() {
             <p className="text-xs text-zinc-400 mb-1">Signed in as</p>
             <p className="text-sm font-medium truncate">{user?.email}</p>
           </div>
-          
+
           {/* AI Limits */}
           <div className="p-3 bg-white/5 rounded-xl border border-zinc-800">
             <div className="flex items-center justify-between mb-1">
@@ -1109,14 +1088,14 @@ export default function AppPage() {
               </p>
             )}
           </div>
-          
+
           <Link href="/history" onClick={() => setProfileModalOpen(false)} className="block">
             <Button variant="secondary" className="w-full justify-center">
               <History className="w-4 h-4" />
               <span>History</span>
             </Button>
           </Link>
-          
+
           <Button
             onClick={() => {
               handleLogout()
@@ -1151,9 +1130,9 @@ export default function AppPage() {
         </div>
       )}
 
-      <AuthModal 
-        isOpen={authModalOpen} 
-        onClose={() => setAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
       />
     </div>
   )
@@ -1175,19 +1154,18 @@ function AIResultDisplay({ content }: { content: any }) {
                 <div className="flex-1">
                   <h4 className="font-semibold mb-1">{recipe.recipe_name}</h4>
                   <p className="text-sm text-zinc-400 mb-3">{recipe.description}</p>
-                  
+
                   <div className="flex items-center gap-4 text-xs text-zinc-500 mb-3">
-                    <span className={`px-2 py-1 rounded ${
-                      recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
-                      recipe.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>
+                    <span className={`px-2 py-1 rounded ${recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                        recipe.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-red-500/20 text-red-400'
+                      }`}>
                       {recipe.difficulty}
                     </span>
                     <span>⏱️ {recipe.prep_time} min</span>
                     {recipe.calories && <span>🔥 {recipe.calories} cal</span>}
                   </div>
-                  
+
                   {recipe.other_ingredients && (
                     <div className="mb-3">
                       <p className="text-xs text-zinc-500 mb-1">Other ingredients needed:</p>
@@ -1200,7 +1178,7 @@ function AIResultDisplay({ content }: { content: any }) {
                       </div>
                     </div>
                   )}
-                  
+
                   {recipe.health_benefits && (
                     <p className="text-xs text-zinc-400">{recipe.health_benefits}</p>
                   )}
@@ -1211,7 +1189,7 @@ function AIResultDisplay({ content }: { content: any }) {
         </div>
       )
     }
-    
+
     // Alternatives or Mood recommendations
     return (
       <div className="space-y-4">
@@ -1238,11 +1216,10 @@ function AIResultDisplay({ content }: { content: any }) {
                   </div>
                 )}
                 {item.energy_level && (
-                  <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${
-                    item.energy_level === 'Boost' ? 'bg-yellow-500/20 text-yellow-400' :
-                    item.energy_level === 'Calm' ? 'bg-blue-500/20 text-blue-400' :
-                    'bg-green-500/20 text-green-400'
-                  }`}>
+                  <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${item.energy_level === 'Boost' ? 'bg-yellow-500/20 text-yellow-400' :
+                      item.energy_level === 'Calm' ? 'bg-blue-500/20 text-blue-400' :
+                        'bg-green-500/20 text-green-400'
+                    }`}>
                     {item.energy_level}
                   </span>
                 )}
@@ -1259,23 +1236,22 @@ function AIResultDisplay({ content }: { content: any }) {
     // Eco score
     const score = content.overall_score
     const scoreClass = score >= 7 ? 'text-green-400' : score >= 4 ? 'text-yellow-400' : 'text-red-400'
-    
+
     return (
       <div className="space-y-6">
         <div className="text-center">
           <div className={`text-6xl font-bold ${scoreClass}`}>{score}/10</div>
           <p className="text-zinc-400 mt-2">Environmental Impact Score</p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           {['carbon_footprint', 'water_usage', 'transportation_impact'].map((key) => (
             content[key] && (
               <div key={key} className="p-4 bg-white/5 rounded-xl">
                 <p className="text-sm text-zinc-400 capitalize">{key.replace(/_/g, ' ')}</p>
-                <p className={`font-semibold ${
-                  content[key] === 'Low' ? 'text-green-400' :
-                  content[key] === 'Medium' ? 'text-yellow-400' : 'text-red-400'
-                }`}>{content[key]}</p>
+                <p className={`font-semibold ${content[key] === 'Low' ? 'text-green-400' :
+                    content[key] === 'Medium' ? 'text-yellow-400' : 'text-red-400'
+                  }`}>{content[key]}</p>
               </div>
             )
           ))}
@@ -1311,19 +1287,17 @@ function AIResultDisplay({ content }: { content: any }) {
       {Object.entries(content).map(([diet, info]: [string, any]) => (
         <div
           key={diet}
-          className={`p-4 rounded-xl border ${
-            info.compatible === 'Yes' ? 'border-green-500/30 bg-green-500/10' :
-            info.compatible === 'Maybe' ? 'border-yellow-500/30 bg-yellow-500/10' :
-            'border-red-500/30 bg-red-500/10'
-          }`}
+          className={`p-4 rounded-xl border ${info.compatible === 'Yes' ? 'border-green-500/30 bg-green-500/10' :
+              info.compatible === 'Maybe' ? 'border-yellow-500/30 bg-yellow-500/10' :
+                'border-red-500/30 bg-red-500/10'
+            }`}
         >
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-semibold">{diet}</h4>
-            <span className={`px-3 py-1 rounded-full text-sm ${
-              info.compatible === 'Yes' ? 'bg-green-500/20 text-green-400' :
-              info.compatible === 'Maybe' ? 'bg-yellow-500/20 text-yellow-400' :
-              'bg-red-500/20 text-red-400'
-            }`}>
+            <span className={`px-3 py-1 rounded-full text-sm ${info.compatible === 'Yes' ? 'bg-green-500/20 text-green-400' :
+                info.compatible === 'Maybe' ? 'bg-yellow-500/20 text-yellow-400' :
+                  'bg-red-500/20 text-red-400'
+              }`}>
               {info.compatible}
             </span>
           </div>

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash, Sparkles, ChevronDown, ChevronUp, Leaf, Activity } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
+import ChatAgent from '@/components/ChatAgent'
 import { toast } from 'sonner'
 
 interface ScannedProduct {
@@ -66,7 +67,7 @@ export default function HistoryPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this item from history?')) return
-    
+
     setDeleting(id)
     try {
       const product = products.find(p => p.id === id)
@@ -89,7 +90,7 @@ export default function HistoryPage() {
 
   const handleClearAll = async () => {
     if (!confirm('Are you sure you want to clear all scan history? This action cannot be undone.')) return
-    
+
     setClearingAll(true)
     try {
       // Delete all AI insights first
@@ -133,6 +134,26 @@ export default function HistoryPage() {
     setExpandedProduct(expandedProduct === productId ? null : productId)
   }
 
+  // Prepare context for AI chat agent
+  const chatContext = useMemo(() => {
+    return {
+      products: products.map(p => ({
+        name: p.product_name,
+        barcode: p.barcode,
+        scanned_at: p.scanned_at,
+        ingredients: p.product_data?.ingredients_text,
+        nutrition: p.product_data?.nutriments,
+        categories: p.product_data?.categories,
+      })),
+      insights: insights.map(i => ({
+        product_name: i.product_name,
+        type: i.insight_type,
+        data: i.insight_data?.content,
+        created_at: i.created_at,
+      })),
+    }
+  }, [products, insights])
+
   return (
     <div className="min-h-screen bg-dark">
       {/* Header */}
@@ -175,7 +196,7 @@ export default function HistoryPage() {
           <div className="text-center py-20">
             <Package className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">No scanned products yet</h2>
-            <p className="text-zinc-400 mb-6">Start scanning to build your history!</p>
+            <p className="text-zinc-400 mb-6">Start scanning to build your history.</p>
             <Link href="/app">
               <Button>Start Scanning</Button>
             </Link>
@@ -183,12 +204,12 @@ export default function HistoryPage() {
         ) : (
           <div className="space-y-4">
             <p className="text-sm text-zinc-500">{products.length} products scanned</p>
-            
+
             <AnimatePresence>
               {products.map((product, i) => {
                 const productInsights = getProductInsights(product.barcode)
                 const isExpanded = expandedProduct === product.id
-                
+
                 return (
                   <motion.div
                     key={product.id}
@@ -223,7 +244,7 @@ export default function HistoryPage() {
                           <Calendar className="w-4 h-4" />
                           <span>{formatDate(product.scanned_at)}</span>
                         </div>
-                        
+
                         {/* AI Insights Badge */}
                         {productInsights.length > 0 && (
                           <button
@@ -292,6 +313,9 @@ export default function HistoryPage() {
           </div>
         )}
       </main>
+
+      {/* AI Chat Agent */}
+      {!loading && products.length > 0 && <ChatAgent context={chatContext} />}
     </div>
   )
 }
@@ -315,19 +339,18 @@ function AIResultDisplay({ content }: { content: any }) {
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm mb-1">{recipe.recipe_name}</h4>
                   <p className="text-xs text-zinc-400 mb-2">{recipe.description}</p>
-                  
+
                   <div className="flex items-center gap-3 text-xs text-zinc-500 mb-2">
-                    <span className={`px-2 py-0.5 rounded ${
-                      recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                    <span className={`px-2 py-0.5 rounded ${recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
                       recipe.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>
+                        'bg-red-500/20 text-red-400'
+                      }`}>
                       {recipe.difficulty}
                     </span>
                     <span>⏱️ {recipe.prep_time} min</span>
                     {recipe.calories && <span>🔥 {recipe.calories} cal</span>}
                   </div>
-                  
+
                   {recipe.other_ingredients && (
                     <div className="mb-2">
                       <p className="text-xs text-zinc-500 mb-1">Other ingredients:</p>
@@ -343,7 +366,7 @@ function AIResultDisplay({ content }: { content: any }) {
                       </div>
                     </div>
                   )}
-                  
+
                   {recipe.health_benefits && (
                     <p className="text-xs text-zinc-400">{recipe.health_benefits}</p>
                   )}
@@ -354,7 +377,7 @@ function AIResultDisplay({ content }: { content: any }) {
         </div>
       )
     }
-    
+
     // Alternatives or Mood recommendations
     return (
       <div className="space-y-3">
@@ -381,11 +404,10 @@ function AIResultDisplay({ content }: { content: any }) {
                   </div>
                 )}
                 {item.energy_level && (
-                  <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs ${
-                    item.energy_level === 'Boost' ? 'bg-yellow-500/20 text-yellow-400' :
+                  <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs ${item.energy_level === 'Boost' ? 'bg-yellow-500/20 text-yellow-400' :
                     item.energy_level === 'Calm' ? 'bg-blue-500/20 text-blue-400' :
-                    'bg-green-500/20 text-green-400'
-                  }`}>
+                      'bg-green-500/20 text-green-400'
+                    }`}>
                     {item.energy_level}
                   </span>
                 )}
@@ -402,23 +424,22 @@ function AIResultDisplay({ content }: { content: any }) {
     // Eco score
     const score = content.overall_score
     const scoreClass = score >= 7 ? 'text-green-400' : score >= 4 ? 'text-yellow-400' : 'text-red-400'
-    
+
     return (
       <div className="space-y-4">
         <div className="text-center">
           <div className={`text-4xl font-bold ${scoreClass}`}>{score}/10</div>
           <p className="text-zinc-400 text-xs mt-1">Environmental Impact Score</p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-2">
           {['carbon_footprint', 'water_usage', 'transportation_impact'].map((key) => (
             content[key] && (
               <div key={key} className="p-2 bg-white/5 rounded-lg">
                 <p className="text-xs text-zinc-400 capitalize">{key.replace(/_/g, ' ')}</p>
-                <p className={`text-sm font-semibold ${
-                  content[key] === 'Low' ? 'text-green-400' :
+                <p className={`text-sm font-semibold ${content[key] === 'Low' ? 'text-green-400' :
                   content[key] === 'Medium' ? 'text-yellow-400' : 'text-red-400'
-                }`}>{content[key]}</p>
+                  }`}>{content[key]}</p>
               </div>
             )
           ))}
@@ -454,19 +475,17 @@ function AIResultDisplay({ content }: { content: any }) {
       {Object.entries(content).map(([diet, info]: [string, any]) => (
         <div
           key={diet}
-          className={`p-3 rounded-lg border ${
-            info.compatible === 'Yes' ? 'border-green-500/30 bg-green-500/10' :
+          className={`p-3 rounded-lg border ${info.compatible === 'Yes' ? 'border-green-500/30 bg-green-500/10' :
             info.compatible === 'Maybe' ? 'border-yellow-500/30 bg-yellow-500/10' :
-            'border-red-500/30 bg-red-500/10'
-          }`}
+              'border-red-500/30 bg-red-500/10'
+            }`}
         >
           <div className="flex items-center justify-between mb-1">
             <h4 className="font-semibold text-sm">{diet}</h4>
-            <span className={`px-2 py-0.5 rounded-full text-xs ${
-              info.compatible === 'Yes' ? 'bg-green-500/20 text-green-400' :
+            <span className={`px-2 py-0.5 rounded-full text-xs ${info.compatible === 'Yes' ? 'bg-green-500/20 text-green-400' :
               info.compatible === 'Maybe' ? 'bg-yellow-500/20 text-yellow-400' :
-              'bg-red-500/20 text-red-400'
-            }`}>
+                'bg-red-500/20 text-red-400'
+              }`}>
               {info.compatible}
             </span>
           </div>

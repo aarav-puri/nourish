@@ -3,7 +3,7 @@ import { Toaster } from 'sonner'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'BarcodeSense — Smart Product Scanning with AI',
+  title: 'BarcodeSense',
   description: 'Scan any barcode and get instant AI-powered insights about products, ingredients, sustainability, and healthier alternatives.',
   icons: {
     icon: '/favicon.png',
@@ -30,7 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        <Toaster 
+        <Toaster
           position="bottom-right"
           toastOptions={{
             style: {

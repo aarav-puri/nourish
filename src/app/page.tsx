@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { 
+import {
   Sparkles, Activity, Leaf, Upload, CheckSquare, ChefHat,
-  ArrowRight, Check, X, Minus
+  ArrowRight, Check, X, Minus, Bot
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -20,6 +20,7 @@ const features = [
   { icon: Upload, title: 'Instant Scanning', description: 'Upload a photo or enter a barcode manually — get results in seconds from our global product database.' },
   { icon: CheckSquare, title: 'Diet Compatibility', description: 'Check if products match your dietary restrictions — vegan, gluten-free, keto, and more.' },
   { icon: ChefHat, title: 'Recipe Ideas', description: 'Get creative recipe suggestions using the products you scan as key ingredients.' },
+  { icon: Bot, title: 'AI Assistant', description: 'Chat with an AI assistant that knows your scan history and can answer questions about your products.' },
 ]
 
 const stats = [
@@ -64,7 +65,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-dark">
       <Particles />
       <Navbar onAuthClick={() => setAuthModalOpen(true)} />
-      
+
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -72,16 +73,16 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-zinc-300 mb-8">
               AI-Powered Product Intelligence
             </div>
-            
+
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Know what you're buying with{' '}
               <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">AI insights</span>
             </h1>
-            
+
             <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
               Scan. Learn. Eat Better.
             </p>
-            
+
             <Link href="/app">
               <Button size="lg" className="group min-w-[240px] relative overflow-hidden">
                 {authLoading ? (
@@ -115,7 +116,7 @@ export default function HomePage() {
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">The Problem</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text">Why informed choices matter</h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             {stats.map((stat, i) => (
               <div key={i} className="card text-center">
@@ -125,9 +126,9 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          
+
           <div className="text-center">
-            <Link 
+            <Link
               href="/blog/nutrition-literacy-upf-crisis"
               className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
             >
@@ -145,7 +146,7 @@ export default function HomePage() {
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Features</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text">Everything you need to shop smarter</h2>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, i) => (
               <div key={i} className="card group">
@@ -167,7 +168,7 @@ export default function HomePage() {
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Why Choose Us</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text">BarcodeSense vs Traditional Methods</h2>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -189,13 +190,13 @@ export default function HomePage() {
                     </td>
                     <td className="py-4 px-4 text-center">
                       {row.manual === true ? <Check className="w-5 h-5 text-green-400 mx-auto" /> :
-                       row.manual === 'partial' ? <Minus className="w-5 h-5 text-yellow-400 mx-auto" /> :
-                       <X className="w-5 h-5 text-zinc-600 mx-auto" />}
+                        row.manual === 'partial' ? <Minus className="w-5 h-5 text-yellow-400 mx-auto" /> :
+                          <X className="w-5 h-5 text-zinc-600 mx-auto" />}
                     </td>
                     <td className="py-4 px-4 text-center">
                       {row.basic === true ? <Check className="w-5 h-5 text-green-400 mx-auto" /> :
-                       row.basic === 'partial' ? <Minus className="w-5 h-5 text-yellow-400 mx-auto" /> :
-                       <X className="w-5 h-5 text-zinc-600 mx-auto" />}
+                        row.basic === 'partial' ? <Minus className="w-5 h-5 text-yellow-400 mx-auto" /> :
+                          <X className="w-5 h-5 text-zinc-600 mx-auto" />}
                     </td>
                   </tr>
                 ))}
@@ -212,7 +213,7 @@ export default function HomePage() {
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">How It Works</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text">Three simple steps</h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
               <div key={i} className="text-center">
@@ -234,11 +235,11 @@ export default function HomePage() {
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Built for You</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Created by someone who cares</h2>
             <p className="text-zinc-400 max-w-2xl mx-auto mb-6">
-              BarcodeSense was built by a developer who wanted to make healthier choices but found 
+              BarcodeSense was built by a developer who wanted to make healthier choices but found
               nutrition labels confusing. Now it's here to help you too.
             </p>
-            <a 
-              href="/about" 
+            <a
+              href="/about"
               className="inline-flex items-center gap-2 text-white hover:text-zinc-300 transition-colors"
             >
               <span>Read the story</span>
@@ -258,7 +259,7 @@ export default function HomePage() {
               We're committed to protecting your privacy. Your information is secure, private, and never sold.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="card p-6 text-center">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center mx-auto mb-4">
@@ -311,7 +312,7 @@ export default function HomePage() {
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Pricing</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text">Simple, transparent pricing</h2>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Free Plan */}
             <div className="card p-8">
@@ -320,7 +321,7 @@ export default function HomePage() {
                 <div className="text-4xl font-bold gradient-text mb-2">$0</div>
                 <p className="text-zinc-400 text-sm">Forever free</p>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
@@ -344,7 +345,7 @@ export default function HomePage() {
                   </span>
                 </li>
               </ul>
-              
+
               <Link href="/app" className="block">
                 <Button variant="secondary" className="w-full">
                   Get Started Free
@@ -359,7 +360,7 @@ export default function HomePage() {
                   COMING SOON
                 </span>
               </div>
-              
+
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold mb-2">Pro</h3>
                 <div className="text-4xl font-bold gradient-text mb-2">
@@ -368,7 +369,7 @@ export default function HomePage() {
                 </div>
                 <p className="text-zinc-400 text-sm">For power users</p>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
@@ -404,7 +405,7 @@ export default function HomePage() {
             <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">FAQ</p>
             <h2 className="text-3xl md:text-4xl font-bold gradient-text">Frequently Asked Questions</h2>
           </div>
-          
+
           <div className="space-y-4">
             <details className="card p-6 cursor-pointer group">
               <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
@@ -412,8 +413,8 @@ export default function HomePage() {
                 <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
-                Simply scan or upload a photo of any product barcode, or enter the barcode number manually. 
-                BarcodeSense instantly retrieves product information from global databases and uses AI to 
+                Simply scan or upload a photo of any product barcode, or enter the barcode number manually.
+                BarcodeSense instantly retrieves product information from global databases and uses AI to
                 analyze ingredients, nutrition, environmental impact, and provide personalized recommendations.
               </p>
             </details>
@@ -424,9 +425,9 @@ export default function HomePage() {
                 <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
-                AI insights are advanced analyses powered by artificial intelligence that help you understand 
-                products better. This includes finding healthier alternatives, checking diet compatibility 
-                (vegan, keto, gluten-free, etc.), analyzing environmental impact, and generating creative 
+                AI insights are advanced analyses powered by artificial intelligence that help you understand
+                products better. This includes finding healthier alternatives, checking diet compatibility
+                (vegan, keto, gluten-free, etc.), analyzing environmental impact, and generating creative
                 recipe ideas using scanned products.
               </p>
             </details>
@@ -437,9 +438,9 @@ export default function HomePage() {
                 <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
-                We source product data from comprehensive global databases with millions of products. While we 
-                strive for accuracy, product information is provided for informational purposes only. Always 
-                check the physical product label for the most up-to-date information, especially for allergies 
+                We source product data from comprehensive global databases with millions of products. While we
+                strive for accuracy, product information is provided for informational purposes only. Always
+                check the physical product label for the most up-to-date information, especially for allergies
                 or dietary restrictions.
               </p>
             </details>
@@ -450,9 +451,9 @@ export default function HomePage() {
                 <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
-                While our database covers millions of products worldwide, some items—especially local or newly 
-                released products—may not be available yet. If a product isn't found, you can still manually 
-                enter product details, and our AI can analyze ingredients and nutrition information you provide. 
+                While our database covers millions of products worldwide, some items—especially local or newly
+                released products—may not be available yet. If a product isn't found, you can still manually
+                enter product details, and our AI can analyze ingredients and nutrition information you provide.
                 We're constantly expanding our database coverage.
               </p>
             </details>
