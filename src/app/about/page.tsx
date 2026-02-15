@@ -4,7 +4,18 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Globe, Sparkles, Check, ExternalLink } from 'lucide-react'
+import {
+  ArrowLeft,
+  Globe,
+  BookOpen,
+  Target,
+  ScanLine,
+  Heart,
+  SlidersHorizontal,
+  ShieldCheck,
+  Leaf,
+  Brain,
+} from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Particles from '@/components/Particles'
@@ -13,12 +24,12 @@ import Button from '@/components/ui/Button'
 import { auth } from '@/lib/supabase'
 
 const features = [
-  'Surfaces product information instantly',
-  'Suggests AI-powered healthier alternatives',
-  'Adapts to mood and diet restrictions',
-  'Checks dietary compatibility',
-  'Highlights environmental impact',
-  'Delivers AI-driven insights',
+  { icon: ScanLine, label: 'Surfaces product information instantly' },
+  { icon: Heart, label: 'Suggests AI-powered healthier alternatives' },
+  { icon: SlidersHorizontal, label: 'Adapts to mood and diet restrictions' },
+  { icon: ShieldCheck, label: 'Checks dietary compatibility' },
+  { icon: Leaf, label: 'Highlights environmental impact' },
+  { icon: Brain, label: 'Delivers AI-driven insights' },
 ]
 
 export default function AboutPage() {
@@ -85,7 +96,7 @@ export default function AboutPage() {
           className="card mb-8"
         >
           <h2 className="flex items-center gap-3 text-2xl font-bold gradient-text mb-6">
-            <Sparkles className="w-7 h-7" />
+            <BookOpen className="w-7 h-7" />
             The Origin Story
           </h2>
           <div className="space-y-4 text-zinc-300 leading-relaxed">
@@ -96,8 +107,8 @@ export default function AboutPage() {
               nutritional information made grocery shopping unnecessarily complicated.
             </p>
             <p>
-              I wanted a simple way to scan products and immediately know what's inside—not just for 
-              vegetarians, but for anyone trying to make informed choices about what they eat.
+              I wanted a simple way to scan products and immediately know what's inside, not just for 
+              vegetarians but for anyone trying to make informed choices about what they eat.
             </p>
 
             <p>
@@ -107,20 +118,23 @@ export default function AboutPage() {
             </p>
 
             <div className="grid sm:grid-cols-2 gap-3 my-6">
-              {features.map((feature, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-zinc-800 hover:border-zinc-600 transition-colors"
-                >
-                  <Check className="w-5 h-5 text-white flex-shrink-0" />
-                  <span className="text-sm">{feature}</span>
-                </div>
-              ))}
+              {features.map((feature, i) => {
+                const Icon = feature.icon
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-zinc-800 hover:border-zinc-600 transition-colors"
+                  >
+                    <Icon className="w-5 h-5 text-white flex-shrink-0" />
+                    <span className="text-sm">{feature.label}</span>
+                  </div>
+                )
+              })}
             </div>
 
             <p>
               The result is a clean, focused experience that helps you discover what's in your food 
-              with a single scan—powered by AI, built from a personal problem, and designed to make 
+              with a single scan, powered by AI, built from a personal problem, and designed to make 
               better eating feel effortless.
             </p>
           </div>
@@ -134,7 +148,7 @@ export default function AboutPage() {
           className="card mb-12"
         >
           <h2 className="flex items-center gap-3 text-2xl font-bold gradient-text mb-6">
-            <Check className="w-7 h-7" />
+            <Target className="w-7 h-7" />
             The Mission
           </h2>
           <div className="space-y-4 text-zinc-300 leading-relaxed">
@@ -172,7 +186,7 @@ export default function AboutPage() {
           <div className="flex items-center justify-center">
             <Link href="/app">
               <Button size="lg" className="min-w-[220px] transition-opacity duration-300">
-                <Sparkles className="w-5 h-5" />
+                <ScanLine className="w-5 h-5" />
                 <span className={authLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}>
                   {user ? 'Go to App' : 'Try BarcodeSense Free'}
                 </span>
