@@ -148,14 +148,15 @@ export const db = {
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
     // Track by email to prevent abuse from account deletion/recreation
+    // Use maybeSingle() instead of single() to avoid 406 when no row exists yet
     const { data, error } = await supabase
       .from('ai_usage')
       .select('count')
       .eq('email', user.email)
       .eq('date', today)
-      .single()
+      .maybeSingle()
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error('AI usage query error:', error)
       throw error
     }
@@ -171,12 +172,13 @@ export const db = {
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
     // Track by email to prevent abuse from account deletion/recreation
+    // Use maybeSingle() to avoid 406 when no row exists yet
     const { data: existing } = await supabase
       .from('ai_usage')
       .select('id, count')
       .eq('email', user.email)
       .eq('date', today)
-      .single()
+      .maybeSingle()
 
     if (existing) {
       // Update existing record

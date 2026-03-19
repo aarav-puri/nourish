@@ -1,6 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const OPEN_FOOD_FACTS_TIMEOUT_MS = Math.max(
+  1000,
+  Number(process.env.OPEN_FOOD_FACTS_TIMEOUT_MS ?? 12000) || 12000
+)
+const OPEN_FOOD_FACTS_MAX_ATTEMPTS = Math.max(
+  1,
+  Number(process.env.OPEN_FOOD_FACTS_MAX_ATTEMPTS ?? 3) || 3
+)
+const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504])
+
+function isAbortError(error: unknown) {
+  return (
+    error instanceof Error &&
+    (error.name === 'AbortError' || (error as Error & { code?: number }).code === 20)
+  )
+}
+
+async function delay(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function parseResponseBody(response: Response) {
+  const raw = await response.text()
+
+  if (!raw) {
+    return {}
+  }
+
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return { error: raw }
+  }
+}
+
+async function fetchOpenFoodFactsProduct(barcode: string): Promise<Response> {
+  const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
+  let lastError: unknown = null
+
+  for (let attempt = 1; attempt <= OPEN_FOOD_FACTS_MAX_ATTEMPTS; attempt += 1) {
+    const offController = new AbortController()
+    const offTimeout = setTimeout(() => offController.abort(), OPEN_FOOD_FACTS_TIMEOUT_MS)
+
+    try {
+      const response = await fetch(url, {
+        signal: offController.signal,
+        cache: 'no-store',
+      })
+
+      if (
+        response.ok ||
+        !RETRYABLE_STATUS_CODES.has(response.status) ||
+        attempt === OPEN_FOOD_FACTS_MAX_ATTEMPTS
+      ) {
+        return response
+      }
+
+      console.warn(
+        `Open Food Facts returned ${response.status} on attempt ${attempt}/${OPEN_FOOD_FACTS_MAX_ATTEMPTS}; retrying`
+      )
+    } catch (error) {
+      lastError = error
+
+      const isRetryableNetworkError =
+        isAbortError(error) ||
+        (error instanceof TypeError && error.message.toLowerCase().includes('fetch'))
+
+      if (!isRetryableNetworkError || attempt === OPEN_FOOD_FACTS_MAX_ATTEMPTS) {
+        throw error
+      }
+
+      console.warn(
+        `Open Food Facts request failed on attempt ${attempt}/${OPEN_FOOD_FACTS_MAX_ATTEMPTS}; retrying`,
+        error
+      )
+    } finally {
+      clearTimeout(offTimeout)
+    }
+
+    await delay(300 * attempt)
+  }
+
+  throw lastError ?? new Error('Open Food Facts request failed without an explicit error')
+}
+
 async function formatProductWithMistral(product: any) {
+  const mistralController = new AbortController()
+  const mistralTimeout = setTimeout(() => mistralController.abort(), 8000)
+
   try {
     const prompt = `Format this product information in a clean, well-structured way. Return ONLY valid JSON with these exact fields:
 
@@ -44,6 +132,7 @@ Return JSON with these exact keys:
         temperature: 0.3,
         max_tokens: 500,
       }),
+      signal: mistralController.signal,
     })
 
     const data = await response.json()
@@ -61,6 +150,8 @@ Return JSON with these exact keys:
   } catch (error) {
     console.error('Format Product Error:', error)
     return null
+  } finally {
+    clearTimeout(mistralTimeout)
   }
 }
 
@@ -76,11 +167,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
-    )
-
-    const data = await response.json()
+    const response = await fetchOpenFoodFactsProduct(barcode)
+    const data = await parseResponseBody(response)
 
     if (!response.ok) {
       return NextResponse.json({ error: data }, { status: response.status })
@@ -97,9 +185,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error: any) {
     console.error('Open Food Facts API Error:', error)
+
+    if (isAbortError(error)) {
+      return NextResponse.json(
+        {
+          error: 'Request timed out',
+          message: `Open Food Facts did not respond in time after ${OPEN_FOOD_FACTS_MAX_ATTEMPTS} attempt(s). Please try again.`,
+        },
+        { status: 504 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error', message: error.message },
-      { status: 500 }
+      { error: 'Upstream fetch failed', message: error.message || 'Unknown Open Food Facts error' },
+      { status: 502 }
     )
   }
 }

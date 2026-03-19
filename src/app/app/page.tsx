@@ -728,7 +728,7 @@ export default function AppPage() {
                             <div className="p-3 bg-white/5 rounded-lg">
                               <p className="text-xs text-zinc-500 mb-1">Energy</p>
                               <p className="text-lg font-bold text-white">
-                                {product.nutriments.energy_value}
+                                {Math.round(Number(product.nutriments.energy_value))}
                                 <span className="text-sm text-zinc-400 ml-1">
                                   {product.nutriments.energy_unit || 'kcal'}
                                 </span>
@@ -739,7 +739,7 @@ export default function AppPage() {
                             <div className="p-3 bg-white/5 rounded-lg">
                               <p className="text-xs text-zinc-500 mb-1">Fat</p>
                               <p className="text-lg font-bold text-white">
-                                {product.nutriments.fat}
+                                {Number(product.nutriments.fat).toFixed(1)}
                                 <span className="text-sm text-zinc-400 ml-1">g</span>
                               </p>
                             </div>
@@ -748,7 +748,7 @@ export default function AppPage() {
                             <div className="p-3 bg-white/5 rounded-lg">
                               <p className="text-xs text-zinc-500 mb-1">Carbs</p>
                               <p className="text-lg font-bold text-white">
-                                {product.nutriments.carbohydrates}
+                                {Number(product.nutriments.carbohydrates).toFixed(1)}
                                 <span className="text-sm text-zinc-400 ml-1">g</span>
                               </p>
                             </div>
@@ -757,7 +757,7 @@ export default function AppPage() {
                             <div className="p-3 bg-white/5 rounded-lg">
                               <p className="text-xs text-zinc-500 mb-1">Protein</p>
                               <p className="text-lg font-bold text-white">
-                                {product.nutriments.proteins}
+                                {Number(product.nutriments.proteins).toFixed(1)}
                                 <span className="text-sm text-zinc-400 ml-1">g</span>
                               </p>
                             </div>
