@@ -92,13 +92,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Contact Us</h2>
             <p>
-              If you have any questions about this Privacy Policy or how we handle your data, please contact us at{' '}
-              <a 
-                href="mailto:barcodesenseofficial@gmail.com"
-                className="text-white hover:underline font-medium"
-              >
-                barcodesenseofficial@gmail.com
-              </a>
+              If you have any questions about this Privacy Policy or how we handle your data, please use our in-app support options.
             </p>
           </section>
 

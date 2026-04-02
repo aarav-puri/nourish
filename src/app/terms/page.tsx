@@ -79,13 +79,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">8. Contact</h2>
             <p>
-              For questions about these Terms of Service, please contact us at{' '}
-              <a 
-                href="mailto:barcodesenseofficial@gmail.com"
-                className="text-white hover:underline font-medium"
-              >
-                barcodesenseofficial@gmail.com
-              </a>
+              For questions about these Terms of Service, please use our in-app support options.
             </p>
           </section>
 
