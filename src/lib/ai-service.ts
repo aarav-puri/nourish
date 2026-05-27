@@ -1,5 +1,5 @@
 const API_URL = '/api/ai'
-const MODELS = ['google/gemini-3-flash-preview', 'google/gemini-2.5-flash']
+const MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro']
 let currentModelIndex = 0
 
 function getNextModel() {
@@ -21,7 +21,7 @@ async function callAI(prompt: string, systemPrompt = 'You are a helpful food and
         { role: 'user', content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 8000,
     }),
   })
 

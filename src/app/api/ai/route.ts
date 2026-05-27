@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
+    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Missing GOOGLE_AI_STUDIO_API_KEY' }, { status: 500 })
+    }
+
     const body = await request.json()
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || '',
-        'X-Title': 'BarcodeSense Food Scanner',
       },
       body: JSON.stringify(body),
     })
