@@ -7,23 +7,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload, Search, ArrowLeft, X, Home, User, Sparkles,
   Activity, CheckSquare, Leaf, Loader2, AlertCircle,
-  Check, ChevronDown, LogOut, History, ChefHat, ScanLine
+  Check, ChevronDown, LogOut, History, ChefHat, ScanLine, KeyRound
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth-context'
 import { fetchProductInfo, ProductData } from '@/lib/product-api'
-import { aiService, Product } from '@/lib/ai-service'
+import { aiService, Product, getGeminiApiKey, setGeminiApiKey } from '@/lib/ai-service'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
-import AuthModal from '@/components/auth/AuthModal'
 import { toast } from 'sonner'
 
 export default function AppPage() {
-  const [user, setUser] = useState<any>(null)
-  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const { user, loading, openAuthModal } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [remainingAI, setRemainingAI] = useState(1)
+  const [apiKey, setApiKey] = useState('')
+  const [apiKeyInput, setApiKeyInput] = useState('')
   const [barcode, setBarcode] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [productLoading, setProductLoading] = useState(false)
@@ -47,7 +46,6 @@ export default function AppPage() {
       proteins: ''
     }
   })
-  const [resetTime, setResetTime] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -57,72 +55,35 @@ export default function AppPage() {
     }
     checkMobile()
 
-    // Calculate time until midnight (reset time)
-    const calculateResetTime = () => {
-      const now = new Date()
-      const tomorrow = new Date(now)
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      tomorrow.setHours(0, 0, 0, 0)
-
-      const diff = tomorrow.getTime() - now.getTime()
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-      setResetTime(`${hours}h ${minutes}m`)
-    }
-
-    calculateResetTime()
-    const interval = setInterval(calculateResetTime, 60000) // Update every minute
-
-    auth.getCurrentUser().then((currentUser) => {
-      setUser(currentUser)
-      setLoading(false)
-      if (currentUser) {
-        updateRemainingAI()
-      } else {
-        // Not signed in - show auth modal
-        setAuthModalOpen(true)
-      }
-    })
-    const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
-      setUser(session?.user || null)
-      setLoading(false)
-      if (session?.user) {
-        updateRemainingAI()
-      } else {
-        // Not signed in - show auth modal
-        setAuthModalOpen(true)
-      }
-    })
-    return () => {
-      subscription.unsubscribe()
-      clearInterval(interval)
-    }
+    const storedKey = getGeminiApiKey()
+    setApiKey(storedKey)
+    setApiKeyInput(storedKey)
   }, [])
 
-  const updateRemainingAI = async () => {
-    try {
-      const usedToday = await db.getAIUsageToday()
-      setRemainingAI(Math.max(0, 1 - usedToday))
-    } catch (err) {
-      console.error('Failed to get AI usage:', err)
+  useEffect(() => {
+    // Not signed in - show auth modal
+    if (!loading && !user) {
+      openAuthModal()
     }
-  }
+  }, [loading, user])
 
   const handleLogout = async () => {
     await auth.signOut()
     setUserMenuOpen(false)
   }
 
-  const getRemainingAIInsights = () => {
-    return remainingAI
+  const handleSaveApiKey = () => {
+    const trimmed = apiKeyInput.trim()
+    setGeminiApiKey(trimmed)
+    setApiKey(trimmed)
+    toast.success(trimmed ? 'Google API key saved' : 'Google API key removed')
   }
 
   const handleImageUpload = useCallback((file: File) => {
     // Require sign-in
     if (!user) {
       toast.error('Please sign in to scan products')
-      setAuthModalOpen(true)
+      openAuthModal()
       return
     }
 
@@ -246,7 +207,7 @@ export default function AppPage() {
     // Require sign-in
     if (!user) {
       toast.error('Please sign in to scan products')
-      setAuthModalOpen(true)
+      openAuthModal()
       return
     }
 
@@ -290,25 +251,15 @@ export default function AppPage() {
     // Non-signed-in users must sign in to use AI features
     if (!user) {
       toast.error('Sign in to unlock AI insights.')
-      setTimeout(() => setAuthModalOpen(true), 500)
+      setTimeout(() => openAuthModal(), 500)
       return
     }
 
-    // Check AI usage limit (1 per day for signed-in users)
-    try {
-      const usedToday = await db.getAIUsageToday()
-
-      if (usedToday >= 1) {
-        toast.error(`Daily AI limit reached. Resets in ${resetTime}`)
-        return
-      }
-
-      // Increment usage in database
-      await db.incrementAIUsage()
-      await updateRemainingAI() // Update the UI
-    } catch (err) {
-      console.error('Failed to check AI usage:', err)
-      toast.error('Failed to check AI usage. Please try again.')
+    // AI features require the user's own Gemini API key
+    if (!apiKey) {
+      toast.error('Add your Google API key in your profile to use AI insights.')
+      setProfileModalOpen(true)
+      setDietModalOpen(false)
       return
     }
 
@@ -400,17 +351,13 @@ export default function AppPage() {
           <p className="text-zinc-400 mb-8">
             Create a free account to start scanning products and get AI-powered insights.
           </p>
-          <Button onClick={() => setAuthModalOpen(true)} size="lg">
+          <Button onClick={() => openAuthModal()} size="lg">
             Sign In to Get Started
           </Button>
           <Link href="/" className="block mt-4 text-zinc-400 hover:text-white transition-colors">
             ← Back to Home
           </Link>
         </div>
-        <AuthModal
-          isOpen={authModalOpen}
-          onClose={() => setAuthModalOpen(false)}
-        />
       </div>
     )
   }
@@ -457,20 +404,35 @@ export default function AppPage() {
                     <p className="text-sm font-medium truncate">{user.email}</p>
                   </div>
 
-                  {/* AI Limits */}
+                  {/* Google API Key */}
                   <div className="px-4 py-3 border-b border-zinc-800 bg-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-zinc-400" />
-                        <span className="text-sm text-zinc-400">AI Insights Left Today</span>
-                      </div>
-                      <span className="text-sm font-bold text-white">{getRemainingAIInsights()}/1</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <KeyRound className="w-4 h-4 text-zinc-400" />
+                      <span className="text-sm text-zinc-400">Google API Key</span>
                     </div>
-                    {remainingAI === 0 && resetTime && (
-                      <p className="text-xs text-zinc-500">
-                        Resets in {resetTime}
-                      </p>
-                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={apiKeyInput}
+                        onChange={(e) => setApiKeyInput(e.target.value)}
+                        placeholder="Paste your Google API key"
+                        className="flex-1 min-w-0 px-2 py-1.5 text-xs bg-dark-elevated border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+                      />
+                      <button
+                        onClick={handleSaveApiKey}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white text-dark hover:bg-zinc-200 transition-colors"
+                      >
+                        Save
+                      </button>
+                    </div>
+                    <a
+                      href="https://aistudio.google.com/apikey"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-zinc-500 hover:text-zinc-300 underline mt-1 inline-block"
+                    >
+                      Get a free Google API key
+                    </a>
                   </div>
 
                   <div className="py-2">
@@ -494,7 +456,7 @@ export default function AppPage() {
               )}
             </div>
           ) : (
-            <Button size="sm" onClick={() => setAuthModalOpen(true)}>Sign In</Button>
+            <Button size="sm" onClick={() => openAuthModal()}>Sign In</Button>
           )}
         </div>
       </header>
@@ -1073,20 +1035,35 @@ export default function AppPage() {
             <p className="text-sm font-medium truncate">{user?.email}</p>
           </div>
 
-          {/* AI Limits */}
+          {/* Google API Key */}
           <div className="p-3 bg-white/5 rounded-xl border border-zinc-800">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-zinc-400" />
-                <span className="text-xs text-zinc-400">AI Insights Left Today</span>
-              </div>
-              <span className="text-sm font-bold text-white">{getRemainingAIInsights()}/1</span>
+            <div className="flex items-center gap-2 mb-2">
+              <KeyRound className="w-4 h-4 text-zinc-400" />
+              <span className="text-xs text-zinc-400">Google API Key</span>
             </div>
-            {remainingAI === 0 && resetTime && (
-              <p className="text-xs text-zinc-500">
-                Resets in {resetTime}
-              </p>
-            )}
+            <div className="flex gap-2">
+              <input
+                type="password"
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                placeholder="Paste your Google API key"
+                className="flex-1 min-w-0 px-2 py-1.5 text-xs bg-dark-elevated border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+              />
+              <button
+                onClick={handleSaveApiKey}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white text-dark hover:bg-zinc-200 transition-colors"
+              >
+                Save
+              </button>
+            </div>
+            <a
+              href="https://aistudio.google.com/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-zinc-500 hover:text-zinc-300 underline mt-1 inline-block"
+            >
+              Get a free Google API key
+            </a>
           </div>
 
           <Link href="/history" onClick={() => setProfileModalOpen(false)} className="block">
@@ -1129,11 +1106,6 @@ export default function AppPage() {
           </div>
         </div>
       )}
-
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-      />
     </div>
   )
 }

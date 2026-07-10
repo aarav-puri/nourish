@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY
+    const apiKey = request.headers.get('x-gemini-api-key')
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing GOOGLE_AI_STUDIO_API_KEY' }, { status: 500 })
+      return NextResponse.json({ error: 'Missing Google API key. Add your own key in your profile.' }, { status: 401 })
     }
 
     const body = await request.json()

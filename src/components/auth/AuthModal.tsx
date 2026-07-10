@@ -1,8 +1,9 @@
 'use client'
 
+import Image from 'next/image'
+import { Sparkles, History, Leaf } from 'lucide-react'
 import { auth } from '@/lib/supabase'
 import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
 import { toast } from 'sonner'
 
 interface AuthModalProps {
@@ -10,6 +11,12 @@ interface AuthModalProps {
   onClose: () => void
   showSaveMessage?: boolean
 }
+
+const perks = [
+  { icon: Sparkles, label: 'AI-powered product insights' },
+  { icon: History, label: 'Scan history synced across devices' },
+  { icon: Leaf, label: 'Healthier & eco-friendly swaps' },
+]
 
 export default function AuthModal({ isOpen, onClose, showSaveMessage = false }: AuthModalProps) {
   const handleGoogleLogin = async () => {
@@ -26,22 +33,36 @@ export default function AuthModal({ isOpen, onClose, showSaveMessage = false }: 
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden mx-auto mb-4 ring-1 ring-white/10">
+            <Image src="/favicon.png" alt="BarcodeSense" width={56} height={56} />
+          </div>
           <h2 className="text-2xl font-bold gradient-text">
             {showSaveMessage ? 'Save Your Scans' : 'Welcome to BarcodeSense'}
           </h2>
-          <p className="mt-2 text-zinc-400">
-            {showSaveMessage 
-              ? 'Sign in with Google to save your scan history and access it from any device'
-              : 'Sign in with Google to save your scanned products and track your history'
+          <p className="mt-2 text-zinc-400 text-sm">
+            {showSaveMessage
+              ? 'Sign in to save your scan history and access it from any device.'
+              : 'Sign in to start scanning and unlock AI-powered product insights.'
             }
           </p>
         </div>
 
+        {/* Perks */}
+        <div className="space-y-2.5 py-1">
+          {perks.map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-3 text-sm text-zinc-300">
+              <div className="w-8 h-8 rounded-lg bg-white/5 border border-zinc-800 flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-zinc-300" />
+              </div>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+
         {/* Google OAuth Button */}
-        <Button
-          variant="secondary"
-          className="w-full py-4"
+        <button
           onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-white text-dark font-semibold hover:bg-zinc-200 active:scale-[0.98] transition-all duration-150 shadow-lg shadow-black/20"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -50,7 +71,7 @@ export default function AuthModal({ isOpen, onClose, showSaveMessage = false }: 
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
           Continue with Google
-        </Button>
+        </button>
 
         {/* Info Text */}
         <p className="text-center text-xs text-zinc-500">

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -19,9 +18,8 @@ import {
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Particles from '@/components/Particles'
-import AuthModal from '@/components/auth/AuthModal'
 import Button from '@/components/ui/Button'
-import { auth } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth-context'
 
 const features = [
   { icon: ScanLine, label: 'Surfaces product information instantly' },
@@ -33,26 +31,12 @@ const features = [
 ]
 
 export default function AboutPage() {
-  const [authModalOpen, setAuthModalOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [authLoading, setAuthLoading] = useState(true)
-
-  useEffect(() => {
-    auth.getCurrentUser().then((currentUser) => {
-      setUser(currentUser)
-      setAuthLoading(false)
-    })
-    const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
-      setUser(session?.user || null)
-      setAuthLoading(false)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
+  const { user, loading: authLoading } = useAuth()
 
   return (
     <div className="min-h-screen bg-dark">
       <Particles />
-      <Navbar onAuthClick={() => setAuthModalOpen(true)} />
+      <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 pt-24 pb-20">
         {/* Back Button */}
@@ -197,7 +181,6 @@ export default function AboutPage() {
       </main>
 
       <Footer />
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   )
 }

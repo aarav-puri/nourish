@@ -6,38 +6,20 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Menu, X, User, LogOut, History, ChevronDown } from 'lucide-react'
 import { auth } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth-context'
 import Button from '@/components/ui/Button'
 
-interface NavbarProps {
-  onAuthClick?: () => void
-}
-
-export default function Navbar({ onAuthClick }: NavbarProps) {
+export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const { user, loading, openAuthModal } = useAuth()
   const pathname = usePathname()
 
   useEffect(() => {
-    auth.getCurrentUser().then((currentUser) => {
-      setUser(currentUser)
-      setLoading(false)
-    })
-    
-    const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
-      setUser(session?.user || null)
-      setLoading(false)
-    })
-
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
-
-    return () => {
-      subscription.unsubscribe()
-      window.removeEventListener('scroll', handleScroll)
-    }
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const handleLogout = async () => {
@@ -48,7 +30,6 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
   const navLinks = [
     { href: '/#features', label: 'Features' },
     { href: '/#pricing', label: 'Pricing' },
-    { href: '/blog', label: 'Blog' },
     { href: '/about', label: 'About' },
   ]
 
@@ -102,7 +83,7 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
             ) : (
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={onAuthClick}
+                  onClick={() => openAuthModal()}
                   className="px-3 py-1.5 text-sm font-medium text-zinc-300 hover:text-white rounded-md hover:bg-white/5 transition-colors"
                 >
                   Sign In
@@ -141,7 +122,7 @@ export default function Navbar({ onAuthClick }: NavbarProps) {
             {!user && (
               <div className="pt-3 border-t border-zinc-800">
                 <div className="flex flex-col gap-2">
-                  <Button variant="secondary" onClick={onAuthClick} className="w-full">
+                  <Button variant="secondary" onClick={() => openAuthModal()} className="w-full">
                     Sign In
                   </Button>
                   <Link href="/app" className="w-full">

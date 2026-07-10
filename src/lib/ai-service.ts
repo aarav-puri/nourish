@@ -1,21 +1,32 @@
 const API_URL = '/api/ai'
-const MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro']
-let currentModelIndex = 0
+const MODEL = 'gemini-3.1-flash'
+const API_KEY_STORAGE_KEY = 'gemini_api_key'
 
-function getNextModel() {
-  const model = MODELS[currentModelIndex]
-  currentModelIndex = (currentModelIndex + 1) % MODELS.length
-  return model
+export function getGeminiApiKey() {
+  if (typeof window === 'undefined') return ''
+  return localStorage.getItem(API_KEY_STORAGE_KEY) || ''
+}
+
+export function setGeminiApiKey(key: string) {
+  if (typeof window === 'undefined') return
+  if (key) localStorage.setItem(API_KEY_STORAGE_KEY, key)
+  else localStorage.removeItem(API_KEY_STORAGE_KEY)
 }
 
 async function callAI(prompt: string, systemPrompt = 'You are a helpful food and nutrition assistant.') {
-  const model = getNextModel()
-  
+  const apiKey = getGeminiApiKey()
+  if (!apiKey) {
+    throw new Error('MISSING_API_KEY')
+  }
+
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-gemini-api-key': apiKey,
+    },
     body: JSON.stringify({
-      model,
+      model: MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },

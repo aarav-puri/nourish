@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Sparkles, Activity, Leaf, Upload, CheckSquare, ChefHat,
@@ -9,9 +8,8 @@ import {
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Particles from '@/components/Particles'
-import AuthModal from '@/components/auth/AuthModal'
 import Button from '@/components/ui/Button'
-import { auth } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth-context'
 
 const features = [
   { icon: Sparkles, title: 'AI-Powered Analysis', description: 'Get instant insights about any product with advanced AI that understands ingredients, nutrition, and more.' },
@@ -24,9 +22,9 @@ const features = [
 ]
 
 const stats = [
-  { value: '73%', label: 'of U.S. food supply is ultra-processed', source: 'Northeastern University' },
-  { value: '60%', label: 'of adults have low nutrition literacy', source: 'Journal of Nutrition Education' },
-  { value: '32', label: 'harmful health effects linked to ultra-processed foods', source: 'BMJ Study' },
+  { value: '73%', label: 'of the U.S. packaged food supply is ultra-processed', source: 'Nature Communications, 2023 (Northeastern University)' },
+  { value: '12%', label: 'of U.S. adults have proficient health literacy', source: 'National Assessment of Adult Literacy, U.S. Dept. of Education' },
+  { value: '32', label: 'adverse health outcomes linked to ultra-processed foods', source: 'The BMJ, 2024' },
 ]
 
 const comparison = [
@@ -45,26 +43,12 @@ const steps = [
 ]
 
 export default function HomePage() {
-  const [authModalOpen, setAuthModalOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [authLoading, setAuthLoading] = useState(true)
-
-  useEffect(() => {
-    auth.getCurrentUser().then((currentUser) => {
-      setUser(currentUser)
-      setAuthLoading(false)
-    })
-    const { data: { subscription } } = auth.onAuthStateChange((_, session) => {
-      setUser(session?.user || null)
-      setAuthLoading(false)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
+  const { user, loading: authLoading } = useAuth()
 
   return (
     <div className="min-h-screen bg-dark">
       <Particles />
-      <Navbar onAuthClick={() => setAuthModalOpen(true)} />
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4">
@@ -125,16 +109,6 @@ export default function HomePage() {
                 <p className="text-xs text-zinc-600">Source: {stat.source}</p>
               </div>
             ))}
-          </div>
-
-          <div className="text-center">
-            <Link
-              href="/blog/nutrition-literacy-upf-crisis"
-              className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              <span>Read the full research</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </section>
@@ -338,9 +312,9 @@ export default function HomePage() {
                 <li className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
                   <span className="text-zinc-300">
-                    <strong className="text-white">1 AI insight per day</strong>
+                    <strong className="text-white">Unlimited AI insights</strong>
                     <span className="block text-sm text-zinc-500 mt-1">
-                      ~30 insights per month
+                      Bring your own free Google API key
                     </span>
                   </span>
                 </li>
@@ -378,10 +352,7 @@ export default function HomePage() {
                 <li className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
                   <span className="text-zinc-300">
-                    <strong className="text-white">10 AI insights per day</strong>
-                    <span className="block text-sm text-zinc-500 mt-1">
-                      ~300 insights per month
-                    </span>
+                    <strong className="text-white">300 AI insights a month</strong>
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -494,7 +465,6 @@ export default function HomePage() {
       </section>
 
       <Footer />
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   )
 }
