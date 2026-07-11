@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const apiKey = request.headers.get('x-gemini-api-key')
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing Google API key. Add your own key in your profile.' }, { status: 401 })
+      return NextResponse.json({ error: 'Missing BYOK key. Add your own key in Settings.' }, { status: 401 })
     }
 
     const body = await request.json()

@@ -7,12 +7,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload, Search, ArrowLeft, X, Home, User, Sparkles,
   Activity, CheckSquare, Leaf, Loader2, AlertCircle,
-  Check, ChevronDown, LogOut, History, ChefHat, ScanLine, KeyRound
+  Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { fetchProductInfo, ProductData } from '@/lib/product-api'
-import { aiService, Product, getGeminiApiKey, setGeminiApiKey } from '@/lib/ai-service'
+import { aiService, Product, getGeminiApiKey } from '@/lib/ai-service'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
@@ -22,7 +22,6 @@ export default function AppPage() {
   const { user, loading, openAuthModal } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [apiKey, setApiKey] = useState('')
-  const [apiKeyInput, setApiKeyInput] = useState('')
   const [barcode, setBarcode] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [productLoading, setProductLoading] = useState(false)
@@ -55,9 +54,7 @@ export default function AppPage() {
     }
     checkMobile()
 
-    const storedKey = getGeminiApiKey()
-    setApiKey(storedKey)
-    setApiKeyInput(storedKey)
+    setApiKey(getGeminiApiKey())
   }, [])
 
   useEffect(() => {
@@ -70,13 +67,6 @@ export default function AppPage() {
   const handleLogout = async () => {
     await auth.signOut()
     setUserMenuOpen(false)
-  }
-
-  const handleSaveApiKey = () => {
-    const trimmed = apiKeyInput.trim()
-    setGeminiApiKey(trimmed)
-    setApiKey(trimmed)
-    toast.success(trimmed ? 'Google API key saved' : 'Google API key removed')
   }
 
   const handleImageUpload = useCallback((file: File) => {
@@ -257,7 +247,7 @@ export default function AppPage() {
 
     // AI features require the user's own Gemini API key
     if (!apiKey) {
-      toast.error('Add your Google API key in your profile to use AI insights.')
+      toast.error('Add your BYOK key in Settings to use AI insights.')
       setProfileModalOpen(true)
       setDietModalOpen(false)
       return
@@ -404,38 +394,15 @@ export default function AppPage() {
                     <p className="text-sm font-medium truncate">{user.email}</p>
                   </div>
 
-                  {/* Google API Key */}
-                  <div className="px-4 py-3 border-b border-zinc-800 bg-white/5">
-                    <div className="flex items-center gap-2 mb-2">
-                      <KeyRound className="w-4 h-4 text-zinc-400" />
-                      <span className="text-sm text-zinc-400">Google API Key</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="password"
-                        value={apiKeyInput}
-                        onChange={(e) => setApiKeyInput(e.target.value)}
-                        placeholder="Paste your Google API key"
-                        className="flex-1 min-w-0 px-2 py-1.5 text-xs bg-dark-elevated border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
-                      />
-                      <button
-                        onClick={handleSaveApiKey}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white text-dark hover:bg-zinc-200 transition-colors"
-                      >
-                        Save
-                      </button>
-                    </div>
-                    <a
-                      href="https://aistudio.google.com/apikey"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-zinc-500 hover:text-zinc-300 underline mt-1 inline-block"
-                    >
-                      Get a free Google API key
-                    </a>
-                  </div>
-
                   <div className="py-2">
+                    <Link
+                      href="/settings"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </Link>
                     <Link
                       href="/history"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
@@ -1035,36 +1002,12 @@ export default function AppPage() {
             <p className="text-sm font-medium truncate">{user?.email}</p>
           </div>
 
-          {/* Google API Key */}
-          <div className="p-3 bg-white/5 rounded-xl border border-zinc-800">
-            <div className="flex items-center gap-2 mb-2">
-              <KeyRound className="w-4 h-4 text-zinc-400" />
-              <span className="text-xs text-zinc-400">Google API Key</span>
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="password"
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="Paste your Google API key"
-                className="flex-1 min-w-0 px-2 py-1.5 text-xs bg-dark-elevated border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
-              />
-              <button
-                onClick={handleSaveApiKey}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white text-dark hover:bg-zinc-200 transition-colors"
-              >
-                Save
-              </button>
-            </div>
-            <a
-              href="https://aistudio.google.com/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-zinc-500 hover:text-zinc-300 underline mt-1 inline-block"
-            >
-              Get a free Google API key
-            </a>
-          </div>
+          <Link href="/settings" onClick={() => setProfileModalOpen(false)} className="block">
+            <Button variant="secondary" className="w-full justify-center">
+              <Settings className="w-4 h-4" />
+              <span>Settings</span>
+            </Button>
+          </Link>
 
           <Link href="/history" onClick={() => setProfileModalOpen(false)} className="block">
             <Button variant="secondary" className="w-full justify-center">

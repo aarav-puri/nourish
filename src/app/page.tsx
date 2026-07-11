@@ -314,7 +314,7 @@ export default function HomePage() {
                   <span className="text-zinc-300">
                     <strong className="text-white">Unlimited AI insights</strong>
                     <span className="block text-sm text-zinc-500 mt-1">
-                      Bring your own free Google API key
+                      BYOK — bring your own free API key
                     </span>
                   </span>
                 </li>
