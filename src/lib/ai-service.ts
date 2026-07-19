@@ -1,5 +1,5 @@
 const API_URL = '/api/ai'
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'gemini-3.5-flash'
 const API_KEY_STORAGE_KEY = 'gemini_api_key'
 
 export function getGeminiApiKey() {
