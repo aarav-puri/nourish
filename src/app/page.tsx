@@ -15,8 +15,8 @@ const features = [
   { icon: Sparkles, title: 'AI-Powered Analysis', description: 'Get instant insights about any product with advanced AI that understands ingredients, nutrition, and more.' },
   { icon: Activity, title: 'Healthier Alternatives', description: 'Discover better product options with similar flavors and improved nutritional profiles.' },
   { icon: Leaf, title: 'Eco Impact Score', description: 'Understand the environmental footprint of your purchases and make more sustainable choices.' },
-  { icon: Upload, title: 'Instant Scanning', description: 'Upload a photo or enter a barcode manually — get results in seconds from our global product database.' },
-  { icon: CheckSquare, title: 'Diet Compatibility', description: 'Check if products match your dietary restrictions — vegan, gluten-free, keto, and more.' },
+  { icon: Upload, title: 'Instant Scanning', description: 'Upload a photo or enter a barcode manually, get results in seconds from our global product database.' },
+  { icon: CheckSquare, title: 'Diet Compatibility', description: 'Check if products match your dietary restrictions: vegan, gluten-free, keto, and more.' },
   { icon: ChefHat, title: 'Recipe Ideas', description: 'Get creative recipe suggestions using the products you scan as key ingredients.' },
   { icon: Bot, title: 'AI Assistant', description: 'Chat with an AI assistant that knows your scan history and can answer questions about your products.' },
 ]
@@ -314,7 +314,7 @@ export default function HomePage() {
                   <span className="text-zinc-300">
                     <strong className="text-white">Unlimited AI insights</strong>
                     <span className="block text-sm text-zinc-500 mt-1">
-                      BYOK — bring your own free API key
+                      BYOK: bring your own free API key
                     </span>
                   </span>
                 </li>
@@ -422,8 +422,8 @@ export default function HomePage() {
                 <span className="text-zinc-500">▼</span>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
-                While our database covers millions of products worldwide, some items—especially local or newly
-                released products—may not be available yet. If a product isn't found, you can still manually
+                While our database covers millions of products worldwide, some items, especially local or newly
+                released products, may not be available yet. If a product isn't found, you can still manually
                 enter product details, and our AI can analyze ingredients and nutrition information you provide.
                 We're constantly expanding our database coverage.
               </p>
