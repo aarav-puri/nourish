@@ -4,10 +4,11 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash, Sparkles, ChevronDown, ChevronUp, Leaf, Activity } from 'lucide-react'
+import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash, Sparkles, ChevronDown, ChevronUp, Leaf, Activity, Timer, Flame, TriangleAlert, Lightbulb } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import ChatAgent from '@/components/ChatAgent'
+import { scoreFromGrade } from '@/components/product/ScoreMeter'
 import { toast } from 'sonner'
 
 interface ScannedProduct {
@@ -220,18 +221,26 @@ export default function HistoryPage() {
                     className="card"
                   >
                     <div className="flex items-start gap-4">
-                      {/* Product Image */}
-                      {product.product_data?.image_url ? (
-                        <img
-                          src={product.product_data.image_url}
-                          alt={product.product_name}
-                          className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-20 h-20 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                          <Package className="w-8 h-8 text-zinc-600" />
-                        </div>
-                      )}
+                      {/* No product photography anywhere in a result. A scan
+                          returns a reading, so the tile carries the score
+                          rather than a picture of the packet. */}
+                      <div className="flex h-20 w-20 flex-shrink-0 flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
+                        {(() => {
+                          const score = scoreFromGrade(product.product_data?.nutriscore_grade)
+                          return score === null ? (
+                            <Package className="h-7 w-7 text-zinc-600" aria-hidden="true" />
+                          ) : (
+                            <>
+                              <span className="tnum font-display text-2xl font-bold leading-none">
+                                {score}
+                              </span>
+                              <span className="mt-1 text-[9px] font-bold uppercase tracking-label text-zinc-500">
+                                / 100
+                              </span>
+                            </>
+                          )
+                        })()}
+                      </div>
 
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
@@ -347,8 +356,8 @@ function AIResultDisplay({ content }: { content: any }) {
                       }`}>
                       {recipe.difficulty}
                     </span>
-                    <span>⏱️ {recipe.prep_time} min</span>
-                    {recipe.calories && <span>🔥 {recipe.calories} cal</span>}
+                    <span className="inline-flex items-center gap-1.5"><Timer className="h-3.5 w-3.5" aria-hidden="true" />{recipe.prep_time} min</span>
+                    {recipe.calories && <span className="inline-flex items-center gap-1.5"><Flame className="h-3.5 w-3.5" aria-hidden="true" />{recipe.calories} cal</span>}
                   </div>
 
                   {recipe.other_ingredients && (
@@ -454,7 +463,7 @@ function AIResultDisplay({ content }: { content: any }) {
 
         {content.tips && (
           <div className="p-3 bg-white/5 rounded-lg">
-            <p className="text-xs text-zinc-400 mb-2">Eco-Friendly Tips</p>
+            <p className="text-xs text-zinc-400 mb-2">Eco Friendly Tips</p>
             <ul className="space-y-1">
               {content.tips.map((tip: string, i: number) => (
                 <li key={i} className="flex items-start gap-2">
@@ -491,10 +500,10 @@ function AIResultDisplay({ content }: { content: any }) {
           </div>
           <p className="text-xs text-zinc-400">{info.reason}</p>
           {info.concerns && info.concerns !== 'null' && (
-            <p className="text-xs text-red-400 mt-1">⚠️ {info.concerns}</p>
+            <p className="mt-1 flex items-start gap-2 text-xs text-red-400"><TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />{info.concerns}</p>
           )}
           {info.alternatives && info.alternatives !== 'null' && (
-            <p className="text-xs text-zinc-300 mt-1">💡 {info.alternatives}</p>
+            <p className="mt-1 flex items-start gap-2 text-xs text-zinc-300"><Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />{info.alternatives}</p>
           )}
         </div>
       ))}

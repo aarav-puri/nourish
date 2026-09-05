@@ -25,7 +25,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. Description of Service</h2>
             <p>
-              BarcodeSense is a product scanning application that provides AI-powered insights about food products, 
+              BarcodeSense is a product scanning application that provides AI powered insights about food products, 
               including nutritional information, health scores, dietary compatibility, and environmental impact.
             </p>
           </section>
@@ -42,7 +42,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Disclaimer</h2>
             <p>
               The information provided by BarcodeSense is for informational purposes only and should not be 
-              considered medical or nutritional advice. Product information is sourced from third-party databases 
+              considered medical or nutritional advice. Product information is sourced from third party databases 
               and AI analysis, which may not always be accurate or complete.
             </p>
             <p className="mt-4">

@@ -1,468 +1,426 @@
 'use client'
 
 import Link from 'next/link'
-import {
-  Sparkles, Activity, Leaf, Upload, CheckSquare, ChefHat,
-  ArrowRight, Check, X, Minus, Bot
-} from 'lucide-react'
+import { ArrowRight, Check, Minus, X } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import Particles from '@/components/Particles'
-import Button from '@/components/ui/Button'
+import SiteBackground from '@/components/brand/SiteBackground'
+import ScoreTicker from '@/components/brand/ScoreTicker'
+import Reveal from '@/components/brand/Reveal'
+import CountUp from '@/components/brand/CountUp'
+import Magnetic from '@/components/brand/Magnetic'
+import ScanSteps from '@/components/home/ScanSteps'
+import FeatureBento from '@/components/home/FeatureBento'
 import { useAuth } from '@/lib/auth-context'
 
-const features = [
-  { icon: Sparkles, title: 'AI-Powered Analysis', description: 'Get instant insights about any product with advanced AI that understands ingredients, nutrition, and more.' },
-  { icon: Activity, title: 'Healthier Alternatives', description: 'Discover better product options with similar flavors and improved nutritional profiles.' },
-  { icon: Leaf, title: 'Eco Impact Score', description: 'Understand the environmental footprint of your purchases and make more sustainable choices.' },
-  { icon: Upload, title: 'Instant Scanning', description: 'Upload a photo or enter a barcode manually, get results in seconds from our global product database.' },
-  { icon: CheckSquare, title: 'Diet Compatibility', description: 'Check if products match your dietary restrictions: vegan, gluten-free, keto, and more.' },
-  { icon: ChefHat, title: 'Recipe Ideas', description: 'Get creative recipe suggestions using the products you scan as key ingredients.' },
-  { icon: Bot, title: 'AI Assistant', description: 'Chat with an AI assistant that knows your scan history and can answer questions about your products.' },
+const FORMATS = ['EAN 13', 'EAN 8', 'UPC A', 'UPC E', 'Code 128', 'Code 39', 'QR']
+
+const STATS = [
+  {
+    to: 73,
+    suffix: '%',
+    claim: 'of the U.S. packaged food supply is ultra processed',
+    source: 'Nature Communications, 2023. Northeastern University',
+  },
+  {
+    to: 12,
+    suffix: '%',
+    claim: 'of U.S. adults have proficient health literacy',
+    source: 'National Assessment of Adult Literacy, U.S. Dept. of Education',
+  },
+  {
+    to: 32,
+    suffix: '',
+    claim: 'adverse health outcomes linked to ultra processed foods',
+    source: 'The BMJ, 2024',
+  },
 ]
 
-const stats = [
-  { value: '73%', label: 'of the U.S. packaged food supply is ultra-processed', source: 'Nature Communications, 2023 (Northeastern University)' },
-  { value: '12%', label: 'of U.S. adults have proficient health literacy', source: 'National Assessment of Adult Literacy, U.S. Dept. of Education' },
-  { value: '32', label: 'adverse health outcomes linked to ultra-processed foods', source: 'The BMJ, 2024' },
+const COMPARISON = [
+  { feature: 'AI powered analysis', us: 'full', manual: 'none', basic: 'none' },
+  { feature: 'Healthier alternatives', us: 'full', manual: 'none', basic: 'none' },
+  { feature: 'Recipe ideas', us: 'full', manual: 'none', basic: 'none' },
+  { feature: 'Eco impact score', us: 'full', manual: 'none', basic: 'none' },
+  { feature: 'Diet compatibility check', us: 'full', manual: 'part', basic: 'part' },
+  { feature: 'Instant results', us: 'full', manual: 'none', basic: 'full' },
+] as const
+
+const MARK = {
+  full: { Icon: Check, text: 'Yes', cls: 'text-white' },
+  part: { Icon: Minus, text: 'Partial', cls: 'text-zinc-400' },
+  none: { Icon: X, text: 'No', cls: 'text-zinc-600' },
+}
+
+const PRIVACY = [
+  { t: 'Encrypted at rest', b: 'We encrypt your scans in storage, using standard industry protection.' },
+  { t: 'Never sold', b: "We don't sell your details or your scan history. Not to brands, not to anyone." },
+  { t: 'Yours alone', b: 'No other user can see what you scanned or what we told you about it.' },
+  { t: 'Gone when you say', b: 'Ask us to delete your account and everything in it goes with it.' },
 ]
 
-const comparison = [
-  { feature: 'AI-Powered Analysis', barcodesense: true, manual: false, basic: false },
-  { feature: 'Healthier Alternatives', barcodesense: true, manual: false, basic: false },
-  { feature: 'Recipe Ideas', barcodesense: true, manual: false, basic: false },
-  { feature: 'Eco Impact Score', barcodesense: true, manual: false, basic: false },
-  { feature: 'Diet Compatibility Check', barcodesense: true, manual: 'partial', basic: 'partial' },
-  { feature: 'Instant Results', barcodesense: true, manual: false, basic: true },
-]
-
-const steps = [
-  { number: '1', title: 'Scan or Upload', description: 'Take a photo of any barcode or enter the numbers manually.' },
-  { number: '2', title: 'AI Analysis', description: 'Our AI instantly analyzes ingredients, nutrition, and environmental impact.' },
-  { number: '3', title: 'Make Better Choices', description: 'Get personalized insights and discover healthier, more sustainable alternatives.' },
+const FAQ = [
+  {
+    q: 'How does BarcodeSense work?',
+    a: "Scan a barcode with your camera, upload a photo of one, or type the number in. We look the product up in global food databases, then explain its ingredients, nutrition and environmental impact in plain English and tell you what we'd do about it.",
+  },
+  {
+    q: 'What are AI insights?',
+    a: "The parts that go beyond the raw product data: healthier alternatives, diet checks like vegan, keto and gluten free, environmental impact, and recipe ideas based on what you've scanned.",
+  },
+  {
+    q: 'How accurate is the product information?',
+    a: "The data comes from global databases covering millions of products, but it isn't always complete or up to date. Treat it as a guide and check the label on the package too, especially for allergies.",
+  },
+  {
+    q: 'What if my product is not in the database?',
+    a: "Some local or newly released products haven't been added yet. You can type in the ingredients and nutrition yourself and the AI will analyze those instead. The databases keep growing.",
+  },
 ]
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth()
+  const primaryLabel = user ? 'Open scanner' : 'Start scanning'
+
+  // Three pulsing dots while the session resolves, so the button never shows
+  // the wrong label and never sits blank.
+  const cta = authLoading ? (
+    <span className="flex items-center gap-1.5" aria-hidden="true">
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current delay-75" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current delay-150" />
+      <span className="sr-only">Checking your session</span>
+    </span>
+  ) : (
+    <>
+      {primaryLabel}
+      <ArrowRight
+        className="h-4 w-4 transition-transform duration-[120ms] group-hover:translate-x-1"
+        aria-hidden="true"
+      />
+    </>
+  )
 
   return (
-    <div className="min-h-screen bg-dark">
-      <Particles />
+    <div className="relative min-h-dvh overflow-x-hidden bg-black text-white">
+      <SiteBackground />
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-zinc-300 mb-8">
-              AI-Powered Product Intelligence
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Know what you're buying with{' '}
-              <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">AI insights</span>
+      <main id="main" className="relative z-10">
+        {/* ===================== HERO ===================== */}
+        <section className="px-[var(--gutter)] pb-16 pt-36 sm:pt-44">
+          <div className="mx-auto max-w-5xl text-center">
+            <h1
+              className="t-display animate-fade-up text-balance"
+              style={{ animationDelay: '0.15s' }}
+            >
+              <span className="text-fade block">Your second opinion</span>
+              <span className="text-fade block">
+                in the{' '}
+                <span className="relative inline-block text-white">
+                  grocery aisle.
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 100 10"
+                    preserveAspectRatio="none"
+                    className="absolute -bottom-2 left-0 h-3 w-full text-white opacity-70"
+                  >
+                    <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="2" fill="none" />
+                  </svg>
+                </span>
+              </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
-              Scan. Learn. Eat Better.
-            </p>
-
-            <Link href="/app">
-              <Button size="lg" className="group min-w-[240px] relative overflow-hidden">
-                {authLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-black rounded-full animate-pulse" />
-                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-75" />
-                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-150" />
-                  </span>
-                ) : (
-                  <>
-                    <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
-                      Start Scanning Free
-                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                    <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                      Go to App
-                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </>
-                )}
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">The Problem</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text">Why informed choices matter</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            {stats.map((stat, i) => (
-              <div key={i} className="card text-center">
-                <div className="text-5xl font-bold gradient-text mb-4">{stat.value}</div>
-                <p className="text-zinc-400 mb-4">{stat.label}</p>
-                <p className="text-xs text-zinc-600">Source: {stat.source}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 scroll-mt-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Features</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text">Everything you need to shop smarter</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
-              <div key={i} className="card group">
-                <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center mb-4">
-                  <feature.icon className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-zinc-400">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Why Choose Us</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text">BarcodeSense vs Traditional Methods</h2>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="text-left py-4 px-4 text-zinc-400 font-medium">Feature</th>
-                  <th className="py-4 px-4 text-center">
-                    <span className="font-bold text-white">BarcodeSense</span>
-                  </th>
-                  <th className="py-4 px-4 text-center text-zinc-400">Manual Reading</th>
-                  <th className="py-4 px-4 text-center text-zinc-400">Basic Apps</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparison.map((row, i) => (
-                  <tr key={i} className="border-b border-zinc-800/50">
-                    <td className="py-4 px-4 text-zinc-300">{row.feature}</td>
-                    <td className="py-4 px-4 text-center">
-                      <Check className="w-5 h-5 text-green-400 mx-auto" />
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      {row.manual === true ? <Check className="w-5 h-5 text-green-400 mx-auto" /> :
-                        row.manual === 'partial' ? <Minus className="w-5 h-5 text-yellow-400 mx-auto" /> :
-                          <X className="w-5 h-5 text-zinc-600 mx-auto" />}
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      {row.basic === true ? <Check className="w-5 h-5 text-green-400 mx-auto" /> :
-                        row.basic === 'partial' ? <Minus className="w-5 h-5 text-yellow-400 mx-auto" /> :
-                          <X className="w-5 h-5 text-zinc-600 mx-auto" />}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 px-4 scroll-mt-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">How It Works</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text">Three simple steps</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((step, i) => (
-              <div key={i} className="text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white to-zinc-400 flex items-center justify-center text-2xl font-bold text-dark mx-auto mb-4">
-                  {step.number}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-zinc-400">{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Privacy & Security Section */}
-      <section className="py-20 px-4 bg-white/[0.02]">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Built for You</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Created by someone who cares</h2>
-            <p className="text-zinc-400 max-w-2xl mx-auto mb-6">
-              BarcodeSense was built by a developer who wanted to make healthier choices but found
-              nutrition labels confusing. Now it's here to help you too.
-            </p>
-            <a
-              href="/about"
-              className="inline-flex items-center gap-2 text-white hover:text-zinc-300 transition-colors"
+            <p
+              className="animate-fade-up mx-auto mt-10 max-w-2xl text-lg leading-relaxed text-zinc-400 md:text-xl"
+              style={{ animationDelay: '0.25s' }}
             >
-              <span>Read the story</span>
-              <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Privacy & Security Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Privacy First</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Your data belongs to you</h2>
-            <p className="text-zinc-400 max-w-2xl mx-auto">
-              We're committed to protecting your privacy. Your information is secure, private, and never sold.
+              Shop smarter. Get clear ingredient breakdowns, an instant health score, and better
+              shelf swaps from one barcode.
             </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="card p-6 text-center">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Encrypted Storage</h3>
-              <p className="text-sm text-zinc-400">Your data is encrypted and stored securely with industry-standard protection.</p>
-            </div>
-
-            <div className="card p-6 text-center">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Never Sold</h3>
-              <p className="text-sm text-zinc-400">We will never sell your personal information or scan history. Ever.</p>
-            </div>
-
-            <div className="card p-6 text-center">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Private by Default</h3>
-              <p className="text-sm text-zinc-400">Your scans and insights are private. Only you can see your data.</p>
-            </div>
-
-            <div className="card p-6 text-center">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500/20 to-red-600/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-white mb-2">Delete Anytime</h3>
-              <p className="text-sm text-zinc-400">Request deletion and we'll permanently remove all your data.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 scroll-mt-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">Pricing</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text">Simple, transparent pricing</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Free Plan */}
-            <div className="card p-8">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold mb-2">Free</h3>
-                <div className="text-4xl font-bold gradient-text mb-2">$0</div>
-                <p className="text-zinc-400 text-sm">Forever free</p>
-              </div>
-
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Unlimited barcode scans</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Product information & nutrition</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Scan history</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">
-                    <strong className="text-white">Unlimited AI insights</strong>
-                    <span className="block text-sm text-zinc-500 mt-1">
-                      BYOK: bring your own free API key
-                    </span>
+            <div
+              className="animate-fade-up mt-12 flex flex-col items-center justify-center gap-5 md:flex-row"
+              style={{ animationDelay: '0.35s' }}
+            >
+              <Magnetic strength={8}>
+                <Link
+                  href="/app"
+                  className="shiny-cta group inline-flex min-h-14 items-center justify-center rounded-full px-9"
+                  aria-busy={authLoading || undefined}
+                >
+                  <span className="relative z-10 flex items-center gap-2 font-semibold text-white">
+                    {cta}
                   </span>
-                </li>
-              </ul>
+                </Link>
+              </Magnetic>
 
-              <Link href="/app" className="block">
-                <Button variant="secondary" className="w-full">
-                  Get Started Free
-                </Button>
+              <Link href="/#how-it-works" className="btn-secondary min-h-14">
+                See how it works
               </Link>
             </div>
+          </div>
 
-            {/* Pro Plan */}
-            <div className="card p-8 relative overflow-hidden border-2 border-white/20">
-              <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 bg-gradient-to-r from-white to-zinc-400 text-dark text-xs font-bold rounded-full">
-                  COMING SOON
-                </span>
-              </div>
-
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold mb-2">Pro</h3>
-                <div className="text-4xl font-bold gradient-text mb-2">
-                  $4.99
-                  <span className="text-lg text-zinc-400">/mo</span>
-                </div>
-                <p className="text-zinc-400 text-sm">For power users</p>
-              </div>
-
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Everything in Free</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">
-                    <strong className="text-white">300 AI insights a month</strong>
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Export scan history</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-300">Priority support</span>
-                </li>
+          {/* Formats strip, in place of the usual logo wall. */}
+          <div className="mx-auto mt-24 max-w-6xl border-y border-white/5 bg-white/[0.02] py-8 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-6 px-6 md:flex-row md:gap-14">
+              <p className="shrink-0 text-xs font-bold uppercase tracking-label text-zinc-500">
+                Reads
+              </p>
+              <ul className="flex w-full list-none flex-wrap items-center justify-center gap-x-8 gap-y-4 md:gap-x-12">
+                {FORMATS.map((f) => (
+                  <li key={f} className="font-display text-base font-semibold text-zinc-400">
+                    {f}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-20 px-4 scroll-mt-20">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-sm text-zinc-500 uppercase tracking-wider mb-2">FAQ</p>
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text">Frequently Asked Questions</h2>
+        {/* A continuous band of readings, closing the hero. */}
+        <ScoreTicker />
+
+        {/* ===================== PROBLEM ===================== */}
+        <section id="problem" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-4 md:grid-cols-3">
+              {STATS.map((s, i) => (
+                <Reveal key={s.claim} delay={i * 90}>
+                  <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-black p-8">
+                    <span className="font-display text-6xl font-bold leading-none tracking-tightest">
+                      <CountUp to={s.to} suffix={s.suffix} />
+                    </span>
+                    <p className="mt-5 text-base leading-snug text-zinc-300">{s.claim}</p>
+                    <p className="mt-auto pt-6 text-[11px] leading-relaxed text-zinc-600">
+                      Source: {s.source}
+                    </p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
           </div>
+        </section>
 
-          <div className="space-y-4">
-            <details className="card p-6 cursor-pointer group">
-              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
-                How does BarcodeSense work?
-                <span className="text-zinc-500">▼</span>
-              </summary>
-              <p className="mt-4 text-zinc-400 leading-relaxed">
-                Simply scan or upload a photo of any product barcode, or enter the barcode number manually.
-                BarcodeSense instantly retrieves product information from global databases and uses AI to
-                analyze ingredients, nutrition, environmental impact, and provide personalized recommendations.
+        {/* ===================== FEATURES ===================== */}
+        <section id="features" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
+          <div className="mx-auto max-w-7xl">
+            <Reveal className="mx-auto mb-16 max-w-3xl text-center">
+              <h2 className="t-h2">
+                Everything you&rsquo;d
+                <br />
+                <span className="text-zinc-500">otherwise look up.</span>
+              </h2>
+              <p className="mt-6 text-lg font-light leading-relaxed text-zinc-400">
+                Seven answers from one scan, in one place, in plain English.
               </p>
-            </details>
+            </Reveal>
 
-            <details className="card p-6 cursor-pointer group">
-              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
-                What are AI insights?
-                <span className="text-zinc-500">▼</span>
-              </summary>
-              <p className="mt-4 text-zinc-400 leading-relaxed">
-                AI insights are advanced analyses powered by artificial intelligence that help you understand
-                products better. This includes finding healthier alternatives, checking diet compatibility
-                (vegan, keto, gluten-free, etc.), analyzing environmental impact, and generating creative
-                recipe ideas using scanned products.
-              </p>
-            </details>
-
-            <details className="card p-6 cursor-pointer group">
-              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
-                How accurate is the product information?
-                <span className="text-zinc-500">▼</span>
-              </summary>
-              <p className="mt-4 text-zinc-400 leading-relaxed">
-                We source product data from comprehensive global databases with millions of products. While we
-                strive for accuracy, product information is provided for informational purposes only. Always
-                check the physical product label for the most up-to-date information, especially for allergies
-                or dietary restrictions.
-              </p>
-            </details>
-
-            <details className="card p-6 cursor-pointer group">
-              <summary className="font-semibold text-lg text-white list-none flex items-center justify-between">
-                What if a product isn't in the database?
-                <span className="text-zinc-500">▼</span>
-              </summary>
-              <p className="mt-4 text-zinc-400 leading-relaxed">
-                While our database covers millions of products worldwide, some items, especially local or newly
-                released products, may not be available yet. If a product isn't found, you can still manually
-                enter product details, and our AI can analyze ingredients and nutrition information you provide.
-                We're constantly expanding our database coverage.
-              </p>
-            </details>
+            <FeatureBento />
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="card p-10">
-            <h2 className="text-3xl font-bold mb-4">Ready to shop smarter?</h2>
-            <p className="text-zinc-400 mb-8">Start scanning products and get AI-powered insights instantly.</p>
-            <Link href="/app">
-              <Button size="lg" className="min-w-[260px] relative overflow-hidden">
-                {authLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-black rounded-full animate-pulse" />
-                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-75" />
-                    <span className="w-2 h-2 bg-black rounded-full animate-pulse delay-150" />
+        {/* ===================== HOW IT WORKS ===================== */}
+        <section id="how-it-works" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
+          <div className="mx-auto max-w-6xl">
+            <Reveal className="mx-auto mb-16 max-w-3xl text-center">
+              <h2 className="t-h2">Three steps to an answer.</h2>
+              <p className="mt-6 text-lg font-light leading-relaxed text-zinc-400">
+                No forms, no sign up to try it. Just point your camera.
+              </p>
+            </Reveal>
+            <ScanSteps />
+          </div>
+        </section>
+
+        {/* ===================== DIFFERENCE ===================== */}
+        <section className="px-[var(--gutter)] py-[var(--band)]">
+          <div className="mx-auto max-w-5xl">
+            <Reveal className="mx-auto mb-14 max-w-3xl text-center">
+              <h2 className="t-h2">
+                How we compare
+                <br />
+                <span className="text-zinc-500">to reading it yourself.</span>
+              </h2>
+            </Reveal>
+
+            <Reveal>
+              <div className="overflow-x-auto rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-black">
+                <table className="w-full min-w-[640px] border-collapse">
+                  <caption className="sr-only">
+                    BarcodeSense compared with reading the label yourself and with basic scanning apps
+                  </caption>
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th scope="col" className="px-6 py-5 text-left text-xs font-bold uppercase tracking-label text-zinc-500">
+                        Capability
+                      </th>
+                      <th scope="col" className="px-4 py-5 text-center text-xs font-bold uppercase tracking-label text-white">
+                        BarcodeSense
+                      </th>
+                      <th scope="col" className="px-4 py-5 text-center text-xs font-bold uppercase tracking-label text-zinc-500">
+                        Reading it yourself
+                      </th>
+                      <th scope="col" className="px-4 py-5 text-center text-xs font-bold uppercase tracking-label text-zinc-500">
+                        Basic apps
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {COMPARISON.map((row) => (
+                      <tr key={row.feature} className="border-b border-white/5 last:border-b-0">
+                        <th scope="row" className="px-6 py-5 text-left text-sm font-medium text-zinc-200">
+                          {row.feature}
+                        </th>
+                        {([row.us, row.manual, row.basic] as const).map((v, i) => {
+                          const m = MARK[v]
+                          return (
+                            <td key={i} className="px-4 py-5">
+                              {/* The glyph never carries the meaning alone. */}
+                              <span className={`flex items-center justify-center gap-2 ${m.cls}`}>
+                                <m.Icon className="h-4 w-4" aria-hidden="true" />
+                                <span className="text-xs font-semibold uppercase tracking-wide">
+                                  {m.text}
+                                </span>
+                              </span>
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ===================== PRIVACY ===================== */}
+        <section className="px-[var(--gutter)] py-[var(--band)]">
+          <div className="mx-auto max-w-6xl">
+            <Reveal className="mx-auto mb-14 max-w-3xl text-center">
+              <h2 className="t-h2">Your scans stay yours.</h2>
+              <p className="mt-6 text-lg font-light leading-relaxed text-zinc-400">
+                We never share or sell what you scan. There are no ads in the app and no brand can
+                pay to change a score. We&rsquo;re here to help you shop, not to sell you to anyone.
+              </p>
+            </Reveal>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {PRIVACY.map((p, i) => (
+                <Reveal key={p.t} delay={i * 70}>
+                  <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-7">
+                    <h3 className="font-display text-lg font-semibold tracking-tight">{p.t}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-zinc-400">{p.b}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ===================== PRICING ===================== */}
+        <section id="pricing" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
+          <div className="mx-auto max-w-4xl">
+            <Reveal className="mb-16 text-center">
+              <h2 className="t-h2">Free, forever.</h2>
+              <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-zinc-400">
+                Every feature, unlimited scans. The AI runs on your own key, billed at cost by your
+                provider.
+              </p>
+            </Reveal>
+
+            <div className="mx-auto max-w-md">
+              <Reveal>
+                <div className="relative flex h-full flex-col rounded-2xl border border-white bg-white/[0.04] p-8 shadow-[0_0_40px_rgba(255,255,255,0.06)]">
+                  <h3 className="font-display text-xl font-bold">Free</h3>
+                  <p className="mt-2 h-10 text-sm text-zinc-400">
+                    Everything the app does, on your own key.
+                  </p>
+                  <div className="mb-8 mt-6 flex items-baseline gap-1">
+                    <span className="text-zinc-500">$</span>
+                    <span className="font-display text-5xl font-bold">
+                      <CountUp to={0} duration={900} />
+                    </span>
+                    <span className="text-sm text-zinc-500">forever</span>
+                  </div>
+                  <ul className="mb-8 flex-1 list-none space-y-4">
+                    {[
+                      'Unlimited barcode scans',
+                      'Full ingredients and nutrition',
+                      'Scan history, synced across your devices',
+                      'Unlimited AI insights with your own free key',
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-3 text-sm text-zinc-200">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-white" aria-hidden="true" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/app" className="btn-primary w-full">
+                    {primaryLabel}
+                  </Link>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ===================== FAQ ===================== */}
+        <section id="faq" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
+          <div className="mx-auto max-w-3xl">
+            <Reveal className="mb-14 text-center">
+              <h2 className="t-h2">Frequently asked questions.</h2>
+            </Reveal>
+
+            <ul className="m-0 list-none space-y-3">
+              {FAQ.map((f, i) => (
+                <Reveal as="li" key={f.q} delay={i * 60}>
+                  <details className="group rounded-2xl border border-white/10 bg-white/[0.02] px-6 transition-colors duration-[260ms] hover:border-white/20 open:bg-white/[0.04]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 font-display text-lg font-semibold tracking-tight marker:hidden">
+                      {f.q}
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 text-2xl font-light leading-none text-zinc-500 transition-transform duration-[260ms] ease-scan group-open:rotate-45"
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="pb-7 text-[0.95rem] leading-relaxed text-zinc-400">{f.a}</p>
+                  </details>
+                </Reveal>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ===================== CTA ===================== */}
+        <section className="px-[var(--gutter)] py-[var(--band)] text-center">
+          <Reveal className="mx-auto max-w-3xl">
+            <h2 className="t-display text-balance">
+              <span className="text-fade">Start with whatever</span>
+              <br />
+              <span>is in your cupboard.</span>
+            </h2>
+            <p className="mx-auto mt-8 max-w-xl text-lg text-zinc-400">
+              It takes seconds. Free to start, and no card needed.
+            </p>
+
+            <div className="mt-12 flex items-center justify-center">
+              <Magnetic strength={10}>
+                <Link
+                  href="/app"
+                  className="shiny-cta group inline-flex min-h-14 items-center justify-center rounded-full px-10"
+                >
+                  <span className="relative z-10 flex items-center gap-2 font-semibold text-white">
+                    {cta}
                   </span>
-                ) : (
-                  <>
-                    <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
-                      Try BarcodeSense Free
-                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                    <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${user ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-                      Go to App
-                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </>
-                )}
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+                </Link>
+              </Magnetic>
+            </div>
+          </Reveal>
+        </section>
+      </main>
 
       <Footer />
     </div>

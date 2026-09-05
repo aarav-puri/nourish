@@ -3,39 +3,17 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import {
-  ArrowLeft,
-  Globe,
-  BookOpen,
-  Target,
-  ScanLine,
-  Heart,
-  SlidersHorizontal,
-  ShieldCheck,
-  Leaf,
-  Brain,
-} from 'lucide-react'
+import { ArrowLeft, Globe } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import Particles from '@/components/Particles'
 import Button from '@/components/ui/Button'
 import { useAuth } from '@/lib/auth-context'
-
-const features = [
-  { icon: ScanLine, label: 'Surfaces product information instantly' },
-  { icon: Heart, label: 'Suggests AI-powered healthier alternatives' },
-  { icon: SlidersHorizontal, label: 'Adapts to mood and diet restrictions' },
-  { icon: ShieldCheck, label: 'Checks dietary compatibility' },
-  { icon: Leaf, label: 'Highlights environmental impact' },
-  { icon: Brain, label: 'Delivers AI-driven insights' },
-]
 
 export default function AboutPage() {
   const { user, loading: authLoading } = useAuth()
 
   return (
     <div className="min-h-screen bg-dark">
-      <Particles />
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 pt-24 pb-20">
@@ -77,17 +55,14 @@ export default function AboutPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card mb-8"
+          className="card mb-12"
         >
-          <h2 className="flex items-center gap-3 text-2xl font-bold gradient-text mb-6">
-            <BookOpen className="w-7 h-7" />
-            The Origin Story
-          </h2>
+          <h2 className="text-2xl font-bold gradient-text mb-6">The Origin Story</h2>
           <div className="space-y-4 text-zinc-300 leading-relaxed">
             <p>
               BarcodeSense was born from a simple, everyday problem: my dad is vegetarian, and I kept 
               noticing how often packaged foods quietly include ingredients that don't actually fit 
-              vegetarian diets. Hidden animal-derived ingredients, confusing labels, and unclear 
+              vegetarian diets. Hidden animal derived ingredients, confusing labels, and unclear 
               nutritional information made grocery shopping unnecessarily complicated.
             </p>
             <p>
@@ -97,65 +72,14 @@ export default function AboutPage() {
 
             <p>
               From there, the concept expanded beyond just checking ingredients. I realized people need 
-              help understanding what they're eating and making better choices with a simple scan. 
-              BarcodeSense evolved into a comprehensive tool that:
+              help understanding what they're eating and making better choices with a simple scan.
             </p>
-
-            <div className="grid sm:grid-cols-2 gap-3 my-6">
-              {features.map((feature, i) => {
-                const Icon = feature.icon
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-zinc-800 hover:border-zinc-600 transition-colors"
-                  >
-                    <Icon className="w-5 h-5 text-white flex-shrink-0" />
-                    <span className="text-sm">{feature.label}</span>
-                  </div>
-                )
-              })}
-            </div>
 
             <p>
               The result is a clean, focused experience that helps you discover what's in your food 
               with a single scan, powered by AI, built from a personal problem, and designed to make 
               better eating feel effortless.
             </p>
-          </div>
-        </motion.div>
-
-        {/* Mission Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card mb-12"
-        >
-          <h2 className="flex items-center gap-3 text-2xl font-bold gradient-text mb-6">
-            <Target className="w-7 h-7" />
-            The Mission
-          </h2>
-          <div className="space-y-4 text-zinc-300 leading-relaxed">
-            <p>
-              BarcodeSense is built on a simple philosophy: everyone deserves to know what they're 
-              putting into their body, without needing to be a nutrition expert or spend hours 
-              researching ingredients.
-            </p>
-            <p>
-              As a developer passionate about building solutions that make everyday life easier, 
-              I'm committed to continuously improving BarcodeSense based on real user needs and feedback.
-            </p>
-            <p>
-              Every feature is designed with real people in mind, from the instant scanning capability 
-              to the personalized AI recommendations. The goal is to empower you to make better food 
-              choices effortlessly, whether you're managing dietary restrictions, trying to eat healthier, 
-              or simply curious about what's in your groceries.
-            </p>
-            
-            <blockquote className="border-l-4 border-white/30 pl-6 py-4 my-6 bg-white/5 rounded-r-xl">
-              Built with: AI-powered analysis, real-time product data, and a focus on making nutrition 
-              information accessible to everyone.
-            </blockquote>
           </div>
         </motion.div>
 
@@ -170,7 +94,6 @@ export default function AboutPage() {
           <div className="flex items-center justify-center">
             <Link href="/app">
               <Button size="lg" className="min-w-[220px] transition-opacity duration-300">
-                <ScanLine className="w-5 h-5" />
                 <span className={authLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}>
                   {user ? 'Go to App' : 'Try BarcodeSense Free'}
                 </span>

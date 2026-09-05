@@ -31,7 +31,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 space-y-2">
               <li>Provide and improve our barcode scanning service</li>
               <li>Save your scan history for your convenience</li>
-              <li>Generate AI-powered product insights</li>
+              <li>Generate AI powered product insights</li>
               <li>Communicate with you about your account</li>
             </ul>
           </section>
@@ -55,7 +55,7 @@ export default function PrivacyPage() {
                 We use Supabase, an enterprise-grade database platform with built-in security features
               </li>
               <li>
-                <span className="text-white font-medium">Row-Level Security:</span>{' '}
+                <span className="text-white font-medium">Row Level Security:</span>{' '}
                 Your data is isolated and protected with database-level access controls
               </li>
               <li>
@@ -64,15 +64,15 @@ export default function PrivacyPage() {
               </li>
             </ul>
             <p className="mt-4">
-              While we implement robust security measures, no method of transmission over the Internet or electronic storage is 100% secure.
+              We use standard security measures, but no method of transmission over the Internet or electronic storage is 100% secure.
               We continuously monitor and update our security practices.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Third-Party Services</h2>
+            <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Third Party Services</h2>
             <p>
-              We use trusted third-party services to provide and improve our application, including 
+              We use trusted third party services to provide and improve our application, including 
               product databases, AI analysis providers, authentication services, and cloud infrastructure. 
               These services are carefully selected for their security and reliability standards.
             </p>
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
               <li>Access your personal data</li>
               <li>Delete your account and associated data</li>
               <li>Export your scan history</li>
-              <li>Opt out of non-essential data collection</li>
+              <li>Opt out of non essential data collection</li>
             </ul>
           </section>
 

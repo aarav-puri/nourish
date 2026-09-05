@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, X, Send, Loader2, Bot } from 'lucide-react'
-import Button from './ui/Button'
+import { MessageCircle, X, ArrowUp, Loader2, Bot } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Message {
@@ -16,11 +15,14 @@ interface ChatAgentProps {
 }
 
 const SUGGESTED_QUESTIONS = [
-    "What are the healthiest products I've scanned?",
-    "Which products are vegan-friendly?",
-    "Show me products with high protein",
-    "What products have the best eco-impact scores?",
+    "Which of my scans is the healthiest?",
+    "Which ones are suitable for vegans?",
+    "Show me the ones highest in protein",
+    "Which has the smallest footprint?",
 ]
+
+// The composer grows with what you type, up to five lines, then scrolls.
+const MAX_COMPOSER_HEIGHT = 132
 
 export default function ChatAgent({ context }: ChatAgentProps) {
     const [isOpen, setIsOpen] = useState(false)
@@ -28,20 +30,34 @@ export default function ChatAgent({ context }: ChatAgentProps) {
     const [input, setInput] = useState('')
     const [loading, setLoading] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
-    const inputRef = useRef<HTMLInputElement>(null)
+    const inputRef = useRef<HTMLTextAreaElement>(null)
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
+    /** Match the composer's height to its content. */
+    const autosize = useCallback(() => {
+        const el = inputRef.current
+        if (!el) return
+        // Reset first so the box can shrink again when text is deleted.
+        el.style.height = 'auto'
+        el.style.height = `${Math.min(el.scrollHeight, MAX_COMPOSER_HEIGHT)}px`
+        el.style.overflowY = el.scrollHeight > MAX_COMPOSER_HEIGHT ? 'auto' : 'hidden'
+    }, [])
+
+    useEffect(autosize, [input, autosize])
 
     useEffect(() => {
-        scrollToBottom()
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
     useEffect(() => {
-        if (isOpen && inputRef.current) {
-            inputRef.current.focus()
-        }
+        if (isOpen) inputRef.current?.focus()
+    }, [isOpen])
+
+    // Escape closes the panel, like every other overlay in the product.
+    useEffect(() => {
+        if (!isOpen) return
+        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false)
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
     }, [isOpen])
 
     const sendMessage = async (messageText: string) => {
@@ -76,8 +92,8 @@ export default function ChatAgent({ context }: ChatAgentProps) {
             setMessages(prev => [...prev, assistantMessage])
         } catch (error: any) {
             console.error('Chat error:', error)
-            toast.error(error.message || 'Failed to send message')
-            // Remove the user message if there was an error
+            toast.error(error.message || 'That message did not go through. Try again.')
+            // Drop the user message again so the thread matches what was sent.
             setMessages(prev => prev.slice(0, -1))
         } finally {
             setLoading(false)
@@ -89,127 +105,163 @@ export default function ChatAgent({ context }: ChatAgentProps) {
         sendMessage(input)
     }
 
-    const handleSuggestedQuestion = (question: string) => {
-        sendMessage(question)
+    // Enter sends. Shift and Enter starts a new line.
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            sendMessage(input)
+        }
     }
+
+    const canSend = Boolean(input.trim()) && !loading
 
     return (
         <>
-            {/* Floating Chat Button */}
+            {/* Launcher */}
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
+                        type="button"
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center group"
+                        aria-label="Open the assistant"
+                        className="group fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white text-black shadow-2xl shadow-black/50 transition-transform hover:scale-105 active:scale-95"
                     >
-                        <MessageCircle className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-dark"></span>
+                        <MessageCircle className="h-6 w-6" aria-hidden="true" />
                     </motion.button>
                 )}
             </AnimatePresence>
 
-            {/* Chat Window */}
+            {/* Panel */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        role="dialog"
+                        aria-label="Assistant"
+                        initial={{ opacity: 0, y: 16, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-3rem)] bg-dark-card rounded-2xl shadow-2xl border border-zinc-800 flex flex-col overflow-hidden"
+                        exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        className="fixed bottom-6 right-6 z-50 flex h-[600px] max-h-[calc(100dvh-3rem)] w-[400px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black shadow-2xl shadow-black/70"
                     >
-                        {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                                    <Bot className="w-4 h-4 text-white" />
-                                </div>
+                        {/* A hairline of light across the head, as on the dialogs. */}
+                        <span
+                            aria-hidden="true"
+                            className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                        />
+
+                        <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
+                            <div className="flex items-center gap-2.5">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                                    <Bot className="h-4 w-4" aria-hidden="true" />
+                                </span>
                                 <div>
-                                    <h3 className="font-semibold text-white">AI Assistant</h3>
-                                    <p className="text-xs text-zinc-400">Ask about your scans</p>
+                                    <h2 className="font-display text-sm font-semibold tracking-tight">Assistant</h2>
+                                    <p className="text-xs text-zinc-500">Knows everything you have scanned</p>
                                 </div>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => setIsOpen(false)}
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                                aria-label="Close the assistant"
+                                className="btn-icon -mr-1"
                             >
-                                <X className="w-5 h-5 text-zinc-400" />
+                                <X className="h-5 w-5" aria-hidden="true" />
                             </button>
                         </div>
 
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        {/* Thread */}
+                        <div className="flex-1 space-y-4 overflow-y-auto p-4">
                             {messages.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-4">
-                                        <Bot className="w-8 h-8 text-purple-400" />
-                                    </div>
-                                    <h4 className="font-semibold text-white mb-2">Ask me anything!</h4>
-                                    <p className="text-sm text-zinc-400 mb-6">I can help you understand your scanned products</p>
+                                <div className="py-6 text-center">
+                                    <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                                        <Bot className="h-6 w-6" aria-hidden="true" />
+                                    </span>
+                                    <h3 className="font-display text-base font-semibold tracking-tight">
+                                        Ask about your scans
+                                    </h3>
+                                    <p className="mx-auto mt-2 max-w-[16rem] text-sm leading-relaxed text-zinc-400">
+                                        It has read your whole history, so the answer is about your food, not food
+                                        in general.
+                                    </p>
 
-                                    {/* Suggested Questions */}
-                                    <div className="space-y-2">
-                                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Try asking:</p>
-                                        {SUGGESTED_QUESTIONS.map((question, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => handleSuggestedQuestion(question)}
-                                                className="block w-full text-left p-3 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-zinc-300 transition-colors border border-white/10 hover:border-purple-500/30"
-                                            >
-                                                {question}
-                                            </button>
+                                    <p className="mb-3 mt-7 text-[11px] font-bold uppercase tracking-label text-zinc-600">
+                                        Try asking
+                                    </p>
+                                    <ul className="m-0 list-none space-y-2 text-left">
+                                        {SUGGESTED_QUESTIONS.map((question) => (
+                                            <li key={question}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => sendMessage(question)}
+                                                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] p-3 text-left text-sm text-zinc-300 transition-colors hover:border-white/25 hover:bg-white/[0.07] hover:text-white"
+                                                >
+                                                    {question}
+                                                </button>
+                                            </li>
                                         ))}
-                                    </div>
+                                    </ul>
                                 </div>
                             ) : (
-                                <>
+                                <div aria-live="polite" className="space-y-4">
                                     {messages.map((message, i) => (
                                         <div
                                             key={i}
                                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                         >
+                                            {/* Bubbles hug their text and stop at 85%. */}
                                             <div
-                                                className={`max-w-[85%] rounded-2xl px-4 py-2 ${message.role === 'user'
-                                                    ? 'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
-                                                    : 'bg-white/10 text-zinc-100 border border-white/10'
-                                                    }`}
+                                                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
+                                                    message.role === 'user'
+                                                        ? 'bg-white text-black'
+                                                        : 'border border-white/10 bg-white/[0.06] text-zinc-100'
+                                                }`}
                                             >
-                                                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                                <p className="whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]">
+                                                    {message.content}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}
                                     {loading && (
                                         <div className="flex justify-start">
-                                            <div className="bg-white/10 rounded-2xl px-4 py-3 border border-white/10">
-                                                <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+                                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
+                                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                                <span className="sr-only">Thinking</span>
                                             </div>
                                         </div>
                                     )}
-                                </>
+                                </div>
                             )}
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Input */}
-                        <form onSubmit={handleSubmit} className="p-4 border-t border-zinc-800 bg-dark-elevated">
-                            <div className="flex gap-2">
-                                <input
+                        {/* Composer: one line to start, growing with the text. */}
+                        <form onSubmit={handleSubmit} className="border-t border-white/10 p-3">
+                            <div className="flex items-end gap-2 rounded-2xl border border-white/12 bg-white/[0.04] p-2 transition-colors focus-within:border-white/40">
+                                <label htmlFor="chat-input" className="sr-only">
+                                    Ask about your scans
+                                </label>
+                                <textarea
+                                    id="chat-input"
                                     ref={inputRef}
-                                    type="text"
+                                    rows={1}
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Ask a question..."
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Ask a question"
                                     disabled={loading}
-                                    className="flex-1 px-4 py-2 bg-white/5 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+                                    className="max-h-[132px] flex-1 resize-none bg-transparent px-2 py-1.5 text-sm leading-relaxed text-white placeholder:text-zinc-500 focus:outline-none disabled:opacity-50"
                                 />
                                 <button
                                     type="submit"
-                                    disabled={!input.trim() || loading}
-                                    className="px-4 py-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl text-white font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={!canSend}
+                                    aria-label="Send"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-black transition-opacity hover:opacity-90 disabled:opacity-30"
                                 >
-                                    <Send className="w-5 h-5" />
+                                    <ArrowUp className="h-4 w-4" aria-hidden="true" />
                                 </button>
                             </div>
                         </form>

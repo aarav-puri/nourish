@@ -7,19 +7,24 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload, Search, ArrowLeft, X, Home, User, Sparkles,
   Activity, CheckSquare, Leaf, Loader2, AlertCircle,
-  Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings
+  Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings,
+  Timer, Flame, TriangleAlert, Lightbulb
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { fetchProductInfo, ProductData } from '@/lib/product-api'
 import { aiService, Product, getGeminiApiKey } from '@/lib/ai-service'
 import Button from '@/components/ui/Button'
+import SiteBackground from '@/components/brand/SiteBackground'
+import ScoreMeter from '@/components/product/ScoreMeter'
+import EcoBars from '@/components/product/EcoBars'
+import DataRow from '@/components/product/DataRow'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
 import { toast } from 'sonner'
 
 export default function AppPage() {
-  const { user, loading, openAuthModal } = useAuth()
+  const { user, loading, requireSignIn } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [apiKey, setApiKey] = useState('')
   const [barcode, setBarcode] = useState('')
@@ -58,9 +63,9 @@ export default function AppPage() {
   }, [])
 
   useEffect(() => {
-    // Not signed in - show auth modal
+    // Not signed in: send them to the sign in page.
     if (!loading && !user) {
-      openAuthModal()
+      requireSignIn()
     }
   }, [loading, user])
 
@@ -70,10 +75,10 @@ export default function AppPage() {
   }
 
   const handleImageUpload = useCallback((file: File) => {
-    // Require sign-in
+    // Require sign in
     if (!user) {
       toast.error('Please sign in to scan products')
-      openAuthModal()
+      requireSignIn()
       return
     }
 
@@ -194,10 +199,10 @@ export default function AppPage() {
   }
 
   const searchProduct = async (code: string) => {
-    // Require sign-in
+    // Require sign in
     if (!user) {
       toast.error('Please sign in to scan products')
-      openAuthModal()
+      requireSignIn()
       return
     }
 
@@ -238,10 +243,10 @@ export default function AppPage() {
     // All features require a product
     if (!product) return
 
-    // Non-signed-in users must sign in to use AI features
+    // Non signed-in users must sign in to use AI features
     if (!user) {
-      toast.error('Sign in to unlock AI insights.')
-      setTimeout(() => openAuthModal(), 500)
+      toast.error('Sign in to use AI insights.')
+      setTimeout(() => requireSignIn({ reason: 'save' }), 500)
       return
     }
 
@@ -319,33 +324,33 @@ export default function AppPage() {
     setManualEntryMode(false) // Reset manual entry mode
   }
 
-  const diets = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Halal', 'Kosher', 'Gluten-Free']
+  const diets = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Halal', 'Kosher', 'Gluten Free']
 
-  // Show loading or sign-in required screen
+  // Show loading or sign in required screen
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
+      <div className="min-h-dvh bg-dark flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-white" />
       </div>
     )
   }
 
+  // The effect above is already navigating to /signin; this is the brief
+  // state in between, and the manual link covers a blocked redirect.
   if (!user) {
     return (
-      <div className="min-h-screen bg-dark flex flex-col items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-6">
-            <Image src="/favicon.png" alt="BarcodeSense" width={64} height={64} />
-          </div>
-          <h1 className="text-2xl font-bold mb-2">Sign in to continue</h1>
-          <p className="text-zinc-400 mb-8">
-            Create a free account to start scanning products and get AI-powered insights.
+      <div className="min-h-dvh bg-dark flex flex-col items-center justify-center p-4">
+        <div className="text-center max-w-sm">
+          <Image src="/favicon.png" alt="" width={56} height={56} className="mx-auto mb-6 h-14 w-14 object-contain" />
+          <h1 className="t-h3 mb-3">Sign in to continue</h1>
+          <p className="text-zinc-400 mb-8 text-sm leading-relaxed">
+            Taking you to the sign in page. The scanner is free and unlimited once you are in.
           </p>
-          <Button onClick={() => openAuthModal()} size="lg">
-            Sign In to Get Started
-          </Button>
-          <Link href="/" className="block mt-4 text-zinc-400 hover:text-white transition-colors">
-            ← Back to Home
+          <Link href="/signin?next=%2Fapp" className="btn-primary w-full">
+            Go to sign in
+          </Link>
+          <Link href="/" className="btn-ghost mt-3 w-full">
+            Back to home
           </Link>
         </div>
       </div>
@@ -353,14 +358,16 @@ export default function AppPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-dark-card/95 backdrop-blur-lg border-b border-zinc-800">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden">
-              <Image src="/favicon.png" alt="BarcodeSense" width={40} height={40} />
-            </div>
+    <div className="relative min-h-dvh overflow-x-hidden bg-black">
+      <SiteBackground />
+
+      {/* Header: the same capsule the marketing pages use, so moving from the
+          site into the product does not feel like changing products. */}
+      <header className="sticky top-0 z-50 px-4 pt-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-full border border-white/10 bg-black/70 px-4 py-2.5 backdrop-blur-xl">
+          <Link href="/" className="group flex items-center gap-2.5" aria-label="BarcodeSense home">
+            <Image src="/favicon.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
+            <span className="font-display text-base font-bold tracking-tight">BarcodeSense</span>
           </Link>
 
           {loading ? (
@@ -368,10 +375,14 @@ export default function AppPage() {
           ) : user ? (
             <div className="relative hidden md:block">
               <button
+                type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-dark-elevated border border-zinc-700 hover:border-zinc-500 transition-colors"
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                aria-label="Account menu"
+                className="flex min-h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 transition-colors hover:border-white/30"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white to-zinc-400 flex items-center justify-center overflow-hidden">
+                <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white">
                   {user.user_metadata?.avatar_url ? (
                     <Image
                       src={user.user_metadata.avatar_url}
@@ -381,66 +392,59 @@ export default function AppPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="w-4 h-4 text-dark" />
+                    <User className="h-4 w-4 text-black" aria-hidden="true" />
                   )}
                 </div>
                 <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-dark-card rounded-xl border border-zinc-800 shadow-xl overflow-hidden">
-                  <div className="px-4 py-3 border-b border-zinc-800">
-                    <p className="text-sm text-zinc-400">Signed in as</p>
-                    <p className="text-sm font-medium truncate">{user.email}</p>
+                <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black shadow-2xl shadow-black/70">
+                  <div className="border-b border-white/10 px-4 py-3">
+                    <p className="text-[11px] font-bold uppercase tracking-label text-zinc-500">Signed in as</p>
+                    <p className="mt-1 truncate text-sm font-medium">{user.email}</p>
                   </div>
 
                   <div className="py-2">
                     <Link
                       href="/settings"
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
+                      className="flex min-h-11 items-center gap-3 px-4 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <Settings className="w-4 h-4" />
+                      <Settings className="h-4 w-4" aria-hidden="true" />
                       Settings
                     </Link>
                     <Link
                       href="/history"
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
+                      className="flex min-h-11 items-center gap-3 px-4 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <History className="w-4 h-4" />
+                      <History className="h-4 w-4" aria-hidden="true" />
                       Scan History
                     </Link>
                     <button
+                      type="button"
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="mt-1 flex min-h-11 w-full items-center gap-3 border-t border-white/10 px-4 text-sm text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
                     >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
+                      <LogOut className="h-4 w-4" aria-hidden="true" />
+                      Sign out
                     </button>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <Button size="sm" onClick={() => openAuthModal()}>Sign In</Button>
+            <Link href="/signin?next=%2Fapp" className="btn-primary min-h-11 px-5 text-xs">
+              Sign in
+            </Link>
           )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 mb-8">
-          <Link href="/" className="btn-ghost flex items-center gap-2 justify-self-start">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="hidden sm:inline">Back</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-center text-white flex items-center justify-center gap-2 justify-self-center">
-            <ScanLine className="w-6 h-6 text-white" />
-            <span>Scan Your Product</span>
-          </h1>
-          <div aria-hidden />
-        </div>
+      <main id="main" className="relative z-10 mx-auto max-w-2xl px-4 pb-28 pt-10">
+        <h1 className="sr-only">Scanner</h1>
 
         {/* Scan Options */}
         <motion.div
@@ -448,35 +452,42 @@ export default function AppPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          {/* Upload Image with Drag & Drop */}
+          {/* Upload, with drag and drop. The clickable target is a real
+              button so the keyboard can reach it; the drop handlers sit on
+              the wrapper, and the file input lives outside the button
+              because nesting one inside is invalid. */}
           <div
-            onClick={() => fileInputRef.current?.click()}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`card cursor-pointer transition-all duration-200 ${isDragging
-                ? 'border-emerald-500 bg-emerald-500/10 scale-[1.02]'
-                : 'hover:border-zinc-500'
+            className={`overflow-hidden rounded-2xl border transition-colors duration-200 ${isDragging
+                ? 'border-white bg-white/[0.08]'
+                : 'border-white/10 bg-gradient-to-b from-zinc-900/60 to-black hover:border-white/25'
               }`}
           >
-            <div className="text-center py-6">
-              <Upload className={`w-12 h-12 mx-auto mb-3 transition-colors ${isDragging ? 'text-emerald-400' : 'text-zinc-500'
-                }`} />
-              <h3 className="text-lg font-semibold mb-1">
-                {isDragging ? 'Drop image here' : 'Upload Image'}
-              </h3>
-              <p className="text-zinc-400 text-sm mb-4">
-                {isDragging
-                  ? 'Release to scan barcode'
-                  : 'Click, drag & drop, or paste (Ctrl/Cmd+V)'}
-              </p>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full px-6 py-10 text-center"
+            >
+              <Upload className={`mx-auto mb-4 h-10 w-10 transition-colors ${isDragging ? 'text-white' : 'text-zinc-500'
+                }`} aria-hidden="true" />
+              <span className="block font-display text-lg font-semibold tracking-tight">
+                {isDragging ? 'Drop it here' : 'Upload a photo'}
+              </span>
+              {isDragging && (
+                <span className="mt-2 block text-sm text-zinc-400">
+                  Release to read the barcode
+                </span>
+              )}
+            </button>
 
-            </div>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              className="hidden"
+              className="sr-only"
+              aria-label="Upload a photo of a barcode"
               onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
             />
           </div>
@@ -487,54 +498,68 @@ export default function AppPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="card mb-6"
+            className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black p-3"
           >
             <div className="relative">
-              <img src={imagePreview} alt="Preview" className="w-full rounded-xl" />
+              <img src={imagePreview} alt="The photo you uploaded" className="w-full rounded-xl" />
               <button
+                type="button"
                 onClick={resetScan}
-                className="absolute top-2 right-2 p-2 bg-dark/80 rounded-full hover:bg-dark transition-colors"
+                aria-label="Remove this photo"
+                className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/80 backdrop-blur-md transition-colors hover:bg-black"
               >
-                <X className="w-5 h-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
           </motion.div>
         )}
 
         {/* Divider */}
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-800" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="px-4 bg-dark text-zinc-500 text-sm">OR</span>
-          </div>
+        <div className="my-7 flex items-center gap-4" aria-hidden="true">
+          <span className="h-px flex-1 bg-white/10" />
+          <span className="text-[11px] font-bold uppercase tracking-label text-zinc-600">or</span>
+          <span className="h-px flex-1 bg-white/10" />
         </div>
 
         {/* Manual Input */}
-        <div className="card mb-6">
-          <h3 className="text-lg font-semibold mb-4">Enter Barcode Manually</h3>
-          <div className="flex gap-3">
+        <div className="mb-6 rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black p-6">
+          <h2 className="font-display text-lg font-semibold tracking-tight">
+            Enter a barcode manually
+          </h2>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start">
             <Input
               type="text"
-              placeholder="Enter barcode number..."
+              inputMode="numeric"
+              autoComplete="off"
+              label="Barcode number"
+              placeholder="8712100843792"
               value={barcode}
               onChange={(e) => setBarcode(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && searchProduct(barcode)}
               className="flex-1"
             />
-            <Button onClick={() => searchProduct(barcode)} loading={productLoading}>
-              <Search className="w-5 h-5" />
-              Search
+            <Button
+              onClick={() => searchProduct(barcode)}
+              loading={productLoading}
+              className="shrink-0 whitespace-nowrap sm:mt-[26px]"
+              icon={<Search className="h-4 w-4" aria-hidden="true" />}
+            >
+              Look up
             </Button>
           </div>
         </div>
 
         {/* Loading State */}
         {productLoading && (
-          <div className="card text-center py-12">
-            <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
-            <p className="text-zinc-400">Analyzing product...</p>
+          <div
+            role="status"
+            className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black px-6 py-14 text-center"
+          >
+            <Loader2 className="mx-auto mb-5 h-8 w-8 animate-spin text-white" aria-hidden="true" />
+            <p className="font-display text-lg font-semibold tracking-tight">Reading the label</p>
+            <p className="mt-2 text-sm text-zinc-400">
+              Looking up the product and calculating its score.
+            </p>
           </div>
         )}
 
@@ -545,58 +570,54 @@ export default function AppPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="card"
+              className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black p-6 sm:p-7"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold gradient-text">Product Details</h2>
-                <button onClick={resetScan} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                  <X className="w-5 h-5" />
+              <div className="mb-6 flex items-center justify-between gap-4">
+                <h2 className="t-h3">Scan result</h2>
+                <button
+                  type="button"
+                  onClick={resetScan}
+                  aria-label="Clear this result and scan again"
+                  className="btn-icon -mr-1"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
 
               {product ? (
                 <div className="space-y-6">
-                  {/* Product Image */}
-                  {product.image_url && (
-                    <img
-                      src={product.image_url}
-                      alt={product.product_name || 'Product'}
-                      className="w-full max-w-xs mx-auto rounded-xl"
-                    />
-                  )}
-
                   {/* Product Info */}
                   <div className="space-y-4">
                     {/* Product Name & Brand */}
                     {((product as any).ai_formatted || product.product_name || product.brands) && (
-                      <div className="p-5 bg-gradient-to-br from-white/10 to-white/5 rounded-xl border border-white/10">
-                        {((product as any).ai_formatted?.formatted_name || product.product_name) && (
-                          <div className="mb-3">
-                            <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1.5">Product Name</p>
-                            <p className="text-lg font-bold text-white">
-                              {(product as any).ai_formatted?.formatted_name || product.product_name}
-                            </p>
-                          </div>
-                        )}
+                      <div>
+                        <h3 className="font-display text-2xl font-bold tracking-tight">
+                          {(product as any).ai_formatted?.formatted_name || product.product_name || 'Unnamed product'}
+                        </h3>
                         {((product as any).ai_formatted?.formatted_brand || product.brands) && (
-                          <div>
-                            <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1.5">Brand</p>
-                            <p className="text-base font-semibold text-zinc-200">
-                              {(product as any).ai_formatted?.formatted_brand || product.brands}
-                            </p>
-                          </div>
+                          <p className="mt-1 text-sm text-zinc-400">
+                            {(product as any).ai_formatted?.formatted_brand || product.brands}
+                          </p>
                         )}
                       </div>
                     )}
 
+                    <ScoreMeter grade={product.nutriscore_grade} />
+                    <EcoBars grade={product.ecoscore_grade} />
+
                     {/* Key Highlights */}
                     {(product as any).ai_formatted?.key_highlights && (product as any).ai_formatted.key_highlights.length > 0 && (
-                      <div className="p-5 bg-gradient-to-br from-white/10 to-white/5 rounded-xl border border-white/10">
-                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-2">Key Highlights</p>
-                        <ul className="space-y-1.5">
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+                        <p className="text-xs font-bold uppercase tracking-label text-zinc-500">
+                          What stands out
+                        </p>
+                        <ul className="m-0 mt-4 list-none">
                           {(product as any).ai_formatted.key_highlights.map((highlight: string, idx: number) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
-                              <span className="text-white mt-0.5">•</span>
+                            <li
+                              key={idx}
+                              className="flex items-start gap-3 border-b border-white/10 py-2.5 text-sm leading-relaxed text-zinc-300 last:border-b-0"
+                            >
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-white" aria-hidden="true" />
                               <span>{highlight}</span>
                             </li>
                           ))}
@@ -606,19 +627,14 @@ export default function AppPage() {
 
                     {/* Ingredients */}
                     {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text) && (
-                      <div className="p-5 bg-gradient-to-br from-white/8 to-white/3 rounded-xl border border-white/10 backdrop-blur-sm">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center">
-                              <Leaf className="w-4 h-4 text-emerald-400" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-white">Ingredients</p>
-                              <p className="text-xs text-zinc-500">
-                                {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text).split(',').length} items
-                              </p>
-                            </div>
-                          </div>
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+                        <div className="mb-4 flex items-baseline justify-between gap-4">
+                          <p className="text-xs font-bold uppercase tracking-label text-zinc-500">
+                            Ingredients
+                          </p>
+                          <p className="font-mono text-[11px] uppercase tracking-label text-zinc-400">
+                            {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text).split(',').length} listed
+                          </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text).split(',').map((ingredient: string, idx: number) => {
@@ -627,10 +643,10 @@ export default function AppPage() {
                             return (
                               <span
                                 key={idx}
-                                className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 cursor-default
+                                className={`rounded-full border px-3 py-1.5 text-sm
                                   ${isFirst
-                                    ? 'bg-gradient-to-r from-white/15 to-white/10 text-white font-medium border border-white/20 shadow-sm'
-                                    : 'bg-white/5 text-zinc-300 border border-white/5 hover:bg-white/10 hover:border-white/15'
+                                    ? 'border-white bg-white font-medium text-black'
+                                    : 'border-white/12 text-zinc-300'
                                   }`}
                               >
                                 {ingredient.trim()}
@@ -638,58 +654,50 @@ export default function AppPage() {
                             )
                           })}
                         </div>
-                        <p className="text-xs text-zinc-500 mt-4 flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-zinc-500"></span>
-                          First 3 ingredients are the most prominent
+                        <p className="mt-4 text-xs text-zinc-500">
+                          Ingredients are listed by weight, so the first three make up most of
+                          what is inside.
                         </p>
                       </div>
                     )}
 
                     {/* Nutrition Facts */}
                     {product.nutriments && (
-                      <div className="p-5 bg-white/5 rounded-xl border border-zinc-800">
-                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-4 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
-                          Nutrition Facts (per 100g)
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+                        <p className="mb-4 text-xs font-bold uppercase tracking-label text-zinc-500">
+                          Nutrition, per 100g
                         </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          {product.nutriments.energy_value && (
-                            <div className="p-3 bg-white/5 rounded-lg">
-                              <p className="text-xs text-zinc-500 mb-1">Energy</p>
-                              <p className="text-lg font-bold text-white">
-                                {Math.round(Number(product.nutriments.energy_value))}
-                                <span className="text-sm text-zinc-400 ml-1">
-                                  {product.nutriments.energy_unit || 'kcal'}
-                                </span>
-                              </p>
-                            </div>
+                        <div>
+                          {product.nutriments.energy_value !== undefined && (
+                            <DataRow
+                              label="Energy"
+                              value={`${Math.round(Number(product.nutriments.energy_value))} ${product.nutriments.energy_unit || 'kcal'}`}
+                            />
+                          )}
+                          {product.nutriments.sugars !== undefined && (
+                            <DataRow
+                              label="Sugars"
+                              strong
+                              value={`${Number(product.nutriments.sugars).toFixed(1)}g`}
+                            />
                           )}
                           {product.nutriments.fat !== undefined && (
-                            <div className="p-3 bg-white/5 rounded-lg">
-                              <p className="text-xs text-zinc-500 mb-1">Fat</p>
-                              <p className="text-lg font-bold text-white">
-                                {Number(product.nutriments.fat).toFixed(1)}
-                                <span className="text-sm text-zinc-400 ml-1">g</span>
-                              </p>
-                            </div>
+                            <DataRow label="Fat" value={`${Number(product.nutriments.fat).toFixed(1)}g`} />
                           )}
                           {product.nutriments.carbohydrates !== undefined && (
-                            <div className="p-3 bg-white/5 rounded-lg">
-                              <p className="text-xs text-zinc-500 mb-1">Carbs</p>
-                              <p className="text-lg font-bold text-white">
-                                {Number(product.nutriments.carbohydrates).toFixed(1)}
-                                <span className="text-sm text-zinc-400 ml-1">g</span>
-                              </p>
-                            </div>
+                            <DataRow
+                              label="Carbohydrates"
+                              value={`${Number(product.nutriments.carbohydrates).toFixed(1)}g`}
+                            />
                           )}
                           {product.nutriments.proteins !== undefined && (
-                            <div className="p-3 bg-white/5 rounded-lg">
-                              <p className="text-xs text-zinc-500 mb-1">Protein</p>
-                              <p className="text-lg font-bold text-white">
-                                {Number(product.nutriments.proteins).toFixed(1)}
-                                <span className="text-sm text-zinc-400 ml-1">g</span>
-                              </p>
-                            </div>
+                            <DataRow
+                              label="Protein"
+                              value={`${Number(product.nutriments.proteins).toFixed(1)}g`}
+                            />
+                          )}
+                          {product.nutriments.salt !== undefined && (
+                            <DataRow label="Salt" value={`${Number(product.nutriments.salt).toFixed(2)}g`} />
                           )}
                         </div>
                       </div>
@@ -697,11 +705,10 @@ export default function AppPage() {
                   </div>
 
                   {/* AI Features */}
-                  <div className="border-t border-zinc-800 pt-6">
-                    <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-                      <Sparkles className="w-5 h-5" />
-                      AI Insights
-                    </h3>
+                  <div className="border-t border-white/10 pt-6">
+                    <p className="mb-4 text-xs font-bold uppercase tracking-label text-zinc-500">
+                      Go further
+                    </p>
                     <div className="grid grid-cols-2 gap-3">
                       <Button
                         variant="secondary"
@@ -710,7 +717,7 @@ export default function AppPage() {
                         className="flex-col h-auto py-4"
                       >
                         <Activity className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Healthier Alternatives</span>
+                        <span className="text-sm">A better option</span>
                       </Button>
                       <Button
                         variant="secondary"
@@ -719,7 +726,7 @@ export default function AppPage() {
                         className="flex-col h-auto py-4"
                       >
                         <ChefHat className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Recipe Ideas</span>
+                        <span className="text-sm">Something to cook</span>
                       </Button>
                       <Button
                         variant="secondary"
@@ -728,7 +735,7 @@ export default function AppPage() {
                         className="flex-col h-auto py-4"
                       >
                         <Leaf className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Eco Score</span>
+                        <span className="text-sm">Footprint detail</span>
                       </Button>
                       <Button
                         variant="secondary"
@@ -737,7 +744,7 @@ export default function AppPage() {
                         className="flex-col h-auto py-4"
                       >
                         <CheckSquare className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Diet Compatibility</span>
+                        <span className="text-sm">Check my diet</span>
                       </Button>
                     </div>
                   </div>
@@ -745,7 +752,7 @@ export default function AppPage() {
               ) : manualEntryMode ? (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold">Enter Product Details</h3>
+                    <h3 className="font-display text-lg font-semibold tracking-tight">Enter the product details</h3>
                     <button
                       onClick={() => {
                         setManualEntryMode(false)
@@ -764,7 +771,7 @@ export default function AppPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Product Name *</label>
+                      <label className="block text-sm text-zinc-400 mb-2">Product name *</label>
                       <Input
                         value={manualProduct.product_name}
                         onChange={(e) => setManualProduct({ ...manualProduct, product_name: e.target.value })}
@@ -794,7 +801,7 @@ export default function AppPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm text-zinc-400 mb-3">Nutrition Facts (per 100g) - Optional</label>
+                      <label className="block text-sm text-zinc-400 mb-3">Nutrition per 100g, optional</label>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs text-zinc-500 mb-1">Energy (kcal)</label>
@@ -1025,7 +1032,7 @@ export default function AppPage() {
             className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 justify-center"
           >
             <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
+            <span>Sign out</span>
           </Button>
         </div>
       </Modal>
@@ -1045,7 +1052,7 @@ export default function AppPage() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
-            <p className="text-zinc-300">Analyzing with AI</p>
+            <p className="text-zinc-300">Analyzing</p>
           </div>
         </div>
       )}
@@ -1077,8 +1084,8 @@ function AIResultDisplay({ content }: { content: any }) {
                       }`}>
                       {recipe.difficulty}
                     </span>
-                    <span>⏱️ {recipe.prep_time} min</span>
-                    {recipe.calories && <span>🔥 {recipe.calories} cal</span>}
+                    <span className="inline-flex items-center gap-1.5"><Timer className="h-3.5 w-3.5" aria-hidden="true" />{recipe.prep_time} min</span>
+                    {recipe.calories && <span className="inline-flex items-center gap-1.5"><Flame className="h-3.5 w-3.5" aria-hidden="true" />{recipe.calories} cal</span>}
                   </div>
 
                   {recipe.other_ingredients && (
@@ -1156,7 +1163,7 @@ function AIResultDisplay({ content }: { content: any }) {
       <div className="space-y-6">
         <div className="text-center">
           <div className={`text-6xl font-bold ${scoreClass}`}>{score}/10</div>
-          <p className="text-zinc-400 mt-2">Environmental Impact Score</p>
+          <p className="text-zinc-400 mt-2">Environmental impact score</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -1181,7 +1188,7 @@ function AIResultDisplay({ content }: { content: any }) {
 
         {content.tips && (
           <div className="p-4 bg-white/5 rounded-xl">
-            <p className="text-sm text-zinc-400 mb-2">Eco-Friendly Tips</p>
+            <p className="text-sm text-zinc-400 mb-2">Eco Friendly Tips</p>
             <ul className="space-y-2">
               {content.tips.map((tip: string, i: number) => (
                 <li key={i} className="flex items-start gap-2">
@@ -1218,10 +1225,10 @@ function AIResultDisplay({ content }: { content: any }) {
           </div>
           <p className="text-sm text-zinc-400">{info.reason}</p>
           {info.concerns && info.concerns !== 'null' && (
-            <p className="text-sm text-red-400 mt-2">⚠️ {info.concerns}</p>
+            <p className="mt-2 flex items-start gap-2 text-sm text-red-400"><TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />{info.concerns}</p>
           )}
           {info.alternatives && info.alternatives !== 'null' && (
-            <p className="text-sm text-zinc-300 mt-2">💡 {info.alternatives}</p>
+            <p className="mt-2 flex items-start gap-2 text-sm text-zinc-300"><Lightbulb className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />{info.alternatives}</p>
           )}
         </div>
       ))}

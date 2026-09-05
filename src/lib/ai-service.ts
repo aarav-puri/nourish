@@ -147,7 +147,7 @@ Estimate the environmental impact with these exact keys:
 4. transportation_impact: "Low", "Medium", or "High"
 5. overall_score: number 1-10
 6. explanation: Brief 2-3 sentence explanation
-7. tips: Array of 2-3 eco-friendly tips
+7. tips: Array of 2-3 eco friendly tips
 
 Format as JSON object with these exact keys.`
 

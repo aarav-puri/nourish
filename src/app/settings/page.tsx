@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, KeyRound, LogOut, History, User, ExternalLink, Loader2 } from 'lucide-react'
-import { auth } from '@/lib/supabase'
+import { ArrowLeft, KeyRound, ExternalLink, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { getGeminiApiKey, setGeminiApiKey } from '@/lib/ai-service'
 import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
 
 export default function SettingsPage() {
-  const router = useRouter()
-  const { user, loading, openAuthModal } = useAuth()
+  const { user, loading, requireSignIn } = useAuth()
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -22,8 +20,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      openAuthModal()
-      router.push('/app')
+      requireSignIn({ next: '/settings' })
     }
   }, [loading, user])
 
@@ -35,26 +32,21 @@ export default function SettingsPage() {
     setSaving(false)
   }
 
-  const handleLogout = async () => {
-    await auth.signOut()
-    router.push('/')
-  }
-
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
+      <div className="min-h-dvh bg-dark flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-white" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="min-h-dvh bg-dark">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-dark-card/95 backdrop-blur-lg border-b border-zinc-800">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <Link href="/app" className="btn-ghost flex items-center gap-2">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             <span className="hidden sm:inline">Back</span>
           </Link>
           <h1 className="text-xl font-bold gradient-text">Settings</h1>
@@ -62,37 +54,29 @@ export default function SettingsPage() {
       </header>
 
       {/* Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        {/* Account */}
-        <section className="card p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <User className="w-4 h-4 text-zinc-400" />
-            <h2 className="text-sm font-medium text-zinc-400">Account</h2>
-          </div>
-          <p className="text-sm text-zinc-500 mb-1">Signed in as</p>
-          <p className="text-base font-medium truncate">{user.email}</p>
-        </section>
-
+      <main id="main" className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         {/* BYOK */}
         <section className="card p-5">
           <div className="flex items-center gap-2 mb-1">
             <KeyRound className="w-4 h-4 text-zinc-400" />
             <h2 className="text-sm font-medium text-zinc-400">BYOK (Bring Your Own Key)</h2>
           </div>
-          <p className="text-sm text-zinc-500 mb-4">
+          <p className="text-sm text-zinc-400 mb-4">
             AI insights run on your own key, so usage is billed directly by the provider.
           </p>
 
-          <label className="block text-xs text-zinc-500 mb-1.5">API Key</label>
-          <div className="flex flex-col sm:flex-row gap-2 mb-3">
-            <input
+          <div className="flex flex-col sm:flex-row sm:items-end gap-2 mb-3">
+            <Input
+              label="API Key"
               type="password"
+              autoComplete="off"
               value={apiKeyInput}
               onChange={(e) => setApiKeyInput(e.target.value)}
               placeholder="Paste your key"
-              className="flex-1 min-w-0 px-3 py-2 text-sm bg-dark-elevated border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+              hint="Stored in this browser only. Leave empty to remove it."
+              className="flex-1 min-w-0"
             />
-            <Button onClick={handleSaveApiKey} disabled={saving} size="sm">
+            <Button onClick={handleSaveApiKey} loading={saving} className="sm:mb-8">
               Save
             </Button>
           </div>
@@ -101,29 +85,11 @@ export default function SettingsPage() {
             href="https://aistudio.google.com/apikey"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 underline"
+            className="inline-flex items-center gap-1 min-h-11 text-xs text-zinc-400 hover:text-white underline"
           >
             Get your key at Google AI Studio
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-3 h-3" aria-hidden="true" />
           </a>
-        </section>
-
-        {/* Other */}
-        <section className="card p-2">
-          <Link
-            href="/history"
-            className="flex items-center gap-3 px-3 py-3 text-sm text-zinc-300 hover:bg-white/5 rounded-lg transition-colors"
-          >
-            <History className="w-4 h-4" />
-            Scan History
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-3 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
         </section>
       </main>
     </div>

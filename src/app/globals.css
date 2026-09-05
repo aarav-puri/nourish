@@ -2,19 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* ============================================================
+   BARCODESENSE
+   Noir, in strict black and white. Depth is built from layered
+   darkness, hairline white borders, blur and glow. The only
+   accent is pure white, used sparingly and at full strength.
+   ============================================================ */
+
+@property --gradient-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
 
 :root {
-  --primary: #ffffff;
-  --primary-dark: #e5e5e5;
-  --secondary: #a1a1aa;
-  --danger: #ef4444;
-  --success: #22c55e;
-  --dark: #0a0a0a;
-  --dark-card: #1a1a1a;
-  --dark-elevated: #242424;
-  --gray: #9ca3af;
-  --light-gray: #2a2a2a;
+  color-scheme: dark;
+
+  /* The accent, as channels so Tailwind opacity modifiers work.
+     White on the dark ground; `.on-paper` flips it to black, so one
+     class reads correctly on either ground with no variant. */
+  --accent-rgb: 255 255 255;
+  --accent-dim-rgb: 163 163 163;
+  --accent-on-rgb: 0 0 0;
+
+  /* Motion hierarchy: three tiers. Nothing invents its own timing. */
+  --t-tap: 120ms;
+  --t-move: 260ms;
+  --t-scene: 620ms;
+  --ease-scan: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --band: clamp(5rem, 11vw, 9rem);
+}
+
+.on-paper {
+  --accent-rgb: 0 0 0;
+  --accent-dim-rgb: 92 92 92;
+  --accent-on-rgb: 255 255 255;
+  background: #ffffff;
+  color: #000000;
 }
 
 * {
@@ -23,190 +49,296 @@
   box-sizing: border-box;
 }
 
+/* The user agent's `[hidden] { display: none }` loses to any author `display`
+   utility, so a `hidden` element carrying `flex` or `grid` stays visible.
+   Restate it here so the attribute is authoritative. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 7rem;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--dark);
-  color: white;
-  min-height: 100vh;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  background: #000000;
+  color: #ffffff;
+  min-height: 100dvh;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Every number in this product is tabular so columns never jitter. */
+.tnum,
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--light-gray);
+/* ---------- Focus ---------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent-rgb));
+  outline-offset: 3px;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gray);
+.skip-link {
+  @apply absolute left-4 top-4 z-[200] -translate-y-32 rounded-full bg-white px-6 py-3
+         text-xs font-bold uppercase tracking-label text-black focus:translate-y-0;
 }
 
-/* Glass effect */
-.glass {
-  background: rgba(26, 26, 26, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* ---------- Type ----------------------------------------------------- */
+.t-display {
+  font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+  font-size: clamp(2.75rem, 7.4vw, 6.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  font-weight: 700;
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #ffffff, #a1a1aa);
+.t-h2 {
+  font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+  font-size: clamp(2rem, 4.4vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.032em;
+  font-weight: 600;
+}
+
+.t-h3 {
+  font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+  font-size: clamp(1.3rem, 2vw, 1.75rem);
+  line-height: 1.16;
+  letter-spacing: -0.022em;
+  font-weight: 600;
+}
+
+.t-body {
+  font-size: clamp(1rem, 1.15vw, 1.15rem);
+  line-height: 1.65;
+  max-width: 64ch;
+}
+
+.t-label {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Headline fill: solid at the top, falling away toward the baseline. */
+.text-fade {
+  background-image: linear-gradient(to bottom, #ffffff 0%, #ffffff 55%, rgba(255, 255, 255, 0.42) 100%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
 }
 
-/* Animated gradient text - removed animation */
-.animated-gradient-text {
-  background: linear-gradient(90deg, #ffffff, #d4d4d8, #71717a, #d4d4d8, #ffffff);
-  background-size: 300% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Outlined display type, for the oversized wordmark in the footer. */
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
+  color: transparent;
 }
 
-/* Glow effect - static */
-.glow {
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+/* ---------- Background layers ---------------------------------------- */
+/* Two drifting starfields, drawn entirely with box-shadow so the whole
+   field is a single composited node rather than hundreds of elements. */
+.stars-near {
+  box-shadow:
+    234px 124px #fff, 654px 345px #fff, 876px 12px #fff, 1200px 800px #fff,
+    400px 1500px #fff, 1800px 200px #fff, 100px 1000px #fff, 900px 1900px #fff,
+    500px 600px #fff, 1400px 100px #fff, 300px 400px #fff, 1600px 1200px #fff,
+    760px 1420px #fff, 1120px 1660px #fff, 210px 1880px #fff, 1980px 940px #fff;
 }
 
-.glow-hover:hover {
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+.stars-far {
+  box-shadow:
+    123px 456px #fff, 789px 234px #fff, 456px 890px #fff, 1100px 300px #fff,
+    200px 1200px #fff, 1500px 500px #fff, 600px 1700px #fff, 1300px 900px #fff,
+    1750px 1550px #fff, 950px 1150px #fff;
 }
 
-/* Card shimmer effect - removed */
-.card-shimmer {
-  position: relative;
-  overflow: hidden;
+/* ---------- Controls -------------------------------------------------- */
+/* min-h-11 is 44px, the iOS touch minimum. This is a phone first scanner,
+   so 44 is the floor for every control, not the 24px web minimum. */
+.btn {
+  @apply inline-flex select-none items-center justify-center gap-2 min-h-11
+         rounded-full px-7 text-sm font-semibold
+         transition-[transform,background-color,border-color,color,box-shadow]
+         duration-[120ms] ease-scan active:scale-[0.97]
+         disabled:pointer-events-none disabled:opacity-40;
 }
 
-/* Particles - GPU accelerated for mobile */
-.particle {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  animation: float-particle linear infinite;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-@keyframes float-particle {
-  0% {
-    transform: translate3d(0, 100vh, 0);
-    opacity: 0;
-  }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% {
-    transform: translate3d(50px, -100px, 0);
-    opacity: 0;
-  }
-}
-
-/* Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-  .particle {
-    animation: none;
-    display: none;
-  }
-}
-
-/* Button styles - no animations */
 .btn-primary {
-  @apply px-6 py-3 bg-gradient-to-r from-white to-zinc-200 text-black font-semibold rounded-xl 
-         hover:shadow-lg hover:shadow-white/20
-         disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply btn bg-white text-black hover:bg-zinc-200;
 }
 
 .btn-secondary {
-  @apply px-6 py-3 bg-dark-elevated text-white font-semibold rounded-xl border border-zinc-700
-         hover:border-white hover:bg-zinc-800
-         disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply btn border border-white/15 bg-white/5 text-zinc-200
+         hover:border-white/30 hover:bg-white/10 hover:text-white;
 }
 
 .btn-ghost {
-  @apply px-4 py-2 text-zinc-400 font-medium rounded-lg
-         hover:text-white hover:bg-white/10;
+  @apply btn bg-transparent px-5 font-medium text-zinc-400 hover:text-white;
 }
 
-/* Input styles - no animations */
+.on-paper .btn-primary {
+  @apply bg-black text-white hover:bg-zinc-800;
+}
+
+.on-paper .btn-secondary {
+  @apply border-black/15 bg-black/5 text-zinc-800 hover:border-black/30 hover:bg-black/10 hover:text-black;
+}
+
+/* The lead call to action: a conic sweep travelling its border.
+   The sweep is a decorative loop, so it stops under reduced motion. */
+.shiny-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#000000, #000000) padding-box,
+    conic-gradient(
+        from var(--gradient-angle),
+        transparent 0%,
+        #ffffff 6%,
+        #ffffff 16%,
+        #ffffff 28%,
+        transparent 40%,
+        transparent 100%
+      )
+      border-box;
+  animation: border-spin 2.5s linear infinite;
+}
+
+/* A fine dot texture inside the button face. */
+.shiny-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0.5px, transparent 0);
+  background-size: 4px 4px;
+  opacity: 0.12;
+  z-index: 0;
+}
+
+/* Icon only control: a guaranteed 44 by 44 hit area around a 20px glyph. */
+.btn-icon {
+  @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full
+         text-zinc-400 transition-colors duration-[120ms]
+         hover:bg-white/10 hover:text-white;
+}
+
 .input-field {
-  @apply w-full px-4 py-3 bg-dark-elevated border border-zinc-700 rounded-xl text-white
-         placeholder:text-zinc-500 focus:outline-none focus:border-white focus:ring-2 
-         focus:ring-white/20;
+  @apply min-h-11 w-full rounded-full border border-white/10 bg-white/5 px-5 py-3
+         text-sm text-white placeholder:text-zinc-500
+         transition-[border-color,box-shadow] duration-[120ms]
+         focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20;
 }
 
-/* Card styles - no animations */
+/* ---------- Surfaces -------------------------------------------------- */
+.panel {
+  @apply relative overflow-hidden rounded-2xl border border-white/10
+         bg-gradient-to-b from-zinc-900/60 to-black p-7
+         transition-[border-color,background-color] duration-[260ms] ease-scan;
+}
+
+.panel-interactive {
+  @apply panel cursor-pointer hover:border-white/25;
+}
+
+.on-paper .panel {
+  @apply border-black/10 bg-white bg-none;
+}
+
+/* Aliases: the product screens already speak in `card`. */
 .card {
-  @apply bg-dark-card rounded-2xl border border-zinc-800 p-6
-         hover:border-zinc-600 hover:shadow-lg hover:shadow-white/5;
+  @apply panel;
 }
 
 .card-interactive {
-  @apply card cursor-pointer;
+  @apply panel-interactive;
 }
 
-/* Modal backdrop */
-.modal-backdrop {
-  @apply fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+.glass {
+  @apply rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl;
 }
 
-/* Toast styles */
-.toast {
-  @apply fixed bottom-4 right-4 px-6 py-3 rounded-xl shadow-lg z-50 animate-slide-up;
+/* `gradient-text` is used across the product screens. There is no gradient
+   text in this system, so it resolves to the plain foreground. */
+.gradient-text {
+  color: #ffffff;
 }
 
-.toast-success {
-  @apply toast bg-green-500/20 border border-green-500/50 text-green-400;
+.on-paper .gradient-text {
+  color: #000000;
 }
 
-.toast-error {
-  @apply toast bg-red-500/20 border border-red-500/50 text-red-400;
+/* The pill that sits above the hero, and its live dot. */
+.eyebrow-pill {
+  @apply inline-flex items-center gap-2.5 rounded-full border border-white/10
+         bg-white/5 px-4 py-1.5 backdrop-blur-md;
 }
 
-/* Loading spinner - keeping this one as it's functional */
-.spinner {
-  @apply w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin;
-}
-
-/* Animation delays for loading dots */
-.delay-75 {
-  animation-delay: 75ms;
-}
-
-.delay-150 {
-  animation-delay: 150ms;
-}
-
-/* Score badges */
+/* ---------- Data ------------------------------------------------------ */
 .score-badge {
-  @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium;
+  @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1
+         text-xs font-semibold;
 }
 
+/* With no hue in the system, state is carried by fill weight plus the text
+   label inside each badge: solid reads loudest, hairline quietest. */
 .score-good {
-  @apply score-badge bg-green-500/20 text-green-400 border border-green-500/30;
+  @apply score-badge border-white/30 bg-transparent text-white;
 }
 
 .score-medium {
-  @apply score-badge bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+  @apply score-badge border-white/15 bg-transparent text-zinc-300;
 }
 
 .score-poor {
-  @apply score-badge bg-red-500/20 text-red-400 border border-red-500/30;
+  @apply score-badge border-white bg-white font-bold text-black;
+}
+
+.spinner {
+  @apply h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white;
+}
+
+.delay-75 { animation-delay: 75ms; }
+.delay-150 { animation-delay: 150ms; }
+
+.modal-backdrop {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm;
+}
+
+/* ---------- Chrome ---------------------------------------------------- */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #000000; }
+::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+::selection {
+  background: rgb(var(--accent-rgb));
+  color: rgb(var(--accent-on-rgb));
+}
+
+/* ---------- Reduced motion -------------------------------------------- */
+/* Canvas work is gated in JS as well; this covers everything declarative. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .shiny-cta { animation: none; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

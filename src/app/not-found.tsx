@@ -2,20 +2,37 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-      <div className="text-center px-4">
-        <h1 className="text-6xl font-bold text-white mb-4">404</h1>
-        <h2 className="text-2xl font-semibold text-zinc-300 mb-6">Page Not Found</h2>
-        <p className="text-zinc-400 mb-8">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <Link
-          href="/"
-          className="inline-block px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-        >
-          Go Home
+    <main
+      id="main"
+      className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-black px-[var(--gutter)] text-center"
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.04] blur-[120px]"
+      />
+
+      {/* An unreadable strip: nothing here to decode. */}
+      <div aria-hidden="true" className="relative mb-10 flex h-16 items-end gap-[3px]">
+        {[14, 40, 22, 58, 30, 46, 18, 62, 26, 38, 52, 20].map((h, i) => (
+          <span key={i} className="w-[3px] rounded-full bg-white/20" style={{ height: `${h}px` }} />
+        ))}
+      </div>
+
+      <p className="relative text-xs font-bold uppercase tracking-label text-zinc-500">Error 404</p>
+      <h1 className="t-h2 relative mt-5">No read</h1>
+      <p className="relative mt-5 max-w-sm leading-relaxed text-zinc-400">
+        There is nothing at this address to decode. The page may have moved, or the link may be
+        mistyped.
+      </p>
+
+      <div className="relative mt-10 flex flex-wrap items-center justify-center gap-4">
+        <Link href="/" className="btn-primary">
+          Back to home
+        </Link>
+        <Link href="/app" className="btn-secondary">
+          Open scanner
         </Link>
       </div>
-    </div>
+    </main>
   )
 }
