@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash, Sparkles, ChevronDown, ChevronUp, Leaf, Activity, Timer, Flame, TriangleAlert, Lightbulb } from 'lucide-react'
+import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash, Brain, ChevronDown, ChevronUp, Leaf, Activity, Timer, Flame, TriangleAlert, Lightbulb } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import ChatAgent from '@/components/ChatAgent'
@@ -258,9 +258,9 @@ export default function HistoryPage() {
                         {productInsights.length > 0 && (
                           <button
                             onClick={() => toggleProductExpansion(product.id)}
-                            className="flex items-center gap-2 mt-3 px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-lg text-sm text-purple-300 hover:bg-purple-500/30 transition-colors"
+                            className="mt-3 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
                           >
-                            <Sparkles className="w-4 h-4" />
+                            <Brain className="w-4 h-4" aria-hidden="true" />
                             <span>{productInsights.length} AI Insight{productInsights.length > 1 ? 's' : ''}</span>
                             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </button>
@@ -299,8 +299,8 @@ export default function HistoryPage() {
                               >
                                 <div className="flex items-center justify-between mb-3">
                                   <div className="flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4 text-purple-400" />
-                                    <span className="text-sm font-semibold text-purple-300">
+                                    <Brain className="w-4 h-4 text-zinc-400" aria-hidden="true" />
+                                    <span className="text-sm font-semibold text-zinc-200">
                                       {formatInsightType(insight.insight_type)}
                                     </span>
                                   </div>
