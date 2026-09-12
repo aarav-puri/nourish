@@ -402,10 +402,6 @@ export default function HomePage() {
               <br />
               <span>is in your cupboard.</span>
             </h2>
-            <p className="mx-auto mt-8 max-w-xl text-lg text-zinc-400">
-              It takes seconds. Free to start, and no card needed.
-            </p>
-
             <div className="mt-12 flex items-center justify-center">
               <Magnetic strength={10}>
                 <Link
