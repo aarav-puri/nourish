@@ -55,6 +55,63 @@ export const auth = {
     return data
   },
 
+  async uploadAvatar(file: File) {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const path = `${user.id}/avatar.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true, cacheControl: '0' })
+    if (uploadError) throw uploadError
+
+    const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(path)
+    // Bust caches on repeated uploads to the same path.
+    const avatarUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`
+
+    const { data, error } = await supabase.auth.updateUser({ data: { avatar_url: avatarUrl } })
+    if (error) throw error
+    return data
+  },
+
+  async removeAvatar() {
+    const user = await auth.getCurrentUser()
+    if (!user) throw new Error('User not authenticated')
+
+    await supabase.storage.from('avatars').remove([
+      `${user.id}/avatar.jpg`,
+      `${user.id}/avatar.jpeg`,
+      `${user.id}/avatar.png`,
+      `${user.id}/avatar.webp`,
+      `${user.id}/avatar.gif`,
+    ])
+
+    const { data, error } = await supabase.auth.updateUser({ data: { avatar_url: null } })
+    if (error) throw error
+    return data
+  },
+
+  async deleteAccount() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    if (!session) throw new Error('User not authenticated')
+
+    const response = await fetch('/api/account/delete', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}))
+      throw new Error(body.error || 'Failed to delete account')
+    }
+
+    await supabase.auth.signOut()
+  },
+
   async signInWithGoogle() {
     const redirectUrl = typeof window !== 'undefined'
       ? `${window.location.origin}/app`
