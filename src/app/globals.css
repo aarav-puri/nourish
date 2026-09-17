@@ -305,10 +305,6 @@ body {
   @apply score-badge border-white bg-white font-bold text-black;
 }
 
-.spinner {
-  @apply h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white;
-}
-
 .delay-75 { animation-delay: 75ms; }
 .delay-150 { animation-delay: 150ms; }
 

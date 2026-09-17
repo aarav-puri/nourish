@@ -18,7 +18,8 @@
     "quagga": "^0.12.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sonner": "^1.7.3"
+    "sonner": "^1.7.3",
+    "thinking-orbs": "^0.3.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

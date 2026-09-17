@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, KeyRound, ExternalLink, Loader2 } from 'lucide-react'
+import { ArrowLeft, KeyRound, ExternalLink } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { getGeminiApiKey, setGeminiApiKey } from '@/lib/ai-service'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
+import Orb from '@/components/ui/Orb'
 
 export default function SettingsPage() {
   const { user, loading, requireSignIn } = useAuth()
@@ -35,7 +36,7 @@ export default function SettingsPage() {
   if (loading || !user) {
     return (
       <div className="min-h-dvh bg-dark flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
+        <Orb size={64} label="Loading" />
       </div>
     )
   }

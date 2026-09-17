@@ -4,12 +4,13 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trash2, Calendar, Barcode, Loader2, Package, Trash, Brain, ChevronDown, ChevronUp, Leaf, Activity, Timer, Flame, TriangleAlert, Lightbulb } from 'lucide-react'
+import { ArrowLeft, Trash2, Calendar, Barcode, Package, Trash, Brain, ChevronDown, ChevronUp, Leaf, Activity, Timer, Flame, TriangleAlert, Lightbulb } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import ChatAgent from '@/components/ChatAgent'
 import { scoreFromGrade } from '@/components/product/ScoreMeter'
 import { toast } from 'sonner'
+import Orb from '@/components/ui/Orb'
 
 interface ScannedProduct {
   id: string
@@ -176,7 +177,7 @@ export default function HistoryPage() {
               className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
             >
               {clearingAll ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Orb />
               ) : (
                 <Trash className="w-4 h-4" />
               )}
@@ -190,7 +191,7 @@ export default function HistoryPage() {
       <main className="max-w-2xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center py-20">
-            <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
+            <Orb size={64} className="mx-auto mb-4 block" />
             <p className="text-zinc-400">Loading history...</p>
           </div>
         ) : products.length === 0 ? (
@@ -274,7 +275,7 @@ export default function HistoryPage() {
                         className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                       >
                         {deleting === product.id ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Orb label="Deleting" />
                         ) : (
                           <Trash2 className="w-5 h-5" />
                         )}

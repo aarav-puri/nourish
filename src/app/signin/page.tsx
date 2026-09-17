@@ -3,13 +3,13 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
 import { auth } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import AuthShell from '@/components/auth/AuthShell'
 import GoogleButton from '@/components/auth/GoogleButton'
 import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
+import Orb from '@/components/ui/Orb'
 
 function SignInForm() {
   const router = useRouter()
@@ -130,7 +130,7 @@ function SignInForm() {
         </div>
 
         <button type="submit" disabled={busy} className="btn-primary mt-7 w-full" aria-busy={busy || undefined}>
-          {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+          {busy && <Orb tone="onLight" />}
           {busy ? 'Signing in' : 'Sign in'}
         </button>
       </form>
@@ -162,7 +162,7 @@ export default function SignInPage() {
     <Suspense
       fallback={
         <div className="flex min-h-dvh items-center justify-center bg-black">
-          <span className="spinner" />
+          <Orb size={64} label="Loading" />
         </div>
       }
     >

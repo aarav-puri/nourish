@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, ButtonHTMLAttributes } from 'react'
-import { Loader2 } from 'lucide-react'
+import Orb from '@/components/ui/Orb'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -56,7 +56,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading || undefined}
         {...props}
       >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : icon}
+        {loading ? <Orb tone={variant === 'primary' ? 'onLight' : 'onDark'} /> : icon}
         {children}
       </button>
     )

@@ -10,9 +10,23 @@
   has a black ground, so it reads as it does in the app. If images are
   blocked, the wordmark beside it still renders, so the mail is never headless.
 
-  Supabase template variables used:
-    {{ .ConfirmationURL }}  the one time link that signs the user in to reset
-    {{ .Email }}            the address this was sent to
+  Supabase template variables used (braces left off here, since
+  Supabase fills them in even inside comments):
+    RedirectTo  the redirectTo the app passed, i.e. <origin>/auth/reset-password
+    TokenHash   the one time recovery token, verified by that page
+    Email       the address this was sent to
+
+  Why not ConfirmationURL: that link goes through Supabase's /verify
+  endpoint, which spends the token on the first GET. Gmail, Outlook and
+  corporate link scanners open links before the user does, so the real click
+  lands on "link expired". Linking straight to the app with the token hash
+  means only the page's own script can spend it.
+
+  For RedirectTo to be honoured, every origin you reset from must be in
+  Authentication > URL Configuration > Redirect URLs, for example:
+    https://your-domain.com/auth/reset-password
+    http://localhost:3000/auth/reset-password
+  Otherwise Supabase substitutes the Site URL and the link lands on the home page.
 -->
 <!doctype html>
 <html lang="en">
@@ -119,7 +133,7 @@
                           <td align="center">
                             <!--[if mso]>
                             <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-                                         href="{{ .ConfirmationURL }}" style="height:50px;v-text-anchor:middle;width:408px;"
+                                         href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery" style="height:50px;v-text-anchor:middle;width:408px;"
                                          arcsize="56%" stroke="f" fillcolor="#ffffff">
                               <w:anchorlock/>
                               <center style="color:#000000;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;">
@@ -128,7 +142,7 @@
                             </v:roundrect>
                             <![endif]-->
                             <!--[if !mso]><!-- -->
-                            <a class="sm-btn" href="{{ .ConfirmationURL }}"
+                            <a class="sm-btn" href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery"
                                style="display:inline-block; background-color:#ffffff; color:#000000;
                                       font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
                                       font-size:15px; font-weight:700; letter-spacing:-0.01em;
@@ -150,7 +164,7 @@
                       <p style="margin:8px 0 0 0; word-break:break-all;
                                 font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
                                 font-size:12px; line-height:1.6;">
-                        <a href="{{ .ConfirmationURL }}" style="color:#a1a1aa; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+                        <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery" style="color:#a1a1aa; text-decoration:underline;">{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery</a>
                       </p>
 
                       <!-- Divider -->

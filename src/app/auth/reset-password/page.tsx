@@ -3,19 +3,22 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2, ShieldAlert } from 'lucide-react'
+import { ShieldAlert } from 'lucide-react'
 import { auth, supabase } from '@/lib/supabase'
 import AuthShell from '@/components/auth/AuthShell'
 import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
+import Orb from '@/components/ui/Orb'
 
 type Stage = 'checking' | 'ready' | 'invalid'
 
 /**
- * Where the emailed reset link lands. Supabase puts the recovery credential in
- * the URL: a `code` to exchange under PKCE, or tokens in the hash under the
- * implicit flow, which the client picks up itself via detectSessionInUrl. We
- * cover both, then let the user set the new password against that session.
+ * Where the emailed reset link lands. The email template links straight here
+ * with a `token_hash`, which we verify in the browser. That keeps the one time
+ * token safe from inbox link scanners (they fetch the page but never run this
+ * script) and works in any browser. Links built from the default
+ * `{{ .ConfirmationURL }}` template arrive with tokens in the hash instead,
+ * which the client picks up itself via detectSessionInUrl, so both still work.
  */
 export default function ResetPasswordLandingPage() {
   const router = useRouter()
@@ -26,6 +29,7 @@ export default function ResetPasswordLandingPage() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const errorRef = useRef<HTMLDivElement>(null)
+  const verification = useRef<Promise<boolean> | null>(null)
 
   useEffect(() => {
     if (error) errorRef.current?.focus()
@@ -54,10 +58,15 @@ export default function ResetPasswordLandingPage() {
         return
       }
 
-      const code = query.get('code')
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-        if (!cancelled) setStage(exchangeError ? 'invalid' : 'ready')
+      const tokenHash = query.get('token_hash')
+      if (tokenHash) {
+        // Strict mode runs this effect twice in development. The token only
+        // verifies once, so both runs share the same attempt.
+        verification.current ??= supabase.auth
+          .verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+          .then(({ error: verifyError }) => !verifyError)
+        const ok = await verification.current
+        if (!cancelled) setStage(ok ? 'ready' : 'invalid')
         return
       }
 
@@ -127,7 +136,7 @@ export default function ResetPasswordLandingPage() {
         }
       >
         <div className="mt-8 flex items-center gap-3 text-sm text-zinc-400">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          <Orb state="searching" />
           Verifying
         </div>
       </AuthShell>
@@ -209,7 +218,7 @@ export default function ResetPasswordLandingPage() {
         </div>
 
         <button type="submit" disabled={busy} className="btn-primary mt-7 w-full" aria-busy={busy || undefined}>
-          {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+          {busy && <Orb tone="onLight" />}
           {busy ? 'Saving' : 'Save new password'}
         </button>
       </form>

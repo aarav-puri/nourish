@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload, Search, ArrowLeft, X, Home, User, Sparkles,
-  Activity, CheckSquare, Leaf, Loader2, AlertCircle,
+  Activity, CheckSquare, Leaf, AlertCircle,
   Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings,
   Timer, Flame, TriangleAlert, Lightbulb
 } from 'lucide-react'
@@ -22,6 +22,7 @@ import DataRow from '@/components/product/DataRow'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
 import { toast } from 'sonner'
+import Orb from '@/components/ui/Orb'
 
 export default function AppPage() {
   const { user, loading, requireSignIn } = useAuth()
@@ -330,7 +331,7 @@ export default function AppPage() {
   if (loading) {
     return (
       <div className="min-h-dvh bg-dark flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
+        <Orb size={64} label="Loading" />
       </div>
     )
   }
@@ -555,7 +556,7 @@ export default function AppPage() {
             role="status"
             className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black px-6 py-14 text-center"
           >
-            <Loader2 className="mx-auto mb-5 h-8 w-8 animate-spin text-white" aria-hidden="true" />
+            <Orb state="searching" size={64} className="mx-auto mb-5 block" />
             <p className="font-display text-lg font-semibold tracking-tight">Reading the label</p>
             <p className="mt-2 text-sm text-zinc-400">
               Looking up the product and calculating its score.
@@ -1051,7 +1052,7 @@ export default function AppPage() {
       {aiLoading && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
+            <Orb state="solving" size={64} className="mx-auto mb-4 block" />
             <p className="text-zinc-300">Analyzing</p>
           </div>
         </div>

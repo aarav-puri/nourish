@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, X, ArrowUp, Loader2, Bot } from 'lucide-react'
+import { MessageCircle, X, ArrowUp, Bot } from 'lucide-react'
 import { toast } from 'sonner'
+import Orb from '@/components/ui/Orb'
 
 interface Message {
     role: 'user' | 'assistant'
@@ -228,7 +229,7 @@ export default function ChatAgent({ context }: ChatAgentProps) {
                                     {loading && (
                                         <div className="flex justify-start">
                                             <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
-                                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                                <Orb state="composing" />
                                                 <span className="sr-only">Thinking</span>
                                             </div>
                                         </div>
