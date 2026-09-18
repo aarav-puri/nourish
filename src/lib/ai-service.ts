@@ -82,35 +82,12 @@ Suggest 3 healthier alternatives with similar flavor profiles. For each, provide
 2. why_healthier: Why it's healthier
 3. flavor_similarity: Flavor similarity (1-10)
 4. price_range: Estimated price range
+5. sugar_diff: How its sugar per 100g compares to the original, as a short phrase (e.g. "4g less sugar" or "About the same sugar")
+6. additive_diff: How its additive count compares to the original, as a short phrase (e.g. "2 fewer additives" or "No additives, vs 3 in the original")
 
 Format as JSON array with these exact keys.`
 
     return await callAI(prompt, 'You are a nutrition expert. Provide practical, realistic food substitutions. Always respond with valid JSON.')
-  },
-
-  async getMoodBasedRecommendations(mood: string, currentProduct?: Product) {
-    const productContext = currentProduct ? `
-Current product context:
-- Product: ${currentProduct.product_name || currentProduct.name || 'Unknown'}
-- Calories: ${currentProduct.nutriments?.energy_value || 'N/A'}
-- Protein: ${currentProduct.nutriments?.proteins || 'N/A'}g
-- Carbs: ${currentProduct.nutriments?.carbohydrates || 'N/A'}g
-- Sugar: ${currentProduct.nutriments?.sugars || 'N/A'}g
-` : ''
-
-    const prompt = `
-User mood: ${mood}
-${productContext}
-
-Based on this mood, recommend 3 foods that would help. For each recommendation provide:
-1. food_name: Name of the food
-2. why_helps: Brief explanation of why this food helps with this mood
-3. key_nutrients: Main nutrients that provide the benefit
-4. energy_level: How it affects energy (Boost/Sustain/Calm)
-
-Format as JSON array with these exact keys.`
-
-    return await callAI(prompt, 'You are a wellness and nutrition coach. Always respond with valid JSON.')
   },
 
   async analyzeDietCompatibility(product: Product, diets: string[]) {
@@ -146,35 +123,13 @@ Estimate the environmental impact with these exact keys:
 3. packaging_score: number 1-10
 4. transportation_impact: "Low", "Medium", or "High"
 5. overall_score: number 1-10
-6. explanation: Brief 2-3 sentence explanation
-7. tips: Array of 2-3 eco friendly tips
+6. category_comparison: One sentence on how this product's footprint compares to typical products in the same category (better, worse, or about the same, and why)
+7. explanation: Brief 2-3 sentence explanation
+8. tips: Array of 2-3 eco friendly tips
 
 Format as JSON object with these exact keys.`
 
     return await callAI(prompt, 'You are an environmental sustainability expert. Always respond with valid JSON.')
-  },
-
-  async getProductSummary(product: Product) {
-    const prompt = `
-Product: ${product.product_name || product.name}
-Ingredients: ${product.ingredients_text || 'Not available'}
-Nutrition (per 100g):
-- Calories: ${product.nutriments?.energy_value || 'N/A'}
-- Fat: ${product.nutriments?.fat || 'N/A'}g
-- Carbs: ${product.nutriments?.carbohydrates || 'N/A'}g
-- Protein: ${product.nutriments?.proteins || 'N/A'}g
-- Sugar: ${product.nutriments?.sugars || 'N/A'}g
-
-Provide a brief, helpful summary including:
-1. health_score: number 1-10
-2. summary: 2-3 sentence overview
-3. pros: Array of 2-3 positive aspects
-4. cons: Array of 2-3 concerns (if any)
-5. recommendation: One sentence recommendation
-
-Format as JSON object.`
-
-    return await callAI(prompt, 'You are a nutrition expert. Be balanced and helpful. Always respond with valid JSON.')
   },
 
   async getRecipeSuggestions(product: Product) {

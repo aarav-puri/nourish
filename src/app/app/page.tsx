@@ -1138,6 +1138,25 @@ function AIResultDisplay({ content }: { content: any }) {
                     <span>{item.flavor_similarity}/10</span>
                   </div>
                 )}
+                {(item.sugar_diff || item.additive_diff || item.price_range) && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {item.sugar_diff && (
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-300">
+                        {item.sugar_diff}
+                      </span>
+                    )}
+                    {item.additive_diff && (
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-300">
+                        {item.additive_diff}
+                      </span>
+                    )}
+                    {item.price_range && (
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-300">
+                        {item.price_range}
+                      </span>
+                    )}
+                  </div>
+                )}
                 {item.energy_level && (
                   <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${item.energy_level === 'Boost' ? 'bg-yellow-500/20 text-yellow-400' :
                       item.energy_level === 'Calm' ? 'bg-blue-500/20 text-blue-400' :
@@ -1166,6 +1185,13 @@ function AIResultDisplay({ content }: { content: any }) {
           <div className={`text-6xl font-bold ${scoreClass}`}>{score}/10</div>
           <p className="text-zinc-400 mt-2">Environmental impact score</p>
         </div>
+
+        {content.category_comparison && (
+          <div className="flex items-start gap-2 rounded-xl bg-white/5 p-4">
+            <Leaf className="mt-0.5 h-4 w-4 shrink-0 text-green-400" aria-hidden="true" />
+            <p className="text-sm">{content.category_comparison}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           {['carbon_footprint', 'water_usage', 'transportation_impact'].map((key) => (
