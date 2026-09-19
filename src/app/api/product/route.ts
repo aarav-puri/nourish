@@ -118,7 +118,7 @@ Return JSON with these exact keys:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'codestral-2501',
+        model: 'mistral-small-2603',
         messages: [
           {
             role: 'system',

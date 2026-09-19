@@ -46,7 +46,7 @@ When answering questions:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral-small-latest',
+        model: 'mistral-small-2603',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages,
