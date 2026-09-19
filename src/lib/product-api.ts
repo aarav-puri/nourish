@@ -1,3 +1,5 @@
+import { getGeminiApiKey } from '@/lib/ai-service'
+
 export interface ProductData {
   status: number
   product?: {
@@ -31,8 +33,11 @@ export interface ProductData {
 }
 
 export async function fetchProductInfo(barcode: string): Promise<ProductData> {
-  const response = await fetch(`/api/product?barcode=${barcode}`)
-  
+  const apiKey = getGeminiApiKey()
+  const response = await fetch(`/api/product?barcode=${barcode}`, {
+    headers: apiKey ? { 'x-gemini-api-key': apiKey } : undefined,
+  })
+
   if (!response.ok) {
     throw new Error('Failed to fetch product information')
   }

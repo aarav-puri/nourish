@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
+    const apiKey = request.headers.get('x-gemini-api-key')
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Missing BYOK key. Add your own key in Settings.' }, { status: 401 })
+    }
+
     const { messages, context } = await request.json()
 
     if (!messages || !Array.isArray(messages)) {
@@ -41,7 +46,7 @@ When answering questions:
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

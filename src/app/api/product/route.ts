@@ -85,7 +85,7 @@ async function fetchOpenFoodFactsProduct(barcode: string): Promise<Response> {
   throw lastError ?? new Error('Open Food Facts request failed without an explicit error')
 }
 
-async function formatProductWithGemini(product: any) {
+async function formatProductWithGemini(product: any, apiKey: string) {
   const geminiController = new AbortController()
   const geminiTimeout = setTimeout(() => geminiController.abort(), 8000)
 
@@ -114,7 +114,7 @@ Return JSON with these exact keys:
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -174,9 +174,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: data }, { status: response.status })
     }
 
-    // If product found, format it with Gemini
-    if (data.status === 1 && data.product) {
-      const formatted = await formatProductWithGemini(data.product)
+    // Formatting only runs when the browser supplied its own key.
+    const apiKey = request.headers.get('x-gemini-api-key')
+    if (apiKey && data.status === 1 && data.product) {
+      const formatted = await formatProductWithGemini(data.product, apiKey)
       if (formatted) {
         data.product.ai_formatted = formatted
       }

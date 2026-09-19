@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, ArrowUp, Bot } from 'lucide-react'
 import { toast } from 'sonner'
 import Orb from '@/components/ui/Orb'
+import { getGeminiApiKey } from '@/lib/ai-service'
 
 interface Message {
     role: 'user' | 'assistant'
@@ -65,6 +66,12 @@ export default function ChatAgent({ context }: ChatAgentProps) {
         if (!messageText.trim() || loading) return
 
         const userMessage: Message = { role: 'user', content: messageText }
+        const apiKey = getGeminiApiKey()
+        if (!apiKey) {
+            toast.error('Add your BYOK key in Settings to use the assistant.')
+            return
+        }
+
         setMessages(prev => [...prev, userMessage])
         setInput('')
         setLoading(true)
@@ -72,7 +79,7 @@ export default function ChatAgent({ context }: ChatAgentProps) {
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'x-gemini-api-key': apiKey },
                 body: JSON.stringify({
                     messages: [...messages, userMessage],
                     context,
