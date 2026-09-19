@@ -68,7 +68,7 @@ export default function ChatAgent({ context }: ChatAgentProps) {
         const userMessage: Message = { role: 'user', content: messageText }
         const apiKey = getGeminiApiKey()
         if (!apiKey) {
-            toast.error('Add your BYOK key in Settings to use the assistant.')
+            toast.error('Add your BYOK key in Settings to use Aisle.')
             return
         }
 
@@ -134,7 +134,7 @@ export default function ChatAgent({ context }: ChatAgentProps) {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         onClick={() => setIsOpen(true)}
-                        aria-label="Open the assistant"
+                        aria-label="Open Aisle"
                         className="group fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white text-black shadow-2xl shadow-black/50 transition-transform hover:scale-105 active:scale-95"
                     >
                         <MessageCircle className="h-6 w-6" aria-hidden="true" />
@@ -147,7 +147,7 @@ export default function ChatAgent({ context }: ChatAgentProps) {
                 {isOpen && (
                     <motion.div
                         role="dialog"
-                        aria-label="Assistant"
+                        aria-label="Aisle"
                         initial={{ opacity: 0, y: 16, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -166,14 +166,14 @@ export default function ChatAgent({ context }: ChatAgentProps) {
                                     <Bot className="h-4 w-4" aria-hidden="true" />
                                 </span>
                                 <div>
-                                    <h2 className="font-display text-sm font-semibold tracking-tight">Assistant</h2>
+                                    <h2 className="font-display text-sm font-semibold tracking-tight">Aisle</h2>
                                     <p className="text-xs text-zinc-500">Knows everything you have scanned</p>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsOpen(false)}
-                                aria-label="Close the assistant"
+                                aria-label="Close Aisle"
                                 className="btn-icon -mr-1"
                             >
                                 <X className="h-5 w-5" aria-hidden="true" />

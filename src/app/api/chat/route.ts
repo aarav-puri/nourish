@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build system prompt with context from scan history
-    let systemPrompt = `You are a helpful AI assistant for BarcodeSense, a food scanning app. You help users understand their scanned products and make healthier choices.
+    let systemPrompt = `You are Aisle, the in-app helper for BarcodeSense, a food scanning app. You help users understand their scanned products and make healthier choices.
 
 You have access to the user's scan history including:
 - Product names, barcodes, ingredients, and nutrition information

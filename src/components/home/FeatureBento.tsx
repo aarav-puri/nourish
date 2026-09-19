@@ -74,7 +74,7 @@ const CELLS: Cell[] = [
   {
     k: 'assistant',
     icon: MessagesSquare,
-    title: 'Ask it anything',
+    title: 'Ask Aisle anything',
     body: "Ask about anything you have scanned. It remembers your whole history, so the answer is about your food, not food in general.",
     span: 'lg:col-span-2',
     size: 'md',
