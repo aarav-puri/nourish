@@ -38,15 +38,14 @@ When answering questions:
       systemPrompt += `\n\nUser's Scan History:\n${JSON.stringify(context, null, 2)}`
     }
 
-    // Call Mistral API
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
+        'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral-small-2603',
+        model: 'gemini-3.5-flash-lite',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages,
@@ -59,9 +58,9 @@ When answering questions:
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('Mistral API Error:', data)
+      console.error('Gemini API Error:', data)
       return NextResponse.json(
-        { error: data.message || 'AI service error' },
+        { error: data?.error?.message || data?.[0]?.error?.message || 'AI service error' },
         { status: response.status }
       )
     }

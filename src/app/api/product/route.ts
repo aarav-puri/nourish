@@ -85,9 +85,9 @@ async function fetchOpenFoodFactsProduct(barcode: string): Promise<Response> {
   throw lastError ?? new Error('Open Food Facts request failed without an explicit error')
 }
 
-async function formatProductWithMistral(product: any) {
-  const mistralController = new AbortController()
-  const mistralTimeout = setTimeout(() => mistralController.abort(), 8000)
+async function formatProductWithGemini(product: any) {
+  const geminiController = new AbortController()
+  const geminiTimeout = setTimeout(() => geminiController.abort(), 8000)
 
   try {
     const prompt = `Format this product information in a clean, well-structured way. Return ONLY valid JSON with these exact fields:
@@ -111,14 +111,14 @@ Return JSON with these exact keys:
   "key_highlights": ["2-3 key points about this product"]
 }`
 
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
+        'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral-small-2603',
+        model: 'gemini-3.5-flash-lite',
         messages: [
           {
             role: 'system',
@@ -132,13 +132,13 @@ Return JSON with these exact keys:
         temperature: 0.3,
         max_tokens: 500,
       }),
-      signal: mistralController.signal,
+      signal: geminiController.signal,
     })
 
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('Mistral API Error:', data)
+      console.error('Gemini API Error:', data)
       return null
     }
 
@@ -151,7 +151,7 @@ Return JSON with these exact keys:
     console.error('Format Product Error:', error)
     return null
   } finally {
-    clearTimeout(mistralTimeout)
+    clearTimeout(geminiTimeout)
   }
 }
 
@@ -174,9 +174,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: data }, { status: response.status })
     }
 
-    // If product found, format it with Mistral AI
+    // If product found, format it with Gemini
     if (data.status === 1 && data.product) {
-      const formatted = await formatProductWithMistral(data.product)
+      const formatted = await formatProductWithGemini(data.product)
       if (formatted) {
         data.product.ai_formatted = formatted
       }
