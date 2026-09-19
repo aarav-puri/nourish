@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Upload, Search, ArrowLeft, X, Home, User, Sparkles,
+  Upload, Search, ArrowLeft, X, Home, User, ScanEye, PenLine,
   Activity, CheckSquare, Leaf, AlertCircle,
   Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings,
   Timer, Flame, TriangleAlert, Lightbulb
@@ -899,7 +899,7 @@ export default function AppPage() {
                   <div className="max-w-md mx-auto space-y-4">
                     <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-left">
                       <p className="text-sm text-blue-300 mb-2">
-                        <Sparkles className="w-4 h-4 inline mr-1" />
+                        <ScanEye className="w-4 h-4 inline mr-1" aria-hidden="true" />
                         What would you like to do?
                       </p>
                       <p className="text-xs text-zinc-400">
@@ -927,7 +927,7 @@ export default function AppPage() {
                         onClick={() => setManualEntryMode(true)}
                         className="w-full"
                       >
-                        <Sparkles className="w-5 h-5" />
+                        <PenLine className="w-5 h-5" aria-hidden="true" />
                         Enter Product Details Manually
                       </Button>
                     </div>
