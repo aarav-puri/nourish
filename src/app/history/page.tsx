@@ -4,13 +4,21 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trash2, Calendar, Barcode, Package, Trash, Brain, ChevronDown, ChevronUp, Leaf, Activity, Timer, Flame, TriangleAlert, Lightbulb } from 'lucide-react'
+import { ArrowLeft, Trash2, Calendar, Barcode, Package, Trash, Brain, ChevronDown, ChevronUp, Leaf, ArrowRightLeft, ChefHat, CheckSquare, type LucideIcon } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import ChatAgent from '@/components/ChatAgent'
 import { scoreFromGrade } from '@/components/product/ScoreMeter'
+import InsightResults from '@/components/product/InsightResults'
 import { toast } from 'sonner'
 import Orb from '@/components/ui/Orb'
+
+const INSIGHT_ICONS: Record<string, LucideIcon> = {
+  alternatives: ArrowRightLeft,
+  diet_compatibility: CheckSquare,
+  eco_impact: Leaf,
+  recipe_suggestions: ChefHat,
+}
 
 interface ScannedProduct {
   id: string
@@ -296,20 +304,29 @@ export default function HistoryPage() {
                             {productInsights.map((insight) => (
                               <div
                                 key={insight.id}
-                                className="p-4 bg-white/5 rounded-xl border border-white/10"
+                                className="rounded-2xl border border-white/10 bg-black/40 p-4 sm:p-5"
                               >
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center gap-2">
-                                    <Brain className="w-4 h-4 text-zinc-400" aria-hidden="true" />
-                                    <span className="text-sm font-semibold text-zinc-200">
+                                <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/10 pb-4">
+                                  <div className="flex min-w-0 items-center gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5">
+                                      {(() => {
+                                        const Icon = INSIGHT_ICONS[insight.insight_type] ?? Brain
+                                        return <Icon className="h-4 w-4" aria-hidden="true" />
+                                      })()}
+                                    </span>
+                                    <span className="truncate font-display text-sm font-semibold">
                                       {formatInsightType(insight.insight_type)}
                                     </span>
                                   </div>
-                                  <span className="text-xs text-zinc-500">
+                                  <span className="shrink-0 font-mono text-[11px] uppercase tracking-label text-zinc-500">
                                     {formatDate(insight.created_at)}
                                   </span>
                                 </div>
-                                <AIResultDisplay content={insight.insight_data?.content} />
+                                {insight.insight_data?.content ? (
+                                  <InsightResults content={insight.insight_data.content} />
+                                ) : (
+                                  <p className="text-sm text-zinc-400">No data available</p>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -326,188 +343,6 @@ export default function HistoryPage() {
 
       {/* AI Chat Agent */}
       {!loading && products.length > 0 && <ChatAgent context={chatContext} />}
-    </div>
-  )
-}
-
-
-// AI Result Display Component
-function AIResultDisplay({ content }: { content: any }) {
-  if (!content) return <p className="text-sm text-zinc-400">No data available</p>
-
-  if (Array.isArray(content)) {
-    // Check if it's recipes (has recipe_name)
-    if (content[0]?.recipe_name) {
-      return (
-        <div className="space-y-3">
-          {content.map((recipe, i) => (
-            <div key={i} className="p-3 bg-white/5 rounded-lg border border-white/10">
-              <div className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                  {i + 1}
-                </span>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm mb-1">{recipe.recipe_name}</h4>
-                  <p className="text-xs text-zinc-400 mb-2">{recipe.description}</p>
-
-                  <div className="flex items-center gap-3 text-xs text-zinc-500 mb-2">
-                    <span className={`px-2 py-0.5 rounded ${recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
-                      recipe.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-red-500/20 text-red-400'
-                      }`}>
-                      {recipe.difficulty}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5"><Timer className="h-3.5 w-3.5" aria-hidden="true" />{recipe.prep_time} min</span>
-                    {recipe.calories && <span className="inline-flex items-center gap-1.5"><Flame className="h-3.5 w-3.5" aria-hidden="true" />{recipe.calories} cal</span>}
-                  </div>
-
-                  {recipe.other_ingredients && (
-                    <div className="mb-2">
-                      <p className="text-xs text-zinc-500 mb-1">Other ingredients:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {recipe.other_ingredients.slice(0, 4).map((ing: string, idx: number) => (
-                          <span key={idx} className="text-xs px-1.5 py-0.5 bg-white/5 rounded">
-                            {ing}
-                          </span>
-                        ))}
-                        {recipe.other_ingredients.length > 4 && (
-                          <span className="text-xs text-zinc-500">+{recipe.other_ingredients.length - 4} more</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {recipe.health_benefits && (
-                    <p className="text-xs text-zinc-400">{recipe.health_benefits}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )
-    }
-
-    // Alternatives or Mood recommendations
-    return (
-      <div className="space-y-3">
-        {content.map((item, i) => (
-          <div key={i} className="p-3 bg-white/5 rounded-lg">
-            <div className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                {i + 1}
-              </span>
-              <div className="flex-1">
-                <h4 className="font-semibold text-sm mb-1">{item.product_name || item.food_name}</h4>
-                {item.why_healthier && <p className="text-xs text-zinc-400 mb-1">{item.why_healthier}</p>}
-                {item.why_helps && <p className="text-xs text-zinc-400 mb-1">{item.why_helps}</p>}
-                {item.flavor_similarity && (
-                  <div className="flex items-center gap-2 text-xs mt-2">
-                    <span className="text-zinc-500">Similarity:</span>
-                    <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden max-w-[100px]">
-                      <div
-                        className="h-full bg-gradient-to-r from-white to-zinc-400"
-                        style={{ width: `${item.flavor_similarity * 10}%` }}
-                      />
-                    </div>
-                    <span className="text-zinc-400">{item.flavor_similarity}/10</span>
-                  </div>
-                )}
-                {item.energy_level && (
-                  <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs ${item.energy_level === 'Boost' ? 'bg-yellow-500/20 text-yellow-400' :
-                    item.energy_level === 'Calm' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-green-500/20 text-green-400'
-                    }`}>
-                    {item.energy_level}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  // Eco score or Diet compatibility
-  if (content.overall_score !== undefined) {
-    // Eco score
-    const score = content.overall_score
-    const scoreClass = score >= 7 ? 'text-green-400' : score >= 4 ? 'text-yellow-400' : 'text-red-400'
-
-    return (
-      <div className="space-y-4">
-        <div className="text-center">
-          <div className={`text-4xl font-bold ${scoreClass}`}>{score}/10</div>
-          <p className="text-zinc-400 text-xs mt-1">Environmental Impact Score</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          {['carbon_footprint', 'water_usage', 'transportation_impact'].map((key) => (
-            content[key] && (
-              <div key={key} className="p-2 bg-white/5 rounded-lg">
-                <p className="text-xs text-zinc-400 capitalize">{key.replace(/_/g, ' ')}</p>
-                <p className={`text-sm font-semibold ${content[key] === 'Low' ? 'text-green-400' :
-                  content[key] === 'Medium' ? 'text-yellow-400' : 'text-red-400'
-                  }`}>{content[key]}</p>
-              </div>
-            )
-          ))}
-        </div>
-
-        {content.explanation && (
-          <div className="p-3 bg-white/5 rounded-lg">
-            <p className="text-xs text-zinc-400 mb-1">Analysis</p>
-            <p className="text-sm">{content.explanation}</p>
-          </div>
-        )}
-
-        {content.tips && (
-          <div className="p-3 bg-white/5 rounded-lg">
-            <p className="text-xs text-zinc-400 mb-2">Eco Friendly Tips</p>
-            <ul className="space-y-1">
-              {content.tips.map((tip: string, i: number) => (
-                <li key={i} className="flex items-start gap-2">
-                  <Leaf className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs">{tip}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Diet compatibility
-  return (
-    <div className="space-y-2">
-      {Object.entries(content).map(([diet, info]: [string, any]) => (
-        <div
-          key={diet}
-          className={`p-3 rounded-lg border ${info.compatible === 'Yes' ? 'border-green-500/30 bg-green-500/10' :
-            info.compatible === 'Maybe' ? 'border-yellow-500/30 bg-yellow-500/10' :
-              'border-red-500/30 bg-red-500/10'
-            }`}
-        >
-          <div className="flex items-center justify-between mb-1">
-            <h4 className="font-semibold text-sm">{diet}</h4>
-            <span className={`px-2 py-0.5 rounded-full text-xs ${info.compatible === 'Yes' ? 'bg-green-500/20 text-green-400' :
-              info.compatible === 'Maybe' ? 'bg-yellow-500/20 text-yellow-400' :
-                'bg-red-500/20 text-red-400'
-              }`}>
-              {info.compatible}
-            </span>
-          </div>
-          <p className="text-xs text-zinc-400">{info.reason}</p>
-          {info.concerns && info.concerns !== 'null' && (
-            <p className="mt-1 flex items-start gap-2 text-xs text-red-400"><TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />{info.concerns}</p>
-          )}
-          {info.alternatives && info.alternatives !== 'null' && (
-            <p className="mt-1 flex items-start gap-2 text-xs text-zinc-300"><Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />{info.alternatives}</p>
-          )}
-        </div>
-      ))}
     </div>
   )
 }

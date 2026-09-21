@@ -6,9 +6,8 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload, Search, ArrowLeft, X, Home, User, ScanEye, PenLine,
-  Activity, CheckSquare, Leaf, AlertCircle,
+  ArrowRightLeft, ArrowUpRight, CheckSquare, Leaf, AlertCircle,
   Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings,
-  Timer, Flame, TriangleAlert, Lightbulb
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
@@ -19,6 +18,7 @@ import SiteBackground from '@/components/brand/SiteBackground'
 import ScoreMeter from '@/components/product/ScoreMeter'
 import EcoBars from '@/components/product/EcoBars'
 import DataRow from '@/components/product/DataRow'
+import InsightResults from '@/components/product/InsightResults'
 import Input from '@/components/ui/Input'
 import Modal from '@/components/ui/Modal'
 import { toast } from 'sonner'
@@ -710,43 +710,33 @@ export default function AppPage() {
                     <p className="mb-4 text-xs font-bold uppercase tracking-label text-zinc-500">
                       Go further
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        variant="secondary"
-                        onClick={() => handleAIFeature('alternatives')}
-                        disabled={aiLoading}
-                        className="flex-col h-auto py-4"
-                      >
-                        <Activity className="w-6 h-6 mb-2" />
-                        <span className="text-sm">A better option</span>
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        onClick={() => handleAIFeature('recipes')}
-                        disabled={aiLoading}
-                        className="flex-col h-auto py-4"
-                      >
-                        <ChefHat className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Something to cook</span>
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        onClick={() => handleAIFeature('eco')}
-                        disabled={aiLoading}
-                        className="flex-col h-auto py-4"
-                      >
-                        <Leaf className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Footprint detail</span>
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setDietModalOpen(true)}
-                        disabled={aiLoading}
-                        className="flex-col h-auto py-4"
-                      >
-                        <CheckSquare className="w-6 h-6 mb-2" />
-                        <span className="text-sm">Check my diet</span>
-                      </Button>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {[
+                        { key: 'alternatives', icon: ArrowRightLeft, title: 'A better option', body: 'Swaps that taste alike but read cleaner.', run: () => handleAIFeature('alternatives') },
+                        { key: 'recipes', icon: ChefHat, title: 'Something to cook', body: 'Three ideas built around this product.', run: () => handleAIFeature('recipes') },
+                        { key: 'eco', icon: Leaf, title: 'Footprint detail', body: 'Carbon, water, transport and packaging.', run: () => handleAIFeature('eco') },
+                        { key: 'diet', icon: CheckSquare, title: 'Check my diet', body: 'Vegan, keto, halal and more, in one pass.', run: () => setDietModalOpen(true) },
+                      ].map(({ key, icon: Icon, title, body, run }) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={run}
+                          disabled={aiLoading}
+                          className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-[border-color,background-color,transform] duration-[120ms] ease-scan hover:border-white/30 hover:bg-white/[0.07] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
+                        >
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 transition-colors group-hover:bg-white group-hover:text-black">
+                            <Icon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block font-display text-sm font-semibold">{title}</span>
+                            <span className="mt-1 block text-xs leading-relaxed text-zinc-500">{body}</span>
+                          </span>
+                          <ArrowUpRight
+                            className="mt-1 h-4 w-4 shrink-0 text-zinc-600 transition-[transform,color] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1043,9 +1033,9 @@ export default function AppPage() {
         isOpen={!!aiResult}
         onClose={() => setAiResult(null)}
         title={aiResult?.title}
-        size="lg"
+        size="xl"
       >
-        {aiResult && <AIResultDisplay content={aiResult.content} />}
+        {aiResult && <InsightResults content={aiResult.content} />}
       </Modal>
 
       {/* AI Loading Overlay */}
@@ -1057,208 +1047,6 @@ export default function AppPage() {
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-// AI Result Display Component
-function AIResultDisplay({ content }: { content: any }) {
-  if (Array.isArray(content)) {
-    // Check if it's recipes (has recipe_name)
-    if (content[0]?.recipe_name) {
-      return (
-        <div className="space-y-4">
-          {content.map((recipe, i) => (
-            <div key={i} className="p-4 bg-white/5 rounded-xl border border-white/10">
-              <div className="flex items-start gap-3">
-                <span className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  {i + 1}
-                </span>
-                <div className="flex-1">
-                  <h4 className="font-semibold mb-1">{recipe.recipe_name}</h4>
-                  <p className="text-sm text-zinc-400 mb-3">{recipe.description}</p>
-
-                  <div className="flex items-center gap-4 text-xs text-zinc-500 mb-3">
-                    <span className={`px-2 py-1 rounded ${recipe.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
-                        recipe.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-red-500/20 text-red-400'
-                      }`}>
-                      {recipe.difficulty}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5"><Timer className="h-3.5 w-3.5" aria-hidden="true" />{recipe.prep_time} min</span>
-                    {recipe.calories && <span className="inline-flex items-center gap-1.5"><Flame className="h-3.5 w-3.5" aria-hidden="true" />{recipe.calories} cal</span>}
-                  </div>
-
-                  {recipe.other_ingredients && (
-                    <div className="mb-3">
-                      <p className="text-xs text-zinc-500 mb-1">Other ingredients needed:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {recipe.other_ingredients.map((ing: string, idx: number) => (
-                          <span key={idx} className="text-xs px-2 py-0.5 bg-white/5 rounded">
-                            {ing}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {recipe.health_benefits && (
-                    <p className="text-xs text-zinc-400">{recipe.health_benefits}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )
-    }
-
-    // Alternatives or Mood recommendations
-    return (
-      <div className="space-y-4">
-        {content.map((item, i) => (
-          <div key={i} className="p-4 bg-white/5 rounded-xl">
-            <div className="flex items-start gap-3">
-              <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold">
-                {i + 1}
-              </span>
-              <div className="flex-1">
-                <h4 className="font-semibold mb-2">{item.product_name || item.food_name}</h4>
-                {item.why_healthier && <p className="text-sm text-zinc-400 mb-2">{item.why_healthier}</p>}
-                {item.why_helps && <p className="text-sm text-zinc-400 mb-2">{item.why_helps}</p>}
-                {item.flavor_similarity && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-zinc-500">Similarity:</span>
-                    <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-white to-zinc-400"
-                        style={{ width: `${item.flavor_similarity * 10}%` }}
-                      />
-                    </div>
-                    <span>{item.flavor_similarity}/10</span>
-                  </div>
-                )}
-                {(item.sugar_diff || item.additive_diff || item.price_range) && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {item.sugar_diff && (
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-300">
-                        {item.sugar_diff}
-                      </span>
-                    )}
-                    {item.additive_diff && (
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-300">
-                        {item.additive_diff}
-                      </span>
-                    )}
-                    {item.price_range && (
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-zinc-300">
-                        {item.price_range}
-                      </span>
-                    )}
-                  </div>
-                )}
-                {item.energy_level && (
-                  <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${item.energy_level === 'Boost' ? 'bg-yellow-500/20 text-yellow-400' :
-                      item.energy_level === 'Calm' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-green-500/20 text-green-400'
-                    }`}>
-                    {item.energy_level}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  // Eco score or Diet compatibility
-  if (content.overall_score !== undefined) {
-    // Eco score
-    const score = content.overall_score
-    const scoreClass = score >= 7 ? 'text-green-400' : score >= 4 ? 'text-yellow-400' : 'text-red-400'
-
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <div className={`text-6xl font-bold ${scoreClass}`}>{score}/10</div>
-          <p className="text-zinc-400 mt-2">Environmental impact score</p>
-        </div>
-
-        {content.category_comparison && (
-          <div className="flex items-start gap-2 rounded-xl bg-white/5 p-4">
-            <Leaf className="mt-0.5 h-4 w-4 shrink-0 text-green-400" aria-hidden="true" />
-            <p className="text-sm">{content.category_comparison}</p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-4">
-          {['carbon_footprint', 'water_usage', 'transportation_impact'].map((key) => (
-            content[key] && (
-              <div key={key} className="p-4 bg-white/5 rounded-xl">
-                <p className="text-sm text-zinc-400 capitalize">{key.replace(/_/g, ' ')}</p>
-                <p className={`font-semibold ${content[key] === 'Low' ? 'text-green-400' :
-                    content[key] === 'Medium' ? 'text-yellow-400' : 'text-red-400'
-                  }`}>{content[key]}</p>
-              </div>
-            )
-          ))}
-        </div>
-
-        {content.explanation && (
-          <div className="p-4 bg-white/5 rounded-xl">
-            <p className="text-sm text-zinc-400 mb-2">Analysis</p>
-            <p>{content.explanation}</p>
-          </div>
-        )}
-
-        {content.tips && (
-          <div className="p-4 bg-white/5 rounded-xl">
-            <p className="text-sm text-zinc-400 mb-2">Eco Friendly Tips</p>
-            <ul className="space-y-2">
-              {content.tips.map((tip: string, i: number) => (
-                <li key={i} className="flex items-start gap-2">
-                  <Leaf className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
-                  <span className="text-sm">{tip}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Diet compatibility
-  return (
-    <div className="space-y-4">
-      {Object.entries(content).map(([diet, info]: [string, any]) => (
-        <div
-          key={diet}
-          className={`p-4 rounded-xl border ${info.compatible === 'Yes' ? 'border-green-500/30 bg-green-500/10' :
-              info.compatible === 'Maybe' ? 'border-yellow-500/30 bg-yellow-500/10' :
-                'border-red-500/30 bg-red-500/10'
-            }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold">{diet}</h4>
-            <span className={`px-3 py-1 rounded-full text-sm ${info.compatible === 'Yes' ? 'bg-green-500/20 text-green-400' :
-                info.compatible === 'Maybe' ? 'bg-yellow-500/20 text-yellow-400' :
-                  'bg-red-500/20 text-red-400'
-              }`}>
-              {info.compatible}
-            </span>
-          </div>
-          <p className="text-sm text-zinc-400">{info.reason}</p>
-          {info.concerns && info.concerns !== 'null' && (
-            <p className="mt-2 flex items-start gap-2 text-sm text-red-400"><TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />{info.concerns}</p>
-          )}
-          {info.alternatives && info.alternatives !== 'null' && (
-            <p className="mt-2 flex items-start gap-2 text-sm text-zinc-300"><Lightbulb className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />{info.alternatives}</p>
-          )}
-        </div>
-      ))}
     </div>
   )
 }

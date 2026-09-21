@@ -75,7 +75,7 @@ export default function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-white/5 px-[var(--gutter)] pt-8 text-[10px] uppercase tracking-label text-zinc-600 md:flex-row">
         <p>© {new Date().getFullYear()} BarcodeSense. All rights reserved.</p>
         <p className="text-center md:text-right">
-          Product data from Open Food Facts. Not medical advice.
+          Product data from Open Food Facts and Go-UPC. Not medical advice.
         </p>
       </div>
     </footer>

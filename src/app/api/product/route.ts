@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const OPEN_FOOD_FACTS_TIMEOUT_MS = Math.max(
+const TIMEOUT_MS = Math.max(
   1000,
-  Number(process.env.OPEN_FOOD_FACTS_TIMEOUT_MS ?? 12000) || 12000
+  Number(process.env.LOOKUP_TIMEOUT_MS ?? 12000) || 12000
 )
-const OPEN_FOOD_FACTS_MAX_ATTEMPTS = Math.max(
+const MAX_ATTEMPTS = Math.max(
   1,
-  Number(process.env.OPEN_FOOD_FACTS_MAX_ATTEMPTS ?? 3) || 3
+  Number(process.env.LOOKUP_MAX_ATTEMPTS ?? 3) || 3
 )
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504])
 
@@ -35,31 +35,33 @@ async function parseResponseBody(response: Response) {
   }
 }
 
-async function fetchOpenFoodFactsProduct(barcode: string): Promise<Response> {
-  const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
+async function fetchWithRetry(
+  label: string,
+  url: string,
+  headers?: Record<string, string>
+): Promise<Response> {
   let lastError: unknown = null
 
-  for (let attempt = 1; attempt <= OPEN_FOOD_FACTS_MAX_ATTEMPTS; attempt += 1) {
-    const offController = new AbortController()
-    const offTimeout = setTimeout(() => offController.abort(), OPEN_FOOD_FACTS_TIMEOUT_MS)
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
     try {
       const response = await fetch(url, {
-        signal: offController.signal,
+        signal: controller.signal,
+        headers,
         cache: 'no-store',
       })
 
       if (
         response.ok ||
         !RETRYABLE_STATUS_CODES.has(response.status) ||
-        attempt === OPEN_FOOD_FACTS_MAX_ATTEMPTS
+        attempt === MAX_ATTEMPTS
       ) {
         return response
       }
 
-      console.warn(
-        `Open Food Facts returned ${response.status} on attempt ${attempt}/${OPEN_FOOD_FACTS_MAX_ATTEMPTS}; retrying`
-      )
+      console.warn(`${label} returned ${response.status} on attempt ${attempt}/${MAX_ATTEMPTS}; retrying`)
     } catch (error) {
       lastError = error
 
@@ -67,22 +69,84 @@ async function fetchOpenFoodFactsProduct(barcode: string): Promise<Response> {
         isAbortError(error) ||
         (error instanceof TypeError && error.message.toLowerCase().includes('fetch'))
 
-      if (!isRetryableNetworkError || attempt === OPEN_FOOD_FACTS_MAX_ATTEMPTS) {
+      if (!isRetryableNetworkError || attempt === MAX_ATTEMPTS) {
         throw error
       }
 
-      console.warn(
-        `Open Food Facts request failed on attempt ${attempt}/${OPEN_FOOD_FACTS_MAX_ATTEMPTS}; retrying`,
-        error
-      )
+      console.warn(`${label} request failed on attempt ${attempt}/${MAX_ATTEMPTS}; retrying`, error)
     } finally {
-      clearTimeout(offTimeout)
+      clearTimeout(timeout)
     }
 
     await delay(300 * attempt)
   }
 
-  throw lastError ?? new Error('Open Food Facts request failed without an explicit error')
+  throw lastError ?? new Error(`${label} request failed without an explicit error`)
+}
+
+// Open Food Facts is the primary source: it carries nutrition and scores.
+// Resolves to null when the product is unknown.
+async function lookupOpenFoodFacts(barcode: string): Promise<any | null> {
+  const response = await fetchWithRetry(
+    'Open Food Facts',
+    `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(barcode)}.json`
+  )
+  if (response.status === 404) return null
+
+  const data = await parseResponseBody(response)
+  if (!response.ok) {
+    throw new Error(`Open Food Facts returned ${response.status}`)
+  }
+  return data.status === 1 && data.product && Object.keys(data.product).length > 0
+    ? data.product
+    : null
+}
+
+// Go-UPC fills the gaps: broader coverage, including non-food products.
+// Resolves to null when the product is unknown.
+async function lookupGoUpc(barcode: string, apiKey: string): Promise<any | null> {
+  const response = await fetchWithRetry(
+    'Go-UPC',
+    `https://go-upc.com/api/v1/code/${encodeURIComponent(barcode)}`,
+    { Authorization: `Bearer ${apiKey}` }
+  )
+  // 400 means the code format is unrecognized, which is a plain "not found".
+  if (response.status === 404 || response.status === 400) return null
+
+  const body = await parseResponseBody(response)
+  if (!response.ok) {
+    throw new Error(`Go-UPC returned ${response.status}`)
+  }
+  return body.product ? mapGoUpcProduct(body.code, body.product) : null
+}
+
+// Go-UPC has no nutrition or score data, so those fields are simply absent.
+function mapGoUpcProduct(code: string, product: any) {
+  return {
+    code,
+    product_name: product.name,
+    brands: product.brand,
+    ingredients_text: product.ingredients?.text,
+    image_url: product.imageUrl,
+    categories: Array.isArray(product.categoryPath) && product.categoryPath.length
+      ? product.categoryPath.join(', ')
+      : product.category,
+  }
+}
+
+function hasCoreFields(product: any) {
+  return Boolean(
+    product.product_name && product.brands && product.image_url && product.ingredients_text
+  )
+}
+
+// Open Food Facts values win; Go-UPC only fills fields that are missing.
+function mergeProducts(off: any | null, upc: any | null, barcode: string) {
+  const merged: Record<string, any> = { code: barcode, ...(upc ?? {}), ...(off ?? {}) }
+  for (const key of ['product_name', 'brands', 'image_url', 'ingredients_text', 'categories']) {
+    if (!merged[key] && upc?.[key]) merged[key] = upc[key]
+  }
+  return merged
 }
 
 async function formatProductWithGemini(product: any, apiKey: string) {
@@ -167,12 +231,37 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetchOpenFoodFactsProduct(barcode)
-    const data = await parseResponseBody(response)
-
-    if (!response.ok) {
-      return NextResponse.json({ error: data }, { status: response.status })
+    let off: any | null = null
+    let offError: unknown = null
+    try {
+      off = await lookupOpenFoodFacts(barcode)
+    } catch (error) {
+      // Keep going: Go-UPC may still be able to answer.
+      offError = error
+      console.error('Open Food Facts lookup failed:', error)
     }
+
+    // Only spend a Go-UPC lookup when Open Food Facts left gaps.
+    const goUpcKey = process.env.GO_UPC_API_KEY
+    const needsGoUpc = !off || !hasCoreFields(off)
+    let upc: any | null = null
+    let upcError: unknown = null
+    if (goUpcKey && needsGoUpc) {
+      try {
+        upc = await lookupGoUpc(barcode, goUpcKey)
+      } catch (error) {
+        upcError = error
+        console.error('Go-UPC lookup failed:', error)
+      }
+    }
+
+    // Both sources failed outright (as opposed to "not found").
+    if (!off && !upc && offError && (upcError || !goUpcKey)) {
+      throw offError
+    }
+
+    const data: { status: number; product?: any } =
+      off || upc ? { status: 1, product: mergeProducts(off, upc, barcode) } : { status: 0 }
 
     // Formatting only runs when the browser supplied its own key.
     const apiKey = request.headers.get('x-gemini-api-key')
@@ -185,20 +274,20 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data)
   } catch (error: any) {
-    console.error('Open Food Facts API Error:', error)
+    console.error('Product lookup error:', error)
 
     if (isAbortError(error)) {
       return NextResponse.json(
         {
           error: 'Request timed out',
-          message: `Open Food Facts did not respond in time after ${OPEN_FOOD_FACTS_MAX_ATTEMPTS} attempt(s). Please try again.`,
+          message: `Product lookup did not respond in time after ${MAX_ATTEMPTS} attempt(s). Please try again.`,
         },
         { status: 504 }
       )
     }
 
     return NextResponse.json(
-      { error: 'Upstream fetch failed', message: error.message || 'Unknown Open Food Facts error' },
+      { error: 'Upstream fetch failed', message: error.message || 'Unknown product lookup error' },
       { status: 502 }
     )
   }
