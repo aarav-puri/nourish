@@ -52,7 +52,7 @@ function FindingChip({ tone, k, v }: { tone: (typeof FINDINGS)[number]['tone']; 
     <div
       className={`whitespace-nowrap rounded-xl border px-3 py-2 font-mono text-[10px] uppercase leading-tight tracking-label ${
         tone === 'alarm'
-          ? 'border-white bg-white font-bold text-black'
+          ? 'border-white bg-white font-semibold text-black'
           : tone === 'good'
             ? 'border-white/40 bg-black/80 text-white backdrop-blur-md'
             : 'border-white/12 bg-black/80 text-zinc-400 backdrop-blur-md'

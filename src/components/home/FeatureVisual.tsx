@@ -9,7 +9,7 @@ export type VisualKey = 'ai' | 'swap' | 'eco' | 'scan' | 'diet' | 'recipe' | 'as
 const Row = ({ label, value, tone = 'muted' }: { label: string; value: string; tone?: 'muted' | 'signal' | 'alarm' }) => (
   <div className="flex items-baseline justify-between gap-4 border-b border-white/10 py-2.5 font-mono text-[11px] uppercase tracking-label last:border-b-0">
     <span className="opacity-60">{label}</span>
-    <span className={tone === 'muted' ? 'opacity-80' : 'font-bold'}>{value}</span>
+    <span className={tone === 'muted' ? 'opacity-80' : 'font-semibold'}>{value}</span>
   </div>
 )
 
@@ -27,7 +27,7 @@ export default function FeatureVisual({ k }: { k: VisualKey }) {
             ))}
           </div>
           <div className="flex items-end gap-4">
-            <span className="tnum font-mono text-6xl font-bold leading-none">38</span>
+            <span className="tnum font-mono text-6xl font-semibold leading-none">38</span>
             <span className="t-label pb-2 opacity-60">/ 100 health score</span>
           </div>
           <div className="mt-5 flex h-2 w-full gap-[3px]">
@@ -56,12 +56,12 @@ export default function FeatureVisual({ k }: { k: VisualKey }) {
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
             <div className="rounded-xl border border-white/15 p-4">
               <span className="t-label opacity-60">Scanned</span>
-              <span className="tnum mt-2 block font-mono text-3xl font-bold opacity-55">38</span>
+              <span className="tnum mt-2 block font-mono text-3xl font-semibold opacity-55">38</span>
             </div>
             <span className="font-mono text-xl opacity-40">→</span>
             <div className="rounded-xl border border-white bg-white p-4 text-black">
               <span className="t-label">Swap</span>
-              <span className="tnum mt-2 block font-mono text-3xl font-bold">81</span>
+              <span className="tnum mt-2 block font-mono text-3xl font-semibold">81</span>
             </div>
           </div>
           <div className="mt-5">
@@ -84,7 +84,7 @@ export default function FeatureVisual({ k }: { k: VisualKey }) {
             <div key={b.l} className="mb-5 last:mb-0">
               <div className="mb-2 flex justify-between font-mono text-[11px] uppercase tracking-label">
                 <span className="opacity-60">{b.l}</span>
-                <span className={i === 1 ? 'opacity-70' : 'font-bold'}>{b.t}</span>
+                <span className={i === 1 ? 'opacity-70' : 'font-semibold'}>{b.t}</span>
               </div>
               <div className="h-3 w-full bg-white/10">
                 <span
@@ -137,7 +137,7 @@ export default function FeatureVisual({ k }: { k: VisualKey }) {
               className="flex items-center justify-between border-b border-white/10 py-2.5 font-mono text-[11px] uppercase tracking-label last:border-b-0"
             >
               <span className="opacity-70">{label as string}</span>
-              <span className={pass ? 'font-bold' : 'opacity-55'}>
+              <span className={pass ? 'font-semibold' : 'opacity-55'}>
                 {pass ? '✓ Pass' : '✕ Fail'}
               </span>
             </div>

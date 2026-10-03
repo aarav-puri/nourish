@@ -36,7 +36,7 @@ function Track() {
         <li key={r.item} className="flex items-center gap-4 whitespace-nowrap px-7">
           <span className="text-sm text-zinc-400">{r.item}</span>
           <span
-            className={`tnum rounded-full px-2.5 py-1 font-mono text-[11px] font-bold tracking-label ${
+            className={`tnum rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold tracking-label ${
               r.score >= 70
                 ? 'bg-white text-black'
                 : r.score >= 40

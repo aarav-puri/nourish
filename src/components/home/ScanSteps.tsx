@@ -59,7 +59,7 @@ export default function ScanSteps() {
       {/* Rail */}
       <div className="hidden lg:block">
         <div className="sticky top-32">
-          <p className="mb-6 text-xs font-bold uppercase tracking-label text-zinc-500">Sequence</p>
+          <p className="mb-6 text-xs font-semibold uppercase tracking-label text-zinc-500">Sequence</p>
           <ol className="relative m-0 list-none border-l border-white/10 pl-6">
             {/* The beam: one transform, tracking the active beat. */}
             <span
@@ -73,7 +73,7 @@ export default function ScanSteps() {
             {STEPS.map((s, i) => (
               <li key={s.n} className="py-5">
                 <span
-                  className={`block text-xs font-bold uppercase tracking-label transition-colors duration-[260ms] ${
+                  className={`block text-xs font-semibold uppercase tracking-label transition-colors duration-[260ms] ${
                     i === active ? 'text-white' : 'text-zinc-600'
                   }`}
                 >
@@ -108,7 +108,7 @@ export default function ScanSteps() {
             >
               <div className="flex items-baseline gap-4">
                 <span
-                  className={`text-xs font-bold uppercase tracking-label ${
+                  className={`text-xs font-semibold uppercase tracking-label ${
                     i === active ? 'text-white' : 'text-zinc-600'
                   }`}
                 >

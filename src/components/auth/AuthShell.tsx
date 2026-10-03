@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { ReactNode } from 'react'
 
 interface AuthShellProps {
@@ -34,10 +33,9 @@ export default function AuthShell({ eyebrow, title, lede, children, footer }: Au
         <Link
           href="/"
           className="mb-10 flex items-center justify-center gap-2.5"
-          aria-label="BarcodeSense home"
+          aria-label="Nourish home"
         >
-          <Image src="/favicon.png" alt="" width={36} height={36} className="h-9 w-9 object-contain" />
-          <span className="font-display text-lg font-bold tracking-tight">BarcodeSense</span>
+          <span className="font-display text-lg font-semibold lowercase tracking-tight">nourish.</span>
         </Link>
 
         <div className="relative overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black p-7 shadow-2xl shadow-black/80 sm:p-9">
@@ -47,7 +45,7 @@ export default function AuthShell({ eyebrow, title, lede, children, footer }: Au
             className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"
           />
 
-          <p className="text-xs font-bold uppercase tracking-label text-zinc-500">{eyebrow}</p>
+          <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">{eyebrow}</p>
           <h1 className="t-h3 mt-3">{title}</h1>
           <p className="mt-3 text-sm leading-relaxed text-zinc-400">{lede}</p>
 

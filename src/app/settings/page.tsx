@@ -112,7 +112,7 @@ export default function SettingsPage() {
             <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             <span className="hidden sm:inline">Back</span>
           </Link>
-          <h1 className="text-xl font-bold gradient-text">Settings</h1>
+          <h1 className="text-xl font-semibold gradient-text">Settings</h1>
         </div>
       </header>
 

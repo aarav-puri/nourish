@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================================
-   BARCODESENSE
+   NOURISH
    Noir, in strict black and white. Depth is built from layered
    darkness, hairline white borders, blur and glow. The only
    accent is pure white, used sparingly and at full strength.
@@ -96,24 +96,24 @@ body {
   font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
   font-size: clamp(2.75rem, 7.4vw, 6.5rem);
   line-height: 1.04;
-  letter-spacing: -0.04em;
-  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-weight: 600;
 }
 
 .t-h2 {
   font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
   font-size: clamp(2rem, 4.4vw, 3.25rem);
   line-height: 1.08;
-  letter-spacing: -0.032em;
-  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-weight: 500;
 }
 
 .t-h3 {
   font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
   font-size: clamp(1.3rem, 2vw, 1.75rem);
   line-height: 1.16;
-  letter-spacing: -0.022em;
-  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-weight: 500;
 }
 
 .t-body {
@@ -125,9 +125,9 @@ body {
 .t-label {
   font-size: 0.6875rem;
   line-height: 1.4;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* Headline fill: solid at the top, falling away toward the baseline. */

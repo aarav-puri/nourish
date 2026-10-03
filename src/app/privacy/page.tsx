@@ -11,12 +11,12 @@ export default function PrivacyPage() {
           Back to Home
         </Link>
 
-        <h1 className="text-4xl font-bold gradient-text mb-8">Privacy Policy</h1>
+        <h1 className="text-4xl font-semibold gradient-text mb-8">Privacy Policy</h1>
         
         <div className="prose prose-invert prose-zinc max-w-none space-y-6 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">1. Information We Collect</h2>
-            <p className="mb-4">When you use BarcodeSense, we may collect:</p>
+            <p className="mb-4">When you use Nourish, we may collect:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Account information (email address) when you sign up</li>
               <li>Product barcodes you scan</li>
@@ -90,14 +90,16 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Contact Us</h2>
+            <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Age Requirement</h2>
             <p>
-              If you have any questions about this Privacy Policy or how we handle your data, please use our in-app support options.
+              Nourish is intended for users who are 18 years of age or older. By using our service, you
+              represent and warrant that you are at least 18 years old. We do not knowingly collect
+              personal information from anyone under 18.
             </p>
           </section>
 
           <p className="text-sm text-zinc-500 mt-12">
-            Last updated: January 26, 2026
+            Last updated: October 3, 2026
           </p>
         </div>
       </main>

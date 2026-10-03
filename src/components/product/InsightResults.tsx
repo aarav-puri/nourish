@@ -28,18 +28,18 @@ type Icon = ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true'
 const WEIGHT = {
   good: 'border-white/30 bg-transparent text-white',
   medium: 'border-white/15 bg-transparent text-zinc-300',
-  poor: 'border-white bg-white font-bold text-black',
+  poor: 'border-white bg-white font-semibold text-black',
 }
 
 /* ---------- Shared pieces ---------------------------------------------- */
 
 function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="text-[11px] font-bold uppercase tracking-label text-zinc-500">{children}</p>
+  return <p className="text-[11px] font-semibold uppercase tracking-label text-zinc-500">{children}</p>
 }
 
 function Rank({ n }: { n: number }) {
   return (
-    <span className="tnum flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 font-display text-sm font-bold">
+    <span className="tnum flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 font-display text-sm font-semibold">
       {n}
     </span>
   )
@@ -109,7 +109,7 @@ function Alternatives({ items }: { items: any[] }) {
                   <div className="mt-4">
                     <div className="mb-2 flex justify-between font-mono text-[11px] uppercase tracking-label">
                       <span className="text-zinc-500">Tastes similar</span>
-                      <span className="tnum font-bold text-white">{similarity} / 10</span>
+                      <span className="tnum font-semibold text-white">{similarity} / 10</span>
                     </div>
                     <Segments value={similarity} label="Flavor similarity" />
                   </div>
@@ -231,8 +231,8 @@ function ScoreRing({ score }: { score: number }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="tnum font-display text-4xl font-bold leading-none">{score}</span>
-          <span className="mt-1 text-[11px] font-bold uppercase tracking-label text-zinc-500">out of 10</span>
+          <span className="tnum font-display text-4xl font-semibold leading-none">{score}</span>
+          <span className="mt-1 text-[11px] font-semibold uppercase tracking-label text-zinc-500">out of 10</span>
         </div>
       </div>
       <p className="mt-3 font-display text-base font-semibold">{verdict}</p>
@@ -258,7 +258,7 @@ function Eco({ content }: { content: any }) {
           content[key] ? (
             <div key={key} className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5 text-center">
               <I className="mx-auto h-5 w-5 text-zinc-400" aria-hidden="true" />
-              <p className="mt-2 text-[11px] font-bold uppercase tracking-label text-zinc-500">{label}</p>
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-label text-zinc-500">{label}</p>
               <span
                 className={`mt-2 inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
                   LEVEL[content[key]]?.badge ?? WEIGHT.medium
@@ -278,7 +278,7 @@ function Eco({ content }: { content: any }) {
               <Package className="h-4 w-4 text-zinc-400" aria-hidden="true" />
               Packaging
             </span>
-            <span className="tnum font-mono text-[11px] font-bold uppercase tracking-label">
+            <span className="tnum font-mono text-[11px] font-semibold uppercase tracking-label">
               {packaging} / 10
             </span>
           </div>
@@ -288,7 +288,7 @@ function Eco({ content }: { content: any }) {
 
       {content.category_comparison && (
         <Callout icon={ArrowRightLeft}>
-          <span className="mb-1 block text-[11px] font-bold uppercase tracking-label text-zinc-500">
+          <span className="mb-1 block text-[11px] font-semibold uppercase tracking-label text-zinc-500">
             Versus similar products
           </span>
           {content.category_comparison}
@@ -359,7 +359,7 @@ function Diets({ content }: { content: Record<string, any> }) {
       <div className="flex items-baseline justify-between gap-4 pb-1">
         <Eyebrow>Your diets</Eyebrow>
         <p className="tnum font-mono text-[11px] uppercase tracking-label text-zinc-400">
-          <span className="font-bold text-white">{yes}</span> of {entries.length} compatible
+          <span className="font-semibold text-white">{yes}</span> of {entries.length} compatible
         </p>
       </div>
 
@@ -405,7 +405,7 @@ function Diets({ content }: { content: Record<string, any> }) {
                 <div className="flex-1">
                   <Segments value={confidence} label={`${diet} confidence`} />
                 </div>
-                <span className="tnum font-mono text-[11px] font-bold">{confidence}/10</span>
+                <span className="tnum font-mono text-[11px] font-semibold">{confidence}/10</span>
               </div>
             )}
           </div>

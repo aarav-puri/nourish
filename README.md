@@ -1,6 +1,6 @@
-# BarcodeSense
+# Nourish
 
-BarcodeSense is a web application that allows users to scan barcodes, analyze their health scores, and find alternatives to products.
+Nourish is a web application that allows users to scan barcodes, analyze their health scores, and find alternatives to products.
 
 ## Features
 
@@ -16,7 +16,7 @@ BarcodeSense is a web application that allows users to scan barcodes, analyze th
 
 ## Barcode Scanning
 
-BarcodeSense supports multiple ways to scan products:
+Nourish supports multiple ways to scan products:
 
 1. **Camera Scan** (Recommended for mobile)
    - Click "Scan with Camera" button

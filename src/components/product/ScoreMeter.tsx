@@ -27,8 +27,8 @@ export default function ScoreMeter({ grade }: { grade?: string }) {
   if (score === null) {
     return (
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-        <p className="text-xs font-bold uppercase tracking-label text-zinc-500">Health read</p>
-        <p className="mt-3 font-display text-2xl font-bold tracking-tight text-zinc-400">
+        <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">Health read</p>
+        <p className="mt-3 font-display text-2xl font-semibold tracking-tight text-zinc-400">
           Not scored
         </p>
         <p className="mt-2 text-sm leading-relaxed text-zinc-500">
@@ -43,13 +43,13 @@ export default function ScoreMeter({ grade }: { grade?: string }) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-      <p className="text-xs font-bold uppercase tracking-label text-zinc-500">Health read</p>
+      <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">Health read</p>
 
       <div className="mt-4 flex items-end gap-4">
-        <span className="tnum font-display text-6xl font-bold leading-none tracking-tightest">
+        <span className="tnum font-display text-6xl font-semibold leading-none tracking-tightest">
           {score}
         </span>
-        <span className="pb-2 text-xs font-bold uppercase tracking-label text-zinc-500">
+        <span className="pb-2 text-xs font-semibold uppercase tracking-label text-zinc-500">
           / 100
         </span>
       </div>

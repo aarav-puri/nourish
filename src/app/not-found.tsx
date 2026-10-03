@@ -18,7 +18,7 @@ export default function NotFound() {
         ))}
       </div>
 
-      <p className="relative text-xs font-bold uppercase tracking-label text-zinc-500">Error 404</p>
+      <p className="relative text-xs font-semibold uppercase tracking-label text-zinc-500">Error 404</p>
       <h1 className="t-h2 relative mt-5">No read</h1>
       <p className="relative mt-5 max-w-sm leading-relaxed text-zinc-400">
         There is nothing at this address to decode. The page may have moved, or the link may be

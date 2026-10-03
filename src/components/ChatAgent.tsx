@@ -195,7 +195,7 @@ export default function ChatAgent({ context }: ChatAgentProps) {
                                         in general.
                                     </p>
 
-                                    <p className="mb-3 mt-7 text-[11px] font-bold uppercase tracking-label text-zinc-600">
+                                    <p className="mb-3 mt-7 text-[11px] font-semibold uppercase tracking-label text-zinc-600">
                                         Try asking
                                     </p>
                                     <ul className="m-0 list-none space-y-2 text-left">
