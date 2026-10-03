@@ -14,7 +14,7 @@ export default function DataRow({
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-white/10 py-2.5 font-mono text-[11px] uppercase tracking-label last:border-b-0">
       <span className="text-zinc-500">{label}</span>
-      <span className={strong ? 'font-bold text-white' : 'text-zinc-300'}>{value}</span>
+      <span className={strong ? 'font-semibold text-white' : 'text-zinc-300'}>{value}</span>
     </div>
   )
 }

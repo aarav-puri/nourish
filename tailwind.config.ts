@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 /**
- * BarcodeSense design system.
+ * Nourish design system.
  *
  * Noir, in strict black and white. Depth comes from layered darkness, hairline
  * white borders, blur and glow rather than from hue, so the only "accent"
@@ -77,7 +77,10 @@ const config: Config = {
         // System stack: the data voice costs no extra download.
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
-      letterSpacing: { tightest: '-0.045em', label: '0.18em' },
+      // Eased from the original -0.045em / 0.18em: the brand mark is a plain
+      // lowercase word now, so the rest of the type pulls back to match
+      // rather than shouting over it.
+      letterSpacing: { tightest: '-0.025em', label: '0.12em' },
       transitionTimingFunction: { scan: 'cubic-bezier(0.16, 1, 0.3, 1)' },
       keyframes: {
         'fade-in-up': {

@@ -137,7 +137,7 @@ function SignInForm() {
 
       <div className="my-6 flex items-center gap-4" aria-hidden="true">
         <span className="h-px flex-1 bg-white/10" />
-        <span className="text-[11px] font-bold uppercase tracking-label text-zinc-600">or</span>
+        <span className="text-[11px] font-semibold uppercase tracking-label text-zinc-600">or</span>
         <span className="h-px flex-1 bg-white/10" />
       </div>
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
@@ -75,16 +74,8 @@ export default function Navbar() {
               : 'border-white/10 bg-black/45'
           }`}
         >
-          <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="BarcodeSense home">
-            <Image
-              src="/favicon.png"
-              alt=""
-              width={32}
-              height={32}
-              priority
-              className="h-8 w-8 object-contain"
-            />
-            <span className="font-display text-base font-bold tracking-tight">BarcodeSense</span>
+          <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="Nourish home">
+            <span className="font-display text-base font-semibold lowercase tracking-tight">nourish.</span>
           </Link>
 
           <div className="hidden items-center gap-7 md:flex">
@@ -134,7 +125,7 @@ export default function Navbar() {
                     className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_75%,#ffffff_100%)] opacity-0 transition-opacity duration-[260ms] group-hover:opacity-100 motion-reduce:animate-none"
                   />
                   <span aria-hidden="true" className="absolute inset-[1px] rounded-full bg-black" />
-                  <span className="relative z-10 flex items-center gap-2 text-xs font-bold uppercase tracking-label">
+                  <span className="relative z-10 flex items-center gap-2 text-xs font-semibold uppercase tracking-label">
                     {user ? 'Open scanner' : 'Start scanning'}
                     <ArrowRight
                       className="h-3 w-3 transition-transform duration-[120ms] group-hover:translate-x-0.5"
@@ -200,7 +191,7 @@ export default function Navbar() {
                 animation: open ? `slide-up 380ms cubic-bezier(0.16,1,0.3,1) ${i * 55}ms both` : undefined,
               }}
             >
-              <span className="text-xs font-bold tracking-label text-zinc-500">0{i + 1}</span>
+              <span className="text-xs font-semibold tracking-label text-zinc-500">0{i + 1}</span>
               <span className="font-display text-2xl font-semibold tracking-tight transition-colors duration-[120ms] group-hover:text-zinc-300">
                 {l.label}
               </span>

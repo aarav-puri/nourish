@@ -27,16 +27,11 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: 'BarcodeSense | Know what is in your food',
+  title: 'Nourish | Know what is in your food',
   description:
     'Scan any barcode to see what is really in a product: ingredients explained in plain English, nutrition, diet compatibility, environmental impact, and a healthier alternative.',
-  // One source for every icon: favicon.png is the full resolution mark, so
-  // each surface downsamples from it rather than from a small baked copy.
-  icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
-  },
+  // Every icon comes from icon.tsx / apple-icon.tsx, generated from the same
+  // mark as the wordmark, so there is nothing to point at here.
 }
 
 export const viewport: Viewport = {

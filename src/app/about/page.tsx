@@ -38,7 +38,7 @@ export default function AboutPage() {
               className="w-full h-full object-cover"
             />
           </div>
-          <h1 className="text-4xl font-bold gradient-text mb-4">Aarav Puri</h1>
+          <h1 className="text-4xl font-semibold gradient-text mb-4">Aarav Puri</h1>
           <a
             href="https://aaravpuri.org"
             target="_blank"
@@ -57,10 +57,10 @@ export default function AboutPage() {
           transition={{ delay: 0.1 }}
           className="card mb-12"
         >
-          <h2 className="text-2xl font-bold gradient-text mb-6">The Origin Story</h2>
+          <h2 className="text-2xl font-semibold gradient-text mb-6">The Origin Story</h2>
           <div className="space-y-4 text-zinc-300 leading-relaxed">
             <p>
-              BarcodeSense was born from a simple, everyday problem: my dad is vegetarian, and I kept 
+              Nourish was born from a simple, everyday problem: my dad is vegetarian, and I kept 
               noticing how often packaged foods quietly include ingredients that don't actually fit 
               vegetarian diets. Hidden animal derived ingredients, confusing labels, and unclear 
               nutritional information made grocery shopping unnecessarily complicated.
@@ -90,12 +90,12 @@ export default function AboutPage() {
           transition={{ delay: 0.3 }}
           className="text-center"
         >
-          <h2 className="text-2xl font-bold gradient-text mb-6">Ready to discover what's in your food?</h2>
+          <h2 className="text-2xl font-semibold gradient-text mb-6">Ready to discover what's in your food?</h2>
           <div className="flex items-center justify-center">
             <Link href="/app">
               <Button size="lg" className="min-w-[220px] transition-opacity duration-300">
                 <span className={authLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}>
-                  {user ? 'Go to App' : 'Try BarcodeSense Free'}
+                  {user ? 'Go to App' : 'Try Nourish Free'}
                 </span>
               </Button>
             </Link>

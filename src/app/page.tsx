@@ -60,7 +60,7 @@ const PRIVACY = [
 
 const FAQ = [
   {
-    q: 'How does BarcodeSense work?',
+    q: 'How does Nourish work?',
     a: "Scan a barcode with your camera, upload a photo of one, or type the number in. We look the product up in global food databases, then explain its ingredients, nutrition and environmental impact in plain English and tell you what we'd do about it.",
   },
   {
@@ -115,18 +115,7 @@ export default function HomePage() {
             >
               <span className="text-fade block">Your second opinion</span>
               <span className="text-fade block">
-                in the{' '}
-                <span className="relative inline-block text-white">
-                  grocery aisle.
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 100 10"
-                    preserveAspectRatio="none"
-                    className="absolute -bottom-2 left-0 h-3 w-full text-white opacity-70"
-                  >
-                    <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                </span>
+                in the <span className="text-white">grocery aisle.</span>
               </span>
             </h1>
 
@@ -163,7 +152,7 @@ export default function HomePage() {
           {/* Formats strip, in place of the usual logo wall. */}
           <div className="mx-auto mt-24 max-w-6xl border-y border-white/5 bg-white/[0.02] py-8 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-6 px-6 md:flex-row md:gap-14">
-              <p className="shrink-0 text-xs font-bold uppercase tracking-label text-zinc-500">
+              <p className="shrink-0 text-xs font-semibold uppercase tracking-label text-zinc-500">
                 Reads
               </p>
               <ul className="flex w-full list-none flex-wrap items-center justify-center gap-x-8 gap-y-4 md:gap-x-12">
@@ -187,7 +176,7 @@ export default function HomePage() {
               {STATS.map((s, i) => (
                 <Reveal key={s.claim} delay={i * 90}>
                   <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-black p-8">
-                    <span className="font-display text-6xl font-bold leading-none tracking-tightest">
+                    <span className="font-display text-6xl font-semibold leading-none tracking-tightest">
                       <CountUp to={s.to} suffix={s.suffix} />
                     </span>
                     <p className="mt-5 text-base leading-snug text-zinc-300">{s.claim}</p>
@@ -248,20 +237,20 @@ export default function HomePage() {
               <div className="overflow-x-auto rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-black">
                 <table className="w-full min-w-[640px] border-collapse">
                   <caption className="sr-only">
-                    BarcodeSense compared with reading the label yourself and with basic scanning apps
+                    Nourish compared with reading the label yourself and with basic scanning apps
                   </caption>
                   <thead>
                     <tr className="border-b border-white/10">
-                      <th scope="col" className="px-6 py-5 text-left text-xs font-bold uppercase tracking-label text-zinc-500">
+                      <th scope="col" className="px-6 py-5 text-left text-xs font-semibold uppercase tracking-label text-zinc-500">
                         Capability
                       </th>
-                      <th scope="col" className="px-4 py-5 text-center text-xs font-bold uppercase tracking-label text-white">
-                        BarcodeSense
+                      <th scope="col" className="px-4 py-5 text-center text-xs font-semibold uppercase tracking-label text-white">
+                        Nourish
                       </th>
-                      <th scope="col" className="px-4 py-5 text-center text-xs font-bold uppercase tracking-label text-zinc-500">
+                      <th scope="col" className="px-4 py-5 text-center text-xs font-semibold uppercase tracking-label text-zinc-500">
                         Reading it yourself
                       </th>
-                      <th scope="col" className="px-4 py-5 text-center text-xs font-bold uppercase tracking-label text-zinc-500">
+                      <th scope="col" className="px-4 py-5 text-center text-xs font-semibold uppercase tracking-label text-zinc-500">
                         Basic apps
                       </th>
                     </tr>
@@ -333,13 +322,13 @@ export default function HomePage() {
             <div className="mx-auto max-w-md">
               <Reveal>
                 <div className="relative flex h-full flex-col rounded-2xl border border-white bg-white/[0.04] p-8 shadow-[0_0_40px_rgba(255,255,255,0.06)]">
-                  <h3 className="font-display text-xl font-bold">Free</h3>
+                  <h3 className="font-display text-xl font-semibold">Free</h3>
                   <p className="mt-2 h-10 text-sm text-zinc-400">
                     Everything the app does, on your own key.
                   </p>
                   <div className="mb-8 mt-6 flex items-baseline gap-1">
                     <span className="text-zinc-500">$</span>
-                    <span className="font-display text-5xl font-bold">
+                    <span className="font-display text-5xl font-semibold">
                       <CountUp to={0} duration={900} />
                     </span>
                     <span className="text-sm text-zinc-500">forever</span>

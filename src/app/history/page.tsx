@@ -174,7 +174,7 @@ export default function HistoryPage() {
               <ArrowLeft className="w-5 h-5" />
               <span className="hidden sm:inline">Back</span>
             </Link>
-            <h1 className="text-xl font-bold gradient-text">Scan History</h1>
+            <h1 className="text-xl font-semibold gradient-text">Scan History</h1>
           </div>
           {!loading && products.length > 0 && (
             <Button
@@ -240,10 +240,10 @@ export default function HistoryPage() {
                             <Package className="h-7 w-7 text-zinc-600" aria-hidden="true" />
                           ) : (
                             <>
-                              <span className="tnum font-display text-2xl font-bold leading-none">
+                              <span className="tnum font-display text-2xl font-semibold leading-none">
                                 {score}
                               </span>
-                              <span className="mt-1 text-[9px] font-bold uppercase tracking-label text-zinc-500">
+                              <span className="mt-1 text-[9px] font-semibold uppercase tracking-label text-zinc-500">
                                 / 100
                               </span>
                             </>

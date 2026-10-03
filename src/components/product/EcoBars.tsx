@@ -18,13 +18,13 @@ export default function EcoBars({ grade }: { grade?: string }) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-      <p className="text-xs font-bold uppercase tracking-label text-zinc-500">Eco impact</p>
+      <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">Eco impact</p>
       <div className="mt-5">
         {rows.map((r, i) => (
           <div key={r.label} className="mb-5 last:mb-0">
             <div className="mb-2 flex justify-between gap-4 font-mono text-[11px] uppercase tracking-label">
               <span className="text-zinc-500">{r.label}</span>
-              <span className={r.strong ? 'font-bold text-white' : 'text-zinc-400'}>
+              <span className={r.strong ? 'font-semibold text-white' : 'text-zinc-400'}>
                 {r.value} / 100
               </span>
             </div>

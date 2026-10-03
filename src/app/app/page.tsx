@@ -342,7 +342,7 @@ export default function AppPage() {
     return (
       <div className="min-h-dvh bg-dark flex flex-col items-center justify-center p-4">
         <div className="text-center max-w-sm">
-          <Image src="/favicon.png" alt="" width={56} height={56} className="mx-auto mb-6 h-14 w-14 object-contain" />
+          <p className="mb-6 font-display text-2xl font-semibold lowercase tracking-tight">nourish.</p>
           <h1 className="t-h3 mb-3">Sign in to continue</h1>
           <p className="text-zinc-400 mb-8 text-sm leading-relaxed">
             Taking you to the sign in page. The scanner is free and unlimited once you are in.
@@ -366,9 +366,8 @@ export default function AppPage() {
           site into the product does not feel like changing products. */}
       <header className="sticky top-0 z-50 px-4 pt-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-full border border-white/10 bg-black/70 px-4 py-2.5 backdrop-blur-xl">
-          <Link href="/" className="group flex items-center gap-2.5" aria-label="BarcodeSense home">
-            <Image src="/favicon.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
-            <span className="font-display text-base font-bold tracking-tight">BarcodeSense</span>
+          <Link href="/" className="group flex items-center gap-2.5" aria-label="Nourish home">
+            <span className="font-display text-base font-semibold lowercase tracking-tight">nourish.</span>
           </Link>
 
           {loading ? (
@@ -402,7 +401,7 @@ export default function AppPage() {
               {userMenuOpen && (
                 <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black shadow-2xl shadow-black/70">
                   <div className="border-b border-white/10 px-4 py-3">
-                    <p className="text-[11px] font-bold uppercase tracking-label text-zinc-500">Signed in as</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-label text-zinc-500">Signed in as</p>
                     <p className="mt-1 truncate text-sm font-medium">{user.email}</p>
                   </div>
 
@@ -518,7 +517,7 @@ export default function AppPage() {
         {/* Divider */}
         <div className="my-7 flex items-center gap-4" aria-hidden="true">
           <span className="h-px flex-1 bg-white/10" />
-          <span className="text-[11px] font-bold uppercase tracking-label text-zinc-600">or</span>
+          <span className="text-[11px] font-semibold uppercase tracking-label text-zinc-600">or</span>
           <span className="h-px flex-1 bg-white/10" />
         </div>
 
@@ -592,7 +591,7 @@ export default function AppPage() {
                     {/* Product Name & Brand */}
                     {((product as any).ai_formatted || product.product_name || product.brands) && (
                       <div>
-                        <h3 className="font-display text-2xl font-bold tracking-tight">
+                        <h3 className="font-display text-2xl font-semibold tracking-tight">
                           {(product as any).ai_formatted?.formatted_name || product.product_name || 'Unnamed product'}
                         </h3>
                         {((product as any).ai_formatted?.formatted_brand || product.brands) && (
@@ -609,7 +608,7 @@ export default function AppPage() {
                     {/* Key Highlights */}
                     {(product as any).ai_formatted?.key_highlights && (product as any).ai_formatted.key_highlights.length > 0 && (
                       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                        <p className="text-xs font-bold uppercase tracking-label text-zinc-500">
+                        <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">
                           What stands out
                         </p>
                         <ul className="m-0 mt-4 list-none">
@@ -630,7 +629,7 @@ export default function AppPage() {
                     {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text) && (
                       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
                         <div className="mb-4 flex items-baseline justify-between gap-4">
-                          <p className="text-xs font-bold uppercase tracking-label text-zinc-500">
+                          <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">
                             Ingredients
                           </p>
                           <p className="font-mono text-[11px] uppercase tracking-label text-zinc-400">
@@ -665,7 +664,7 @@ export default function AppPage() {
                     {/* Nutrition Facts */}
                     {product.nutriments && (
                       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                        <p className="mb-4 text-xs font-bold uppercase tracking-label text-zinc-500">
+                        <p className="mb-4 text-xs font-semibold uppercase tracking-label text-zinc-500">
                           Nutrition, per 100g
                         </p>
                         <div>
@@ -707,7 +706,7 @@ export default function AppPage() {
 
                   {/* AI Features */}
                   <div className="border-t border-white/10 pt-6">
-                    <p className="mb-4 text-xs font-bold uppercase tracking-label text-zinc-500">
+                    <p className="mb-4 text-xs font-semibold uppercase tracking-label text-zinc-500">
                       Go further
                     </p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

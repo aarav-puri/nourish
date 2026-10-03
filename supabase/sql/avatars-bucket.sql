@@ -1,4 +1,4 @@
--- BarcodeSense - Avatar storage bucket + policies.
+-- Nourish - Avatar storage bucket + policies.
 --
 -- Run this once in the Supabase SQL Editor (Dashboard > SQL Editor).
 -- Files are stored at <user id>/avatar.<ext>, one per user, so the RLS
