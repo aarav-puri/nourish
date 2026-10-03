@@ -5,6 +5,9 @@ import { auth } from '@/lib/supabase'
 import { toast } from 'sonner'
 import Orb from '@/components/ui/Orb'
 
+/** Flip back to true once the Google OAuth provider is working again. */
+const GOOGLE_ENABLED = false
+
 /** Shared on both auth pages so the OAuth path behaves identically. */
 export default function GoogleButton({ label }: { label: string }) {
   const [busy, setBusy] = useState(false)
@@ -18,6 +21,14 @@ export default function GoogleButton({ label }: { label: string }) {
       setBusy(false)
       toast.error('Google sign in failed. Please try again.')
     }
+  }
+
+  if (!GOOGLE_ENABLED) {
+    return (
+      <button type="button" disabled className="btn-secondary w-full cursor-not-allowed opacity-60" title="Google sign in is temporarily unavailable">
+        Google sign in temporarily unavailable
+      </button>
+    )
   }
 
   return (
