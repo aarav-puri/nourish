@@ -367,7 +367,10 @@ export default function AppPage() {
       <header className="sticky top-0 z-50 px-4 pt-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-full border border-white/10 bg-black/70 px-4 py-2.5 backdrop-blur-xl">
           <Link href="/" className="group flex items-center gap-2.5" aria-label="Nourish home">
-            <span className="font-display text-base font-semibold lowercase tracking-tight">nourish.</span>
+            <span className="flex flex-col leading-none">
+              <span className="font-display text-base font-semibold lowercase tracking-tight">nourish.</span>
+              <span className="mt-0.5 text-[10px] font-medium lowercase tracking-wide text-zinc-500">by nourish labs</span>
+            </span>
           </Link>
 
           {loading ? (
