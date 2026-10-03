@@ -75,7 +75,10 @@ export default function Navbar() {
           }`}
         >
           <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="Nourish home">
-            <span className="font-display text-base font-semibold lowercase tracking-tight">nourish.</span>
+            <span className="flex flex-col leading-none">
+              <span className="font-display text-base font-semibold lowercase tracking-tight">nourish.</span>
+              <span className="mt-0.5 text-[10px] font-medium lowercase tracking-wide text-zinc-500">by nourish labs</span>
+            </span>
           </Link>
 
           <div className="hidden items-center gap-7 md:flex">
