@@ -32,6 +32,9 @@ export const metadata: Metadata = {
     'Scan any barcode to see what is really in a product: ingredients explained in plain English, nutrition, diet compatibility, environmental impact, and a healthier alternative.',
   // Every icon comes from icon.tsx / apple-icon.tsx, generated from the same
   // mark as the wordmark, so there is nothing to point at here.
+  verification: {
+    google: '9_JzOdfOk3oOJkfW-pZ7t_XjlRBABpYdauzpEX9h1i0',
+  },
 }
 
 export const viewport: Viewport = {
