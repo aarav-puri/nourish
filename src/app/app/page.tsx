@@ -8,11 +8,12 @@ import {
   Upload, Search, ArrowLeft, X, Home, User, ScanEye, PenLine,
   ArrowRightLeft, ArrowUpRight, CheckSquare, Leaf, AlertCircle,
   Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings,
+  KeyRound, ExternalLink,
 } from 'lucide-react'
 import { auth, db } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { fetchProductInfo, ProductData } from '@/lib/product-api'
-import { aiService, Product, getGeminiApiKey } from '@/lib/ai-service'
+import { fetchProductInfo, scoreProduct, ProductData } from '@/lib/product-api'
+import { aiService, Product, getGeminiApiKey, setGeminiApiKey } from '@/lib/ai-service'
 import Button from '@/components/ui/Button'
 import SiteBackground from '@/components/brand/SiteBackground'
 import ScoreMeter from '@/components/product/ScoreMeter'
@@ -27,7 +28,9 @@ import Orb from '@/components/ui/Orb'
 export default function AppPage() {
   const { user, loading, requireSignIn } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [apiKey, setApiKey] = useState('')
+  // null until localStorage has been read, so the key gate does not flash.
+  const [apiKey, setApiKey] = useState<string | null>(null)
+  const [keyInput, setKeyInput] = useState('')
   const [barcode, setBarcode] = useState('')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [productLoading, setProductLoading] = useState(false)
@@ -69,6 +72,18 @@ export default function AppPage() {
       requireSignIn()
     }
   }, [loading, user])
+
+  const handleSaveKey = () => {
+    const trimmed = keyInput.trim()
+    if (!trimmed) {
+      toast.error('Paste your Gemini API key to continue')
+      return
+    }
+    setGeminiApiKey(trimmed)
+    setApiKey(trimmed)
+    setKeyInput('')
+    toast.success('Key saved')
+  }
 
   const handleLogout = async () => {
     await auth.signOut()
@@ -328,7 +343,7 @@ export default function AppPage() {
   const diets = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Halal', 'Kosher', 'Gluten Free']
 
   // Show loading or sign in required screen
-  if (loading) {
+  if (loading || (user && apiKey === null)) {
     return (
       <div className="min-h-dvh bg-dark flex items-center justify-center">
         <Orb size={64} label="Loading" />
@@ -350,6 +365,51 @@ export default function AppPage() {
           <Link href="/signin?next=%2Fapp" className="btn-primary w-full">
             Go to sign in
           </Link>
+          <Link href="/" className="btn-ghost mt-3 w-full">
+            Back to home
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // The app runs on the user's own Gemini key, so nothing works without one.
+  if (!apiKey) {
+    return (
+      <div className="min-h-dvh bg-dark flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <p className="mb-6 text-center font-display text-2xl font-semibold lowercase tracking-tight">nourish.</p>
+          <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black p-6">
+            <div className="mb-2 flex items-center gap-2">
+              <KeyRound className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+              <h1 className="font-display text-lg font-semibold tracking-tight">Add your Gemini key</h1>
+            </div>
+            <p className="mb-5 text-sm leading-relaxed text-zinc-400">
+              Nourish runs on your own Gemini API key, so usage is billed directly by Google.
+              The key stays in this browser.
+            </p>
+            <Input
+              type="password"
+              autoComplete="off"
+              label="Gemini API key"
+              placeholder="AIza..."
+              value={keyInput}
+              onChange={(e) => setKeyInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
+            />
+            <Button onClick={handleSaveKey} className="mt-4 w-full">
+              Save and continue
+            </Button>
+            <a
+              href="https://aistudio.google.com/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex min-h-11 items-center gap-1 text-xs text-zinc-400 underline hover:text-white"
+            >
+              Get a free key from Google AI Studio
+              <ExternalLink className="h-3 w-3" aria-hidden="true" />
+            </a>
+          </div>
           <Link href="/" className="btn-ghost mt-3 w-full">
             Back to home
           </Link>
@@ -605,8 +665,14 @@ export default function AppPage() {
                       </div>
                     )}
 
-                    <ScoreMeter grade={product.nutriscore_grade} />
-                    <EcoBars grade={product.ecoscore_grade} />
+                    <ScoreMeter
+                      grade={product.nutriscore_grade}
+                      estimated={product.ai_estimated_scores?.includes('nutriscore_grade')}
+                    />
+                    <EcoBars
+                      grade={product.ecoscore_grade}
+                      estimated={product.ai_estimated_scores?.includes('ecoscore_grade')}
+                    />
 
                     {/* Key Highlights */}
                     {(product as any).ai_formatted?.key_highlights && (product as any).ai_formatted.key_highlights.length > 0 && (
@@ -849,7 +915,7 @@ export default function AppPage() {
                   </div>
 
                   <Button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!manualProduct.product_name || !manualProduct.ingredients_text) {
                         toast.error('Please fill in product name and ingredients')
                         return
@@ -866,6 +932,14 @@ export default function AppPage() {
                           proteins: parseFloat(manualProduct.nutriments.proteins) || undefined,
                         }
                       }
+                      // Hand-entered products have no published grades, so Gemini scores them.
+                      setProductLoading(true)
+                      try {
+                        Object.assign(formattedProduct, await scoreProduct(formattedProduct as any))
+                      } catch (err) {
+                        console.error('Failed to score product:', err)
+                      }
+                      setProductLoading(false)
                       setProduct(formattedProduct as any)
                       setManualEntryMode(false)
                       toast.success('Product details saved! Use AI insights below.')
