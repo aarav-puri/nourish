@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { scoreProductWithGemini } from '@/lib/gemini-score'
 
 const TIMEOUT_MS = Math.max(
   1000,
@@ -230,6 +231,11 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  const apiKey = request.headers.get('x-gemini-api-key')
+  if (!apiKey) {
+    return NextResponse.json({ error: 'Missing BYOK key. Add your own key in Settings.' }, { status: 401 })
+  }
+
   try {
     let off: any | null = null
     let offError: unknown = null
@@ -263,10 +269,12 @@ export async function GET(request: NextRequest) {
     const data: { status: number; product?: any } =
       off || upc ? { status: 1, product: mergeProducts(off, upc, barcode) } : { status: 0 }
 
-    // Formatting only runs when the browser supplied its own key.
-    const apiKey = request.headers.get('x-gemini-api-key')
-    if (apiKey && data.status === 1 && data.product) {
-      const formatted = await formatProductWithGemini(data.product, apiKey)
+    // Formatting and scoring of unscored items run in parallel on the user's key.
+    if (data.status === 1 && data.product) {
+      const [formatted] = await Promise.all([
+        formatProductWithGemini(data.product, apiKey),
+        scoreProductWithGemini(data.product, apiKey),
+      ])
       if (formatted) {
         data.product.ai_formatted = formatted
       }

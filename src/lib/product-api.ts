@@ -23,6 +23,7 @@ export interface ProductData {
     packaging?: string
     nutriscore_grade?: string
     ecoscore_grade?: string
+    ai_estimated_scores?: string[]
     ai_formatted?: {
       formatted_name?: string
       formatted_brand?: string
@@ -33,9 +34,8 @@ export interface ProductData {
 }
 
 export async function fetchProductInfo(barcode: string): Promise<ProductData> {
-  const apiKey = getGeminiApiKey()
   const response = await fetch(`/api/product?barcode=${barcode}`, {
-    headers: apiKey ? { 'x-gemini-api-key': apiKey } : undefined,
+    headers: { 'x-gemini-api-key': getGeminiApiKey() },
   })
 
   if (!response.ok) {
@@ -43,6 +43,23 @@ export async function fetchProductInfo(barcode: string): Promise<ProductData> {
   }
   
   return response.json()
+}
+
+// Estimates the missing grades for a product entered by hand.
+export async function scoreProduct(product: NonNullable<ProductData['product']>) {
+  const response = await fetch('/api/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-gemini-api-key': getGeminiApiKey() },
+    body: JSON.stringify({ product }),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to score product')
+  }
+
+  return response.json() as Promise<
+    Pick<NonNullable<ProductData['product']>, 'nutriscore_grade' | 'ecoscore_grade' | 'ai_estimated_scores'>
+  >
 }
 
 export function getNutriScoreColor(grade?: string): string {

@@ -1,9 +1,9 @@
 /**
  * The scan readout, drawn the way the landing page promises it.
  *
- * The number is derived from the published grade on the product record, not
- * invented here. A product with no grade says so rather than showing a made
- * up number.
+ * The number is derived from the grade on the product record. When that grade
+ * was estimated by AI rather than published, the readout says so. A product
+ * with no grade says so rather than showing a made up number.
  */
 
 const GRADE_TO_SCORE: Record<string, number> = {
@@ -21,7 +21,7 @@ export function scoreFromGrade(grade?: string): number | null {
   return GRADE_TO_SCORE[grade.toLowerCase()] ?? null
 }
 
-export default function ScoreMeter({ grade }: { grade?: string }) {
+export default function ScoreMeter({ grade, estimated = false }: { grade?: string; estimated?: boolean }) {
   const score = scoreFromGrade(grade)
 
   if (score === null) {
@@ -43,7 +43,10 @@ export default function ScoreMeter({ grade }: { grade?: string }) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-      <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">Health read</p>
+      <div className="flex items-baseline justify-between gap-4">
+        <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">Health read</p>
+        {estimated && <EstimateTag />}
+      </div>
 
       <div className="mt-4 flex items-end gap-4">
         <span className="tnum font-display text-6xl font-semibold leading-none tracking-tightest">
@@ -64,5 +67,14 @@ export default function ScoreMeter({ grade }: { grade?: string }) {
         ))}
       </div>
     </div>
+  )
+}
+
+// Marks a grade that Gemini estimated because the product had none published.
+export function EstimateTag() {
+  return (
+    <span className="font-mono text-[11px] uppercase tracking-label text-zinc-400">
+      AI estimate
+    </span>
   )
 }

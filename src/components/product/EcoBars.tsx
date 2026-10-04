@@ -1,4 +1,4 @@
-import { scoreFromGrade } from './ScoreMeter'
+import { scoreFromGrade, EstimateTag } from './ScoreMeter'
 
 /**
  * The footprint, shown against the scale the way the landing page shows it.
@@ -6,7 +6,7 @@ import { scoreFromGrade } from './ScoreMeter'
  * ends of the rating scale, so nothing here implies a measurement we do not
  * have.
  */
-export default function EcoBars({ grade }: { grade?: string }) {
+export default function EcoBars({ grade, estimated = false }: { grade?: string; estimated?: boolean }) {
   const score = scoreFromGrade(grade)
   if (score === null) return null
 
@@ -18,7 +18,10 @@ export default function EcoBars({ grade }: { grade?: string }) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-      <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">Eco impact</p>
+      <div className="flex items-baseline justify-between gap-4">
+        <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">Eco impact</p>
+        {estimated && <EstimateTag />}
+      </div>
       <div className="mt-5">
         {rows.map((r, i) => (
           <div key={r.label} className="mb-5 last:mb-0">
