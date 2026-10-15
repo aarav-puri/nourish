@@ -15,16 +15,28 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#000000',
+          paddingTop: 8,
+          background: '#3D4852',
           borderRadius: 16,
           color: '#ffffff',
           fontSize: 38,
-          fontWeight: 600,
+          fontWeight: 800,
           fontFamily: 'sans-serif',
-          letterSpacing: '-0.02em',
+          letterSpacing: '-0.04em',
         }}
       >
-        n.
+        n
+        <div
+          style={{
+            width: 7,
+            height: 7,
+            marginLeft: 2,
+            alignSelf: 'flex-end',
+            marginBottom: 13,
+            borderRadius: 999,
+            background: '#ffffff',
+          }}
+        />
       </div>
     ),
     { ...size }

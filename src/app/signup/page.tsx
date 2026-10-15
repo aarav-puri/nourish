@@ -7,10 +7,10 @@ import { MailCheck } from 'lucide-react'
 import { auth } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import AuthShell from '@/components/auth/AuthShell'
-import GoogleButton from '@/components/auth/GoogleButton'
+import GoogleButton, { GOOGLE_ENABLED } from '@/components/auth/GoogleButton'
 import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
-import Orb from '@/components/ui/Orb'
+import Spinner from '@/components/ui/Spinner'
 
 const MIN_PASSWORD = 8
 
@@ -61,7 +61,7 @@ function SignUpForm() {
       // Supabase returns a user with no session when confirmation is required.
       if (data?.session) {
         toast.success('Account created')
-        router.replace(next)
+        router.replace(`/setup?next=${encodeURIComponent(next)}`)
         return
       }
       setCheckInbox(true)
@@ -90,16 +90,16 @@ function SignUpForm() {
             <button
               type="button"
               onClick={() => setCheckInbox(false)}
-              className="font-medium text-white underline underline-offset-4 hover:text-zinc-300"
+              className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink"
             >
               Go back
             </button>
           </>
         }
       >
-        <div className="mt-8 flex items-center gap-4 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-4">
+        <div className="mt-8 flex items-center gap-4 well px-5 py-4">
           <MailCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <p className="text-sm leading-relaxed text-zinc-300">
+          <p className="text-sm leading-relaxed text-ink-2">
             The link expires after a while. If nothing arrives, check your spam folder.
           </p>
         </div>
@@ -121,7 +121,7 @@ function SignUpForm() {
           Already have an account?{' '}
           <Link
             href={`/signin${next !== '/app' ? `?next=${encodeURIComponent(next)}` : ''}`}
-            className="font-medium text-white underline underline-offset-4 hover:text-zinc-300"
+            className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink"
           >
             Sign in
           </Link>
@@ -134,7 +134,7 @@ function SignUpForm() {
             ref={errorRef}
             tabIndex={-1}
             role="alert"
-            className="mb-5 rounded-xl border border-white/25 bg-white/[0.06] px-4 py-3 text-sm leading-relaxed text-white focus:outline-none"
+            className="mb-5 rounded-lg border border-level-high/30 bg-level-high/5 px-4 py-3 text-sm leading-relaxed text-ink focus:outline-none"
           >
             {error}
           </div>
@@ -176,26 +176,30 @@ function SignUpForm() {
         </div>
 
         <button type="submit" disabled={busy} className="btn-primary mt-7 w-full" aria-busy={busy || undefined}>
-          {busy && <Orb tone="onLight" />}
+          {busy && <Spinner />}
           {busy ? 'Creating account' : 'Create account'}
         </button>
       </form>
 
-      <div className="my-6 flex items-center gap-4" aria-hidden="true">
-        <span className="h-px flex-1 bg-white/10" />
-        <span className="text-[11px] font-semibold uppercase tracking-label text-zinc-600">or</span>
-        <span className="h-px flex-1 bg-white/10" />
-      </div>
+      {GOOGLE_ENABLED && (
+        <>
+          <div className="my-6 flex items-center gap-4" aria-hidden="true">
+            <span className="h-px flex-1 bg-line" />
+            <span className="font-mono text-2xs uppercase tracking-wide text-ink-3">or</span>
+            <span className="h-px flex-1 bg-line" />
+          </div>
 
-      <GoogleButton label="Sign up with Google" />
+          <GoogleButton label="Sign up with Google" />
+        </>
+      )}
 
-      <p className="mt-6 text-center text-xs leading-relaxed text-zinc-500">
+      <p className="mt-6 text-center text-xs leading-relaxed text-ink-3">
         By creating an account you agree to our{' '}
-        <Link href="/terms" className="text-zinc-300 underline underline-offset-4 hover:text-white">
+        <Link href="/terms" className="text-ink-2 underline decoration-ink/30 underline-offset-4 hover:text-ink">
           Terms
         </Link>{' '}
         and{' '}
-        <Link href="/privacy" className="text-zinc-300 underline underline-offset-4 hover:text-white">
+        <Link href="/privacy" className="text-ink-2 underline decoration-ink/30 underline-offset-4 hover:text-ink">
           Privacy Policy
         </Link>
       </p>
@@ -207,8 +211,8 @@ export default function SignUpPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-dvh items-center justify-center bg-black">
-          <Orb size={64} label="Loading" />
+        <div className="flex min-h-dvh items-center justify-center">
+          <Spinner className="h-5 w-5 text-ink-3" label="Loading" />
         </div>
       }
     >

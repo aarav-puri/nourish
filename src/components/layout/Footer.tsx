@@ -1,54 +1,48 @@
 import Link from 'next/link'
+import Wordmark from '@/components/brand/Wordmark'
 
 const COLUMNS = [
   {
     label: 'Product',
     links: [
       { href: '/app', text: 'Scanner' },
-      { href: '/history', text: 'Scan history' },
-      { href: '/#features', text: 'Features' },
-      { href: '/#pricing', text: 'Pricing' },
+      { href: '/history', text: 'History' },
+      { href: '/settings', text: 'Settings' },
     ],
   },
   {
-    label: 'Company',
+    label: 'Nourish',
     links: [
       { href: '/about', text: 'About' },
-      { href: '/#how-it-works', text: 'How it works' },
-      { href: '/#faq', text: 'FAQ' },
+      { href: '/#how', text: 'How it works' },
     ],
   },
   {
     label: 'Legal',
     links: [
-      { href: '/privacy', text: 'Privacy policy' },
-      { href: '/terms', text: 'Terms of service' },
+      { href: '/privacy', text: 'Privacy' },
+      { href: '/terms', text: 'Terms' },
     ],
   },
 ]
 
 export default function Footer() {
   return (
-    <footer className="relative z-10 overflow-hidden border-t border-white/5 bg-black pb-10 pt-16">
-      <div className="mx-auto mb-20 grid max-w-7xl grid-cols-2 gap-x-8 gap-y-12 px-[var(--gutter)] md:grid-cols-[1.6fr_repeat(3,minmax(0,1fr))]">
+    <footer className="border-t border-line">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-10 px-[var(--gutter)] py-14 md:grid-cols-[2fr_repeat(3,1fr)]">
         <div className="col-span-2 md:col-span-1">
-          <div className="mb-6 flex items-center gap-2.5">
-            <span className="font-display text-xl font-semibold lowercase tracking-tight">nourish.</span>
-          </div>
+          <Wordmark byline />
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-2">
+            A second opinion in the grocery aisle.
+          </p>
         </div>
-
         {COLUMNS.map((col) => (
           <nav key={col.label} aria-label={col.label}>
-            <h2 className="mb-6 text-xs font-semibold uppercase tracking-label text-zinc-500">
-              {col.label}
-            </h2>
-            <ul className="m-0 list-none space-y-1">
+            <h2 className="t-eyebrow">{col.label}</h2>
+            <ul className="mt-3 space-y-0.5">
               {col.links.map((l) => (
-                <li key={l.href + l.text}>
-                  <Link
-                    href={l.href}
-                    className="inline-flex min-h-11 items-center text-sm text-zinc-400 transition-colors duration-[120ms] hover:text-white"
-                  >
+                <li key={l.href}>
+                  <Link href={l.href} className="inline-flex min-h-9 items-center text-sm text-ink-2 transition-colors hover:text-ink">
                     {l.text}
                   </Link>
                 </li>
@@ -57,12 +51,9 @@ export default function Footer() {
           </nav>
         ))}
       </div>
-
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-white/5 px-[var(--gutter)] pt-8 text-[10px] uppercase tracking-label text-zinc-600 md:flex-row">
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 border-t border-line px-[var(--gutter)] py-6 text-xs text-ink-3 sm:flex-row sm:justify-between">
         <p>© {new Date().getFullYear()} Nourish Labs. All rights reserved.</p>
-        <p className="text-center md:text-right">
-          Product data from Open Food Facts and Go-UPC. Not medical advice.
-        </p>
+        <p>Product data from Open Food Facts and Go-UPC. Not medical advice.</p>
       </div>
     </footer>
   )

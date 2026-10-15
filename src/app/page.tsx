@@ -1,413 +1,238 @@
-'use client'
-
 import Link from 'next/link'
-import { ArrowRight, Check, Minus, X } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowRightLeft,
+  Camera,
+  FlaskConical,
+  Gauge,
+  MessageSquareText,
+  ShieldCheck,
+  type LucideIcon,
+} from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
+import Hero from '@/components/home/Hero'
 import Footer from '@/components/layout/Footer'
-import SiteBackground from '@/components/brand/SiteBackground'
-import ScoreTicker from '@/components/brand/ScoreTicker'
-import Reveal from '@/components/brand/Reveal'
-import CountUp from '@/components/brand/CountUp'
-import Magnetic from '@/components/brand/Magnetic'
-import ScanSteps from '@/components/home/ScanSteps'
-import FeatureBento from '@/components/home/FeatureBento'
-import { useAuth } from '@/lib/auth-context'
+import PhoneShot from '@/components/home/PhoneShot'
 
-const FORMATS = ['EAN 13', 'EAN 8', 'UPC A', 'UPC E', 'Code 128', 'Code 39', 'QR']
+const STEPS = [
+  {
+    n: '01',
+    title: 'Scan',
+    body: 'Point your camera at any barcode. No camera handy? Upload a photo or type the number.',
+  },
+  {
+    n: '02',
+    title: 'Read',
+    body: 'An A to E grade, the sugar, fat and salt, how processed it is, and every additive and allergen in plain words.',
+  },
+  {
+    n: '03',
+    title: 'Decide',
+    body: 'See straight away whether it fits your diet and allergies. Want better? Get a healthier swap that tastes alike.',
+  },
+]
+
+const FEATURES: { icon: LucideIcon; title: string; body: string }[] = [
+  {
+    icon: ShieldCheck,
+    title: 'Checked against you',
+    body: 'Tell Nourish your diet and allergies once. Every scan flags what does not fit before you read a word.',
+  },
+  {
+    icon: Gauge,
+    title: 'A grade you already know',
+    body: 'The A to E Nutri-Score used on packs across Europe, with fat, sugar and salt marked low, medium or high.',
+  },
+  {
+    icon: FlaskConical,
+    title: 'Spot ultra-processed food',
+    body: 'See how processed it is, and what every E number on the label means.',
+  },
+  {
+    icon: ArrowRightLeft,
+    title: 'Better swaps',
+    body: 'Healthier alternatives that taste alike, plus recipe ideas and the environmental footprint.',
+  },
+  {
+    icon: MessageSquareText,
+    title: 'Ask your history',
+    body: '“Which of my snacks has the least sugar?” Ask in plain words and get answers from everything you have scanned.',
+  },
+  {
+    icon: Camera,
+    title: 'Made for the aisle',
+    body: 'One hand, one scan, and the next one is a thumb away.',
+  },
+]
 
 const STATS = [
   {
-    to: 73,
-    suffix: '%',
-    claim: 'of the U.S. packaged food supply is ultra processed',
-    source: 'Nature Communications, 2023. Northeastern University',
+    figure: '73%',
+    claim: 'of the U.S. packaged food supply is ultra-processed',
+    source: 'Nature Communications, 2023',
   },
   {
-    to: 12,
-    suffix: '%',
+    figure: '12%',
     claim: 'of U.S. adults have proficient health literacy',
-    source: 'National Assessment of Adult Literacy, U.S. Dept. of Education',
+    source: 'National Assessment of Adult Literacy',
   },
   {
-    to: 32,
-    suffix: '',
-    claim: 'adverse health outcomes linked to ultra processed foods',
+    figure: '32',
+    claim: 'adverse health outcomes linked to ultra-processed food',
     source: 'The BMJ, 2024',
   },
 ]
 
-const COMPARISON = [
-  { feature: 'AI powered analysis', us: 'full', manual: 'none', basic: 'none' },
-  { feature: 'Healthier alternatives', us: 'full', manual: 'none', basic: 'none' },
-  { feature: 'Recipe ideas', us: 'full', manual: 'none', basic: 'none' },
-  { feature: 'Eco impact score', us: 'full', manual: 'none', basic: 'none' },
-  { feature: 'Diet compatibility check', us: 'full', manual: 'part', basic: 'part' },
-  { feature: 'Instant results', us: 'full', manual: 'none', basic: 'full' },
-] as const
-
-const MARK = {
-  full: { Icon: Check, text: 'Yes', cls: 'text-white' },
-  part: { Icon: Minus, text: 'Partial', cls: 'text-zinc-400' },
-  none: { Icon: X, text: 'No', cls: 'text-zinc-600' },
+/** The small numbered line that opens each section. */
+function SectionLabel({ n, name }: { n: string; name: string }) {
+  return (
+    <p className="mb-5 flex items-baseline gap-2.5 text-sm text-ink">
+      <span className="font-mono text-xs text-ink-3">{n}</span>
+      <span className="font-medium">{name}</span>
+    </p>
+  )
 }
 
-const PRIVACY = [
-  { t: 'Encrypted at rest', b: 'We encrypt your scans in storage, using standard industry protection.' },
-  { t: 'Never sold', b: "We don't sell your details or your scan history. Not to brands, not to anyone." },
-  { t: 'Yours alone', b: 'No other user can see what you scanned or what we told you about it.' },
-  { t: 'Gone when you say', b: 'Ask us to delete your account and everything in it goes with it.' },
-]
-
-const FAQ = [
-  {
-    q: 'How does Nourish work?',
-    a: "Scan a barcode with your camera, upload a photo of one, or type the number in. We look the product up in global food databases, then explain its ingredients, nutrition and environmental impact in plain English and tell you what we'd do about it.",
-  },
-  {
-    q: 'What are AI insights?',
-    a: "The parts that go beyond the raw product data: healthier alternatives, diet checks like vegan, keto and gluten free, environmental impact, and recipe ideas based on what you've scanned.",
-  },
-  {
-    q: 'How accurate is the product information?',
-    a: "The data comes from global databases covering millions of products, but it isn't always complete or up to date. Treat it as a guide and check the label on the package too, especially for allergies.",
-  },
-  {
-    q: 'What if my product is not in the database?',
-    a: "Some local or newly released products haven't been added yet. You can type in the ingredients and nutrition yourself and the AI will analyze those instead. The databases keep growing.",
-  },
-]
-
 export default function HomePage() {
-  const { user, loading: authLoading } = useAuth()
-  const primaryLabel = user ? 'Open scanner' : 'Start scanning'
-
-  // Three pulsing dots while the session resolves, so the button never shows
-  // the wrong label and never sits blank.
-  const cta = authLoading ? (
-    <span className="flex items-center gap-1.5" aria-hidden="true">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current delay-75" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current delay-150" />
-      <span className="sr-only">Checking your session</span>
-    </span>
-  ) : (
-    <>
-      {primaryLabel}
-      <ArrowRight
-        className="h-4 w-4 transition-transform duration-[120ms] group-hover:translate-x-1"
-        aria-hidden="true"
-      />
-    </>
-  )
-
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-black text-white">
-      <SiteBackground />
+    <>
       <Navbar />
+      <main id="main">
+        <Hero />
 
-      <main id="main" className="relative z-10">
-        {/* ===================== HERO ===================== */}
-        <section className="px-[var(--gutter)] pb-16 pt-36 sm:pt-44">
-          <div className="mx-auto max-w-5xl text-center">
-            <h1
-              className="t-display animate-fade-up text-balance"
-              style={{ animationDelay: '0.15s' }}
-            >
-              <span className="text-fade block">Your second opinion</span>
-              <span className="text-fade block">
-                in the <span className="text-white">grocery aisle.</span>
-              </span>
-            </h1>
-
-            <p
-              className="animate-fade-up mx-auto mt-10 max-w-2xl text-lg leading-relaxed text-zinc-400 md:text-xl"
-              style={{ animationDelay: '0.25s' }}
-            >
-              Shop smarter. Get clear ingredient breakdowns, an instant health score, and better
-              shelf swaps from one barcode.
-            </p>
-
-            <div
-              className="animate-fade-up mt-12 flex flex-col items-center justify-center gap-5 md:flex-row"
-              style={{ animationDelay: '0.35s' }}
-            >
-              <Magnetic strength={8}>
-                <Link
-                  href="/app"
-                  className="shiny-cta group inline-flex min-h-14 items-center justify-center rounded-full px-9"
-                  aria-busy={authLoading || undefined}
-                >
-                  <span className="relative z-10 flex items-center gap-2 font-semibold text-white">
-                    {cta}
-                  </span>
-                </Link>
-              </Magnetic>
-
-              <Link href="/#how-it-works" className="btn-secondary min-h-14">
-                See how it works
-              </Link>
-            </div>
-          </div>
-
-          {/* Formats strip, in place of the usual logo wall. */}
-          <div className="mx-auto mt-24 max-w-6xl border-y border-white/5 bg-white/[0.02] py-8 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-6 px-6 md:flex-row md:gap-14">
-              <p className="shrink-0 text-xs font-semibold uppercase tracking-label text-zinc-500">
-                Reads
-              </p>
-              <ul className="flex w-full list-none flex-wrap items-center justify-center gap-x-8 gap-y-4 md:gap-x-12">
-                {FORMATS.map((f) => (
-                  <li key={f} className="font-display text-base font-semibold text-zinc-400">
-                    {f}
+        {/* ============ How it works ============ */}
+        <section id="how" aria-labelledby="how-h" className="scroll-mt-20 overflow-x-clip px-[var(--gutter)] py-20 lg:py-28">
+          <div className="mx-auto grid max-w-6xl items-start gap-14 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
+            <div>
+              <SectionLabel n="01" name="How it works" />
+              <h2 id="how-h" className="t-title max-w-xl">
+                From shelf to answer in one scan.
+              </h2>
+              <ol className="mt-12 space-y-10">
+                {STEPS.map((s) => (
+                  <li key={s.n} className="grid gap-x-6 border-t-[3px] border-ink pt-5 sm:grid-cols-[4rem_1fr]">
+                    <span className="font-mono text-sm text-accent-ink">{s.n}</span>
+                    <div>
+                      <h3 className="text-2xl font-semibold tracking-tight">{s.title}</h3>
+                      <p className="mt-2 max-w-md leading-relaxed text-ink-2">{s.body}</p>
+                    </div>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
-          </div>
-        </section>
-
-        {/* A continuous band of readings, closing the hero. */}
-        <ScoreTicker />
-
-        {/* ===================== PROBLEM ===================== */}
-        <section id="problem" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
-          <div className="mx-auto max-w-6xl">
-            <div className="grid gap-4 md:grid-cols-3">
-              {STATS.map((s, i) => (
-                <Reveal key={s.claim} delay={i * 90}>
-                  <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-black p-8">
-                    <span className="font-display text-6xl font-semibold leading-none tracking-tightest">
-                      <CountUp to={s.to} suffix={s.suffix} />
-                    </span>
-                    <p className="mt-5 text-base leading-snug text-zinc-300">{s.claim}</p>
-                    <p className="mt-auto pt-6 text-[11px] leading-relaxed text-zinc-600">
-                      Source: {s.source}
-                    </p>
+            <figure className="relative mx-auto w-full max-w-[19rem] py-10 lg:sticky lg:top-12">
+              {/* Concentric rings, raised then pressed, molded from the page. */}
+              <div aria-hidden="true" className="absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2">
+                <div className="flex h-[30rem] w-[30rem] items-center justify-center rounded-full shadow-neu">
+                  <div className="flex h-[22rem] w-[22rem] items-center justify-center rounded-full shadow-neu-inset-deep">
+                    <div className="h-[14rem] w-[14rem] rounded-full shadow-neu" />
                   </div>
-                </Reveal>
-              ))}
-            </div>
-
-          </div>
-        </section>
-
-        {/* ===================== FEATURES ===================== */}
-        <section id="features" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
-          <div className="mx-auto max-w-7xl">
-            <Reveal className="mx-auto mb-16 max-w-3xl text-center">
-              <h2 className="t-h2">
-                Everything you&rsquo;d
-                <br />
-                <span className="text-zinc-500">otherwise look up.</span>
-              </h2>
-              <p className="mt-6 text-lg font-light leading-relaxed text-zinc-400">
-                Seven answers from one scan, in one place, in plain English.
-              </p>
-            </Reveal>
-
-            <FeatureBento />
-          </div>
-        </section>
-
-        {/* ===================== HOW IT WORKS ===================== */}
-        <section id="how-it-works" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="mx-auto mb-16 max-w-3xl text-center">
-              <h2 className="t-h2">Three steps to an answer.</h2>
-              <p className="mt-6 text-lg font-light leading-relaxed text-zinc-400">
-                No forms, no sign up to try it. Just point your camera.
-              </p>
-            </Reveal>
-            <ScanSteps />
-          </div>
-        </section>
-
-        {/* ===================== DIFFERENCE ===================== */}
-        <section className="px-[var(--gutter)] py-[var(--band)]">
-          <div className="mx-auto max-w-5xl">
-            <Reveal className="mx-auto mb-14 max-w-3xl text-center">
-              <h2 className="t-h2">
-                How we compare
-                <br />
-                <span className="text-zinc-500">to reading it yourself.</span>
-              </h2>
-            </Reveal>
-
-            <Reveal>
-              <div className="overflow-x-auto rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-black">
-                <table className="w-full min-w-[640px] border-collapse">
-                  <caption className="sr-only">
-                    Nourish compared with reading the label yourself and with basic scanning apps
-                  </caption>
-                  <thead>
-                    <tr className="border-b border-white/10">
-                      <th scope="col" className="px-6 py-5 text-left text-xs font-semibold uppercase tracking-label text-zinc-500">
-                        Capability
-                      </th>
-                      <th scope="col" className="px-4 py-5 text-center text-xs font-semibold uppercase tracking-label text-white">
-                        Nourish
-                      </th>
-                      <th scope="col" className="px-4 py-5 text-center text-xs font-semibold uppercase tracking-label text-zinc-500">
-                        Reading it yourself
-                      </th>
-                      <th scope="col" className="px-4 py-5 text-center text-xs font-semibold uppercase tracking-label text-zinc-500">
-                        Basic apps
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {COMPARISON.map((row) => (
-                      <tr key={row.feature} className="border-b border-white/5 last:border-b-0">
-                        <th scope="row" className="px-6 py-5 text-left text-sm font-medium text-zinc-200">
-                          {row.feature}
-                        </th>
-                        {([row.us, row.manual, row.basic] as const).map((v, i) => {
-                          const m = MARK[v]
-                          return (
-                            <td key={i} className="px-4 py-5">
-                              {/* The glyph never carries the meaning alone. */}
-                              <span className={`flex items-center justify-center gap-2 ${m.cls}`}>
-                                <m.Icon className="h-4 w-4" aria-hidden="true" />
-                                <span className="text-xs font-semibold uppercase tracking-wide">
-                                  {m.text}
-                                </span>
-                              </span>
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ===================== PRIVACY ===================== */}
-        <section className="px-[var(--gutter)] py-[var(--band)]">
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="mx-auto mb-14 max-w-3xl text-center">
-              <h2 className="t-h2">Your scans stay yours.</h2>
-              <p className="mt-6 text-lg font-light leading-relaxed text-zinc-400">
-                We never share or sell what you scan. There are no ads in the app and no brand can
-                pay to change a score. We&rsquo;re here to help you shop, not to sell you to anyone.
-              </p>
-            </Reveal>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {PRIVACY.map((p, i) => (
-                <Reveal key={p.t} delay={i * 70}>
-                  <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-7">
-                    <h3 className="font-display text-lg font-semibold tracking-tight">{p.t}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-zinc-400">{p.b}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ===================== PRICING ===================== */}
-        <section id="pricing" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
-          <div className="mx-auto max-w-4xl">
-            <Reveal className="mb-16 text-center">
-              <h2 className="t-h2">Free, forever.</h2>
-              <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-zinc-400">
-                Every feature, unlimited scans. The AI runs on your own key, billed at cost by your
-                provider.
-              </p>
-            </Reveal>
-
-            <div className="mx-auto max-w-md">
-              <Reveal>
-                <div className="relative flex h-full flex-col rounded-2xl border border-white bg-white/[0.04] p-8 shadow-[0_0_40px_rgba(255,255,255,0.06)]">
-                  <h3 className="font-display text-xl font-semibold">Free</h3>
-                  <p className="mt-2 h-10 text-sm text-zinc-400">
-                    Everything the app does, on your own key.
-                  </p>
-                  <div className="mb-8 mt-6 flex items-baseline gap-1">
-                    <span className="text-zinc-500">$</span>
-                    <span className="font-display text-5xl font-semibold">
-                      <CountUp to={0} duration={900} />
-                    </span>
-                    <span className="text-sm text-zinc-500">forever</span>
-                  </div>
-                  <ul className="mb-8 flex-1 list-none space-y-4">
-                    {[
-                      'Unlimited barcode scans',
-                      'Full ingredients and nutrition',
-                      'Scan history, synced across your devices',
-                      'Unlimited AI insights with your own free key',
-                    ].map((f) => (
-                      <li key={f} className="flex items-start gap-3 text-sm text-zinc-200">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-white" aria-hidden="true" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/app" className="btn-primary w-full">
-                    {primaryLabel}
-                  </Link>
                 </div>
-              </Reveal>
-            </div>
+              </div>
+              <PhoneShot className="animate-float" />
+            </figure>
           </div>
         </section>
 
-        {/* ===================== FAQ ===================== */}
-        <section id="faq" className="scroll-mt-28 px-[var(--gutter)] py-[var(--band)]">
-          <div className="mx-auto max-w-3xl">
-            <Reveal className="mb-14 text-center">
-              <h2 className="t-h2">Frequently asked questions.</h2>
-            </Reveal>
-
-            <ul className="m-0 list-none space-y-3">
-              {FAQ.map((f, i) => (
-                <Reveal as="li" key={f.q} delay={i * 60}>
-                  <details className="group rounded-2xl border border-white/10 bg-white/[0.02] px-6 transition-colors duration-[260ms] hover:border-white/20 open:bg-white/[0.04]">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 font-display text-lg font-semibold tracking-tight marker:hidden">
-                      {f.q}
-                      <span
-                        aria-hidden="true"
-                        className="shrink-0 text-2xl font-light leading-none text-zinc-500 transition-transform duration-[260ms] ease-scan group-open:rotate-45"
-                      >
-                        +
-                      </span>
-                    </summary>
-                    <p className="pb-7 text-[0.95rem] leading-relaxed text-zinc-400">{f.a}</p>
-                  </details>
-                </Reveal>
+        {/* ============ Features ============ */}
+        <section id="features" aria-labelledby="features-h" className="scroll-mt-20 px-[var(--gutter)] py-20 lg:py-28">
+          <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_2fr] lg:gap-16">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <SectionLabel n="02" name="Features" />
+              <h2 id="features-h" className="t-title">
+                Everything you would otherwise squint at.
+              </h2>
+              <p className="mt-4 max-w-sm leading-relaxed text-ink-2">
+                The small print on the back of the pack, read for you in seconds.
+              </p>
+            </div>
+            <ul className="grid gap-6 sm:grid-cols-2">
+              {FEATURES.map((f) => (
+                <li
+                  key={f.title}
+                  className="card p-7 transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-neu-hover"
+                >
+                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl text-accent-ink shadow-neu-inset-deep">
+                    <f.icon className="h-6 w-6" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-5 font-display text-lg font-bold tracking-tight">{f.title}</h3>
+                  <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink-2">{f.body}</p>
+                </li>
               ))}
             </ul>
           </div>
         </section>
 
-        {/* ===================== CTA ===================== */}
-        <section className="px-[var(--gutter)] py-[var(--band)] text-center">
-          <Reveal className="mx-auto max-w-3xl">
-            <h2 className="t-display text-balance">
-              <span className="text-fade">Start with whatever</span>
-              <br />
-              <span>is in your cupboard.</span>
+        {/* ============ Why ============ */}
+        <section aria-labelledby="why-h" className="px-[var(--gutter)] py-20 lg:py-28">
+          <div className="mx-auto max-w-6xl">
+            <SectionLabel n="03" name="Why" />
+            <h2 id="why-h" className="t-title max-w-2xl">
+              Labels are written for regulators, not for people in a hurry.
             </h2>
-            <div className="mt-12 flex items-center justify-center">
-              <Magnetic strength={10}>
-                <Link
-                  href="/app"
-                  className="shiny-cta group inline-flex min-h-14 items-center justify-center rounded-full px-10"
-                >
-                  <span className="relative z-10 flex items-center gap-2 font-semibold text-white">
-                    {cta}
-                  </span>
+            <dl className="mt-14 grid gap-8 md:grid-cols-3">
+              {STATS.map((s) => (
+                <div key={s.claim} className="card p-8 transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-neu-hover">
+                  <dt className="sr-only">{s.claim}</dt>
+                  <dd>
+                    <span className="block font-display text-6xl font-extrabold leading-none tracking-tight text-accent-ink">{s.figure}</span>
+                    <span className="mt-4 block leading-relaxed text-ink-2">{s.claim}</span>
+                    <span className="mt-3 block text-xs text-ink-3">{s.source}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
+        {/* ============ Story + promises ============ */}
+        <section aria-labelledby="story-h" className="px-[var(--gutter)] py-20 lg:py-28">
+          <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-2 lg:gap-20">
+            <figure>
+              <blockquote className="font-display font-bold text-[1.6rem] leading-[1.2] sm:text-3xl">
+                “My dad is vegetarian, and I kept noticing how often packaged food quietly includes things that do not fit.
+                I wanted a scan to tell us, instantly.”
+              </blockquote>
+              <figcaption className="mt-6 text-sm text-ink-2">
+                Aarav Puri, founder.{' '}
+                <Link href="/about" className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
+                  Read the story
                 </Link>
-              </Magnetic>
+              </figcaption>
+            </figure>
+            <div>
+              <h2 id="story-h" className="font-display text-2xl font-extrabold tracking-tight">
+                Our promises
+              </h2>
+              <dl className="card mt-6 divide-y divide-line px-6 py-2 sm:px-8">
+                {[
+                  ['Free to use', 'Scanning, history and your food profile are free. AI features use your own Gemini API key and are subject to Google’s Gemini API pricing.'],
+                  ['Your data stays yours', 'We never sell or share your scans or profile. Not with brands, not with advertisers.'],
+                  ['No paid placement', 'No ads, no sponsored products, and no brand can buy a better grade.'],
+                  ['Delete anytime', 'Remove your account in Settings and everything in it goes too.'],
+                ].map(([t, b]) => (
+                  <div key={t} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
+                    <dt className="font-semibold">{t}</dt>
+                    <dd className="text-ink-2">{b}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-          </Reveal>
+          </div>
+        </section>
+
+        {/* ============ CTA ============ */}
+        <section className="px-[var(--gutter)] pb-20 lg:pb-28">
+          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 card p-8 sm:p-14 lg:flex-row lg:items-center">
+            <h2 className="t-title">Try it on the next thing you eat.</h2>
+            <Link href="/app" className="btn-primary group h-12 shrink-0 px-6 text-[0.9375rem]">
+              Scan your first product
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
+          </div>
         </section>
       </main>
-
       <Footer />
-    </div>
+    </>
   )
 }

@@ -1,15 +1,20 @@
 import type { Config } from 'tailwindcss'
 
 /**
- * Nourish design system.
+ * Nourish design system: soft UI.
  *
- * Noir, in strict black and white. Depth comes from layered darkness, hairline
- * white borders, blur and glow rather than from hue, so the only "accent"
- * in the system is pure white used sparingly at full strength.
+ * Everything is molded from one cool grey clay. Depth comes from paired
+ * shadows, light from the top left and shade to the bottom right, so
+ * elements read as raised from the surface or pressed into it. Colour is
+ * kept for meaning: the Nutri-Score ramp (A to E) and the traffic-light
+ * nutrient levels. Actions are white, raised from the clay; the rest is
+ * grey.
  *
- * Contrast was checked for every step of the neutral ramp against the three
- * surfaces it sits on (#000000, #0A0A0A, #141414); the ratios are noted below.
+ * Every colour is a CSS variable so the whole system flips for dark mode in
+ * globals.css without a single `dark:` variant in the markup.
  */
+const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
+
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -19,99 +24,91 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: {
-          DEFAULT: '#000000',
-          900: '#050505',
-          800: '#0A0A0A',
-          700: '#141414',
-          600: '#1F1F1F',
-          line: '#6E6E6E', // control boundary on black, 3.4:1 and up
-          muted: '#A3A3A3', // body text on black, 6.9:1 and up
+        paper: token('paper'),
+        surface: { DEFAULT: token('surface'), 2: token('surface-2'), 3: token('surface-3') },
+        ink: { DEFAULT: token('ink'), 2: token('ink-2'), 3: token('ink-3') },
+        line: { DEFAULT: token('line'), strong: token('line-strong') },
+        accent: { DEFAULT: token('accent'), ink: token('accent-ink'), soft: token('accent-soft') },
+        'on-ink': token('on-ink'),
+        'on-accent': token('on-accent'),
+        grade: {
+          a: token('grade-a'),
+          b: token('grade-b'),
+          c: token('grade-c'),
+          d: token('grade-d'),
+          e: token('grade-e'),
         },
-        paper: {
-          DEFAULT: '#FFFFFF',
-          2: '#F2F2F2',
-          3: '#E4E4E4',
-          line: '#767676',
-          muted: '#5C5C5C',
+        level: {
+          low: token('level-low'),
+          moderate: token('level-moderate'),
+          high: token('level-high'),
         },
-        // The single accent. White on the dark ground, black on the light one.
-        signal: {
-          DEFAULT: 'rgb(var(--accent-rgb) / <alpha-value>)',
-          dim: 'rgb(var(--accent-dim-rgb) / <alpha-value>)',
-        },
-        'accent-on': 'rgb(var(--accent-on-rgb) / <alpha-value>)',
-        alarm: { DEFAULT: 'rgb(var(--accent-rgb) / <alpha-value>)' },
-
-        // The neutral ramp the product screens already speak in.
-        // 200 to 500 clear 4.5:1 for text, 600 and 700 clear 3:1 for borders.
-        zinc: {
-          50: '#FAFAFA',
-          100: '#F2F2F2',
-          200: '#D6D6D6',
-          300: '#BDBDBD',
-          400: '#A3A3A3',
-          500: '#8F8F8F',
-          600: '#7C7C7C',
-          700: '#6E6E6E',
-          800: '#1F1F1F',
-          900: '#0A0A0A',
-          950: '#000000',
-        },
-        // Status hues fold into greyscale. Meaning is carried by the label and
-        // the fill treatment next to it, never by colour alone.
-        green: { 400: '#FFFFFF', 500: '#E4E4E4', 600: '#BDBDBD' },
-        emerald: { 400: '#FFFFFF', 500: '#E4E4E4', 600: '#BDBDBD' },
-        red: { 400: '#FFFFFF', 500: '#D6D6D6', 600: '#BDBDBD' },
-        yellow: { 400: '#BDBDBD', 500: '#A3A3A3' },
-        amber: { 300: '#BDBDBD', 400: '#A3A3A3' },
-
-        dark: { DEFAULT: '#000000', card: '#0A0A0A', elevated: '#141414' },
-        control: '#6E6E6E',
       },
-      borderColor: { control: '#6E6E6E' },
       fontFamily: {
-        // Manrope carries the display voice, Inter the reading voice.
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-manrope)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
-        // System stack: the data voice costs no extra download.
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
-      // Eased from the original -0.045em / 0.18em: the brand mark is a plain
-      // lowercase word now, so the rest of the type pulls back to match
-      // rather than shouting over it.
-      letterSpacing: { tightest: '-0.025em', label: '0.12em' },
-      transitionTimingFunction: { scan: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+      fontSize: {
+        '2xs': ['0.6875rem', { lineHeight: '1rem' }],
+      },
+      // Soft, pillowed corners: nothing in the system is sharper than 8px.
+      borderRadius: {
+        DEFAULT: '8px',
+        md: '12px',
+        lg: '14px',
+        xl: '16px',
+        '2xl': '20px',
+        '3xl': '32px',
+      },
+      // Dual opposing shadows: light from the top left, shade to the bottom
+      // right. Elements are either extruded from the surface or pressed in.
+      boxShadow: {
+        neu: '9px 9px 16px rgb(var(--sh-dark) / var(--sh-dark-a)), -9px -9px 16px rgb(var(--sh-light) / var(--sh-light-a))',
+        'neu-hover': '12px 12px 20px rgb(var(--sh-dark) / var(--sh-dark-a-strong)), -12px -12px 20px rgb(var(--sh-light) / var(--sh-light-a-strong))',
+        'neu-sm': '5px 5px 10px rgb(var(--sh-dark) / var(--sh-dark-a)), -5px -5px 10px rgb(var(--sh-light) / var(--sh-light-a))',
+        'neu-inset': 'inset 6px 6px 10px rgb(var(--sh-dark) / var(--sh-dark-a)), inset -6px -6px 10px rgb(var(--sh-light) / var(--sh-light-a))',
+        'neu-inset-deep': 'inset 10px 10px 20px rgb(var(--sh-dark) / var(--sh-dark-a-strong)), inset -10px -10px 20px rgb(var(--sh-light) / var(--sh-light-a-strong))',
+        'neu-inset-sm': 'inset 3px 3px 6px rgb(var(--sh-dark) / var(--sh-dark-a)), inset -3px -3px 6px rgb(var(--sh-light) / var(--sh-light-a))',
+        // Pressed into a white button.
+        'neu-press-color': 'inset 4px 4px 8px rgb(var(--sh-dark) / 0.55), inset -4px -4px 8px rgb(255 255 255 / 0.8)',
+        card: '5px 5px 10px rgb(var(--sh-dark) / var(--sh-dark-a)), -5px -5px 10px rgb(var(--sh-light) / var(--sh-light-a))',
+        pop: '9px 9px 16px rgb(var(--sh-dark) / var(--sh-dark-a)), -9px -9px 16px rgb(var(--sh-light) / var(--sh-light-a))',
+      },
+      transitionTimingFunction: {
+        out: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
       keyframes: {
-        'fade-in-up': {
-          from: { opacity: '0', transform: 'translateY(20px)' },
+        'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'rise': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
-        'border-spin': {
-          from: { '--gradient-angle': '0deg' },
-          to: { '--gradient-angle': '360deg' },
+        'sheet-up': {
+          from: { transform: 'translateY(100%)' },
+          to: { transform: 'translateY(0)' },
         },
-        // Two identical tracks, so half a turn is one seamless loop.
-        ticker: {
-          from: { transform: 'translateX(0)' },
-          to: { transform: 'translateX(-50%)' },
+        shimmer: {
+          from: { backgroundPosition: '200% 0' },
+          to: { backgroundPosition: '-200% 0' },
         },
-        'star-drift': {
-          from: { transform: 'translateY(0px)' },
-          to: { transform: 'translateY(-2000px)' },
+        sweep: {
+          '0%, 100%': { transform: 'translateY(-46%)' },
+          '50%': { transform: 'translateY(46%)' },
         },
-        'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-        'slide-up': {
-          '0%': { opacity: '0', transform: 'translateY(12px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+        spin: { to: { transform: 'rotate(360deg)' } },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
       },
       animation: {
-        'fade-up': 'fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
-        ticker: 'ticker 46s linear infinite',
-        'border-spin': 'border-spin 2.5s linear infinite',
-        'fade-in': 'fade-in 0.3s ease-out',
-        'slide-up': 'slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        'fade-in': 'fade-in 200ms ease-out both',
+        rise: 'rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both',
+        float: 'float 3s ease-in-out infinite',
+        shimmer: 'shimmer 1.6s linear infinite',
+        sweep: 'sweep 2.4s ease-in-out infinite',
+        spin: 'spin 700ms linear infinite',
       },
     },
   },

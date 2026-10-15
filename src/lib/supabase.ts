@@ -136,10 +136,18 @@ export const auth = {
   },
 }
 
+// The signed-in user from the locally stored session. Every query already
+// carries the access token the database authorises against, so re-verifying
+// it with getUser would add a network round trip without adding safety.
+async function sessionUser() {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.user ?? null
+}
+
 // Database helper functions
 export const db = {
   async saveScannedProduct(barcode: string, productName: string, productData: any) {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
@@ -157,7 +165,7 @@ export const db = {
   },
 
   async getScannedProducts(limit = 50) {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
@@ -172,7 +180,7 @@ export const db = {
   },
 
   async deleteScannedProduct(id: string) {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase
@@ -184,8 +192,22 @@ export const db = {
     if (error) throw error
   },
 
+  /** Removes every scan of one product, which is how history lists them. */
+  async deleteScansByBarcode(barcode: string) {
+    const user = await sessionUser()
+    if (!user) throw new Error('User not authenticated')
+
+    const { error } = await supabase
+      .from('scanned_products')
+      .delete()
+      .eq('barcode', barcode)
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  },
+
   async clearAllScannedProducts() {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase
@@ -196,72 +218,8 @@ export const db = {
     if (error) throw error
   },
 
-  async getAIUsageToday() {
-    const user = await auth.getCurrentUser()
-    if (!user || !user.email) throw new Error('User not authenticated')
-
-    // Get today's date in user's local timezone as YYYY-MM-DD string
-    const now = new Date()
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-
-    // Track by email to prevent abuse from account deletion/recreation
-    // Use maybeSingle() instead of single() to avoid 406 when no row exists yet
-    const { data, error } = await supabase
-      .from('ai_usage')
-      .select('count')
-      .eq('email', user.email)
-      .eq('date', today)
-      .maybeSingle()
-
-    if (error) {
-      console.error('AI usage query error:', error)
-      throw error
-    }
-    return data?.count || 0
-  },
-
-  async incrementAIUsage() {
-    const user = await auth.getCurrentUser()
-    if (!user || !user.email) throw new Error('User not authenticated')
-
-    // Get today's date in user's local timezone as YYYY-MM-DD string
-    const now = new Date()
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-
-    // Track by email to prevent abuse from account deletion/recreation
-    // Use maybeSingle() to avoid 406 when no row exists yet
-    const { data: existing } = await supabase
-      .from('ai_usage')
-      .select('id, count')
-      .eq('email', user.email)
-      .eq('date', today)
-      .maybeSingle()
-
-    if (existing) {
-      // Update existing record
-      const { error } = await supabase
-        .from('ai_usage')
-        .update({ count: existing.count + 1 })
-        .eq('id', existing.id)
-
-      if (error) throw error
-    } else {
-      // Create new record with email
-      const { error } = await supabase
-        .from('ai_usage')
-        .insert([{
-          user_id: user.id,
-          email: user.email,
-          date: today,
-          count: 1,
-        }])
-
-      if (error) throw error
-    }
-  },
-
   async saveAIInsight(barcode: string, productName: string, insightType: string, insightData: any) {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { data, error } = await supabase
@@ -280,7 +238,7 @@ export const db = {
   },
 
   async getAIInsights(barcode?: string, limit = 50) {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     let query = supabase
@@ -301,7 +259,7 @@ export const db = {
   },
 
   async deleteAIInsight(id: string) {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase
@@ -314,7 +272,7 @@ export const db = {
   },
 
   async deleteAIInsightsByBarcode(barcode: string) {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase
@@ -327,7 +285,7 @@ export const db = {
   },
 
   async clearAllAIInsights() {
-    const user = await auth.getCurrentUser()
+    const user = await sessionUser()
     if (!user) throw new Error('User not authenticated')
 
     const { error } = await supabase

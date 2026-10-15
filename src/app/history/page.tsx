@@ -1,348 +1,453 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Trash2, Calendar, Barcode, Package, Trash, Brain, ChevronDown, ChevronUp, Leaf, ArrowRightLeft, ChefHat, CheckSquare, type LucideIcon } from 'lucide-react'
-import { auth, db } from '@/lib/supabase'
-import Button from '@/components/ui/Button'
-import ChatAgent from '@/components/ChatAgent'
-import { scoreFromGrade } from '@/components/product/ScoreMeter'
-import InsightResults from '@/components/product/InsightResults'
+import { Camera, MessagesSquare, Search, ShieldAlert, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
-import Orb from '@/components/ui/Orb'
+import { db } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth-context'
+import { toFood, type Food, type Grade } from '@/lib/food'
+import { checkProduct, dietLabel, isProfileEmpty, overallStatus } from '@/lib/profile'
+import { productCache } from '@/lib/scan-cache'
+import { dayBucket, timeAgo } from '@/lib/time'
+import AppShell from '@/components/app/AppShell'
+import ChatAgent from '@/components/ChatAgent'
+import { GRADE_STYLE, GradeBadge } from '@/components/product/Grade'
+import ProductThumb from '@/components/product/ProductThumb'
+import Modal from '@/components/ui/Modal'
+import Button from '@/components/ui/Button'
 
-const INSIGHT_ICONS: Record<string, LucideIcon> = {
-  alternatives: ArrowRightLeft,
-  diet_compatibility: CheckSquare,
-  eco_impact: Leaf,
-  recipe_suggestions: ChefHat,
-}
-
-interface ScannedProduct {
-  id: string
+interface Entry {
   barcode: string
-  product_name: string
-  product_data: any
-  scanned_at: string
+  food: Food
+  lastScanned: string
+  times: number
+  conflict: boolean
 }
 
-interface AIInsight {
-  id: string
-  barcode: string
-  product_name: string
-  insight_type: string
-  insight_data: any
-  created_at: string
-}
+type Filter = 'all' | 'good' | 'middle' | 'poor' | 'conflict'
+
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'good', label: 'A–B' },
+  { id: 'middle', label: 'C' },
+  { id: 'poor', label: 'D–E' },
+  { id: 'conflict', label: 'Not for me' },
+]
+
+const UNDO_MS = 5000
 
 export default function HistoryPage() {
-  const router = useRouter()
-  const [products, setProducts] = useState<ScannedProduct[]>([])
-  const [insights, setInsights] = useState<AIInsight[]>([])
-  const [expandedProduct, setExpandedProduct] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [deleting, setDeleting] = useState<string | null>(null)
-  const [clearingAll, setClearingAll] = useState(false)
+  return (
+    <AppShell>
+      <History />
+    </AppShell>
+  )
+}
 
-  useEffect(() => {
-    checkAuthAndLoadHistory()
+function History() {
+  const router = useRouter()
+  const { profile } = useAuth()
+  const [rows, setRows] = useState<any[] | null>(null)
+  const [error, setError] = useState(false)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<Filter>('all')
+  const [hidden, setHidden] = useState<Set<string>>(new Set())
+  const [confirmClear, setConfirmClear] = useState(false)
+  const [clearing, setClearing] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
+  const pending = useRef(new Map<string, ReturnType<typeof setTimeout>>())
+
+  const load = useCallback(() => {
+    setError(false)
+    db.getScannedProducts(500)
+      .then((data) => setRows(data ?? []))
+      .catch(() => setError(true))
   }, [])
 
-  const checkAuthAndLoadHistory = async () => {
-    const user = await auth.getCurrentUser()
-    if (!user) {
-      toast.error('Please sign in to view your history')
-      router.push('/')
-      return
+  useEffect(load, [load])
+
+  // Commit any deletions still waiting on their undo window when leaving.
+  useEffect(() => {
+    const map = pending.current
+    return () => {
+      map.forEach((t, barcode) => {
+        clearTimeout(t)
+        commitDelete(barcode)
+      })
     }
-    loadHistory()
-  }
+  }, [])
 
-  const loadHistory = async () => {
-    try {
-      const [productsData, insightsData] = await Promise.all([
-        db.getScannedProducts(),
-        db.getAIInsights()
-      ])
-      setProducts(productsData || [])
-      setInsights(insightsData || [])
-    } catch (err: any) {
-      toast.error('Failed to load history')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const profileEmpty = isProfileEmpty(profile)
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this item from history?')) return
-
-    setDeleting(id)
-    try {
-      const product = products.find(p => p.id === id)
-      if (product) {
-        // Delete AI insights for this product first
-        await db.deleteAIInsightsByBarcode(product.barcode)
-        // Then delete the product
-        await db.deleteScannedProduct(id)
-        // Update UI
-        setProducts(products.filter((p) => p.id !== id))
-        setInsights(insights.filter((i) => i.barcode !== product.barcode))
-        toast.success('Item deleted')
+  const entries = useMemo<Entry[]>(() => {
+    if (!rows) return []
+    const byCode = new Map<string, Entry>()
+    for (const row of rows) {
+      const key = row.barcode || row.id
+      const existing = byCode.get(key)
+      if (existing) {
+        existing.times += 1
+        continue
       }
-    } catch (err) {
-      toast.error('Failed to delete item')
-    } finally {
-      setDeleting(null)
+      const food = toFood(row.product_data, row.barcode)
+      byCode.set(key, {
+        barcode: key,
+        food,
+        lastScanned: row.scanned_at,
+        times: 1,
+        conflict: !profileEmpty && overallStatus(checkProduct(food, profile)) === 'conflict',
+      })
     }
+    return Array.from(byCode.values())
+  }, [rows, profile, profileEmpty])
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return entries.filter((e) => {
+      if (hidden.has(e.barcode)) return false
+      if (q && !`${e.food.name} ${e.food.brand ?? ''} ${e.barcode}`.toLowerCase().includes(q)) return false
+      const g = e.food.grade
+      if (filter === 'good') return g === 'a' || g === 'b'
+      if (filter === 'middle') return g === 'c'
+      if (filter === 'poor') return g === 'd' || g === 'e'
+      if (filter === 'conflict') return e.conflict
+      return true
+    })
+  }, [entries, hidden, query, filter])
+
+  const groups = useMemo(() => {
+    const out: { label: string; items: Entry[] }[] = []
+    for (const e of visible) {
+      const label = dayBucket(e.lastScanned)
+      const last = out[out.length - 1]
+      if (last?.label === label) last.items.push(e)
+      else out.push({ label, items: [e] })
+    }
+    return out
+  }, [visible])
+
+  const counts = useMemo(() => {
+    const c: Record<Grade | 'none', number> = { a: 0, b: 0, c: 0, d: 0, e: 0, none: 0 }
+    for (const e of entries) if (!hidden.has(e.barcode)) c[e.food.grade ?? 'none']++
+    return c
+  }, [entries, hidden])
+
+  const openEntry = (e: Entry) => {
+    productCache.set(e.barcode, e.food)
+    router.push(`/app?code=${encodeURIComponent(e.barcode)}`)
   }
 
-  const handleClearAll = async () => {
-    if (!confirm('Are you sure you want to clear all scan history? This action cannot be undone.')) return
-
-    setClearingAll(true)
+  async function commitDelete(barcode: string) {
+    pending.current.delete(barcode)
     try {
-      // Delete all AI insights first
-      await db.clearAllAIInsights()
-      // Then delete all products
-      await db.clearAllScannedProducts()
-      // Update UI
-      setProducts([])
-      setInsights([])
-      toast.success('All history cleared')
-    } catch (err) {
-      toast.error('Failed to clear history')
-    } finally {
-      setClearingAll(false)
+      await Promise.all([db.deleteScansByBarcode(barcode), db.deleteAIInsightsByBarcode(barcode)])
+      productCache.delete(barcode)
+      setRows((r) => r?.filter((row) => (row.barcode || row.id) !== barcode) ?? r)
+    } catch {
+      toast.error('Could not delete that scan. It is back in your list.')
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    setHidden((h) => {
+      const next = new Set(h)
+      next.delete(barcode)
+      return next
     })
   }
 
-  const getProductInsights = (barcode: string) => {
-    return insights.filter(insight => insight.barcode === barcode)
+  const remove = (e: Entry) => {
+    setHidden((h) => new Set(h).add(e.barcode))
+    const t = setTimeout(() => commitDelete(e.barcode), UNDO_MS)
+    pending.current.set(e.barcode, t)
+    toast(`Removed ${e.food.name}`, {
+      duration: UNDO_MS,
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          clearTimeout(pending.current.get(e.barcode))
+          pending.current.delete(e.barcode)
+          setHidden((h) => {
+            const next = new Set(h)
+            next.delete(e.barcode)
+            return next
+          })
+        },
+      },
+    })
   }
 
-  const formatInsightType = (type: string) => {
-    if (type === 'alternatives') return 'Healthier Alternatives'
-    if (type === 'diet_compatibility') return 'Diet Compatibility'
-    if (type === 'eco_impact') return 'Environmental Impact'
-    if (type === 'recipe_suggestions') return 'Recipe Ideas'
-    return type
-  }
-
-  const toggleProductExpansion = (productId: string) => {
-    setExpandedProduct(expandedProduct === productId ? null : productId)
-  }
-
-  // Prepare context for AI chat agent
-  const chatContext = useMemo(() => {
-    return {
-      products: products.map(p => ({
-        name: p.product_name,
-        barcode: p.barcode,
-        scanned_at: p.scanned_at,
-        ingredients: p.product_data?.ingredients_text,
-        nutrition: p.product_data?.nutriments,
-        categories: p.product_data?.categories,
-      })),
-      insights: insights.map(i => ({
-        product_name: i.product_name,
-        type: i.insight_type,
-        data: i.insight_data?.content,
-        created_at: i.created_at,
-      })),
+  const clearAll = async () => {
+    setClearing(true)
+    try {
+      await db.clearAllAIInsights()
+      await db.clearAllScannedProducts()
+      productCache.clear()
+      setRows([])
+      setConfirmClear(false)
+      toast.success('History cleared')
+    } catch {
+      toast.error('Could not clear history. Try again.')
     }
-  }, [products, insights])
+    setClearing(false)
+  }
+
+  // A compact, readable summary for Aisle rather than raw database records.
+  const chatContext = useMemo(
+    () => ({
+      profile: { diets: profile.diets.map(dietLabel), avoids: profile.avoid },
+      products: entries.slice(0, 60).map(({ food, lastScanned, times }) => ({
+        name: food.name,
+        brand: food.brand,
+        nutri_score: food.grade?.toUpperCase() ?? null,
+        processing_nova: food.nova,
+        per_100g: food.nutrition,
+        allergens: food.allergens,
+        vegan: food.vegan,
+        vegetarian: food.vegetarian,
+        additives: food.additives.length,
+        ingredients: food.ingredientsText?.slice(0, 400),
+        last_scanned: lastScanned,
+        times_scanned: times,
+      })),
+    }),
+    [entries, profile]
+  )
+
+  const total = entries.length - hidden.size
 
   return (
-    <div className="min-h-screen bg-dark">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-dark-card/95 backdrop-blur-lg border-b border-zinc-800">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/app" className="btn-ghost flex items-center gap-2">
-              <ArrowLeft className="w-5 h-5" />
-              <span className="hidden sm:inline">Back</span>
-            </Link>
-            <h1 className="text-xl font-semibold gradient-text">Scan History</h1>
-          </div>
-          {!loading && products.length > 0 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleClearAll}
-              disabled={clearingAll}
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-            >
-              {clearingAll ? (
-                <Orb />
-              ) : (
-                <Trash className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline">Clear All</span>
-            </Button>
-          )}
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="t-title">History</h1>
+          <p className="mt-1 text-ink-2">
+            {rows === null ? ' ' : total === 0 ? 'Nothing here yet.' : `${total} product${total === 1 ? '' : 's'} scanned`}
+          </p>
         </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
-        {loading ? (
-          <div className="text-center py-20">
-            <Orb size={64} className="mx-auto mb-4 block" />
-            <p className="text-zinc-400">Loading history...</p>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-20">
-            <Package className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No scanned products yet</h2>
-            <p className="text-zinc-400 mb-6">Start scanning to build your history.</p>
-            <Link href="/app">
-              <Button>Start Scanning</Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-sm text-zinc-500">{products.length} products scanned</p>
-
-            <AnimatePresence>
-              {products.map((product, i) => {
-                const productInsights = getProductInsights(product.barcode)
-                const isExpanded = expandedProduct === product.id
-
-                return (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="card"
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* No product photography anywhere in a result. A scan
-                          returns a reading, so the tile carries the score
-                          rather than a picture of the packet. */}
-                      <div className="flex h-20 w-20 flex-shrink-0 flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
-                        {(() => {
-                          const score = scoreFromGrade(product.product_data?.nutriscore_grade)
-                          return score === null ? (
-                            <Package className="h-7 w-7 text-zinc-600" aria-hidden="true" />
-                          ) : (
-                            <>
-                              <span className="tnum font-display text-2xl font-semibold leading-none">
-                                {score}
-                              </span>
-                              <span className="mt-1 text-[9px] font-semibold uppercase tracking-label text-zinc-500">
-                                / 100
-                              </span>
-                            </>
-                          )
-                        })()}
-                      </div>
-
-                      {/* Product Info */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{product.product_name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-zinc-400 mt-1">
-                          <Barcode className="w-4 h-4" />
-                          <span>{product.barcode}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-zinc-500 mt-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDate(product.scanned_at)}</span>
-                        </div>
-
-                        {/* AI Insights Badge */}
-                        {productInsights.length > 0 && (
-                          <button
-                            onClick={() => toggleProductExpansion(product.id)}
-                            className="mt-3 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
-                          >
-                            <Brain className="w-4 h-4" aria-hidden="true" />
-                            <span>{productInsights.length} AI Insight{productInsights.length > 1 ? 's' : ''}</span>
-                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        disabled={deleting === product.id}
-                        className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      >
-                        {deleting === product.id ? (
-                          <Orb label="Deleting" />
-                        ) : (
-                          <Trash2 className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Expanded AI Insights */}
-                    <AnimatePresence>
-                      {isExpanded && productInsights.length > 0 && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="mt-4 pt-4 border-t border-zinc-800 space-y-3">
-                            {productInsights.map((insight) => (
-                              <div
-                                key={insight.id}
-                                className="rounded-2xl border border-white/10 bg-black/40 p-4 sm:p-5"
-                              >
-                                <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/10 pb-4">
-                                  <div className="flex min-w-0 items-center gap-3">
-                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5">
-                                      {(() => {
-                                        const Icon = INSIGHT_ICONS[insight.insight_type] ?? Brain
-                                        return <Icon className="h-4 w-4" aria-hidden="true" />
-                                      })()}
-                                    </span>
-                                    <span className="truncate font-display text-sm font-semibold">
-                                      {formatInsightType(insight.insight_type)}
-                                    </span>
-                                  </div>
-                                  <span className="shrink-0 font-mono text-[11px] uppercase tracking-label text-zinc-500">
-                                    {formatDate(insight.created_at)}
-                                  </span>
-                                </div>
-                                {insight.insight_data?.content ? (
-                                  <InsightResults content={insight.insight_data.content} />
-                                ) : (
-                                  <p className="text-sm text-zinc-400">No data available</p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                )
-              })}
-            </AnimatePresence>
-          </div>
+        {total > 0 && (
+          <Button variant="secondary" icon={<MessagesSquare className="h-4 w-4 text-ink-2" aria-hidden="true" />} onClick={() => setChatOpen(true)}>
+            Ask about your scans
+          </Button>
         )}
-      </main>
+      </div>
 
-      {/* AI Chat Agent */}
-      {!loading && products.length > 0 && <ChatAgent context={chatContext} />}
+      {error ? (
+        <div className="card mt-8 p-6 text-center">
+          <p className="font-medium">Your history did not load</p>
+          <p className="mt-1 text-sm text-ink-2">Check your connection and try again.</p>
+          <Button variant="secondary" className="mt-4" onClick={load}>
+            Try again
+          </Button>
+        </div>
+      ) : rows === null ? (
+        <ListSkeleton />
+      ) : total === 0 ? (
+        <EmptyHistory />
+      ) : (
+        <>
+          <GradeMix counts={counts} total={total} />
+
+          <div className="sticky top-16 z-10 -mx-[var(--gutter)] mt-6 bg-paper/90 px-[var(--gutter)] py-3 backdrop-blur-md">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
+                <label htmlFor="history-search" className="sr-only">
+                  Search history
+                </label>
+                <input
+                  id="history-search"
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by name, brand or barcode"
+                  className="field pl-10 pr-10 [&::-webkit-search-cancel-button]:hidden"
+                />
+                {query && (
+                  <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="btn-icon absolute right-0 top-1/2 h-10 w-10 -translate-y-1/2">
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+              {/* A pressed-in track with the chosen filter raised out of it. The
+                  scroller is padded so no shadow is clipped at its edges. */}
+              <div className="-m-3 overflow-x-auto p-3">
+                <div className="inline-flex gap-1 rounded-full bg-paper p-1.5 shadow-neu-inset-sm" role="radiogroup" aria-label="Filter by grade">
+                {FILTERS.filter((f) => f.id !== 'conflict' || !profileEmpty).map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={filter === f.id}
+                    onClick={() => setFilter(f.id)}
+                    className={`h-9 shrink-0 whitespace-nowrap rounded-full px-4 text-sm font-medium transition-[color,box-shadow] duration-300 ease-out ${
+                      filter === f.id ? 'bg-paper text-ink shadow-neu-sm' : 'text-ink-3 hover:text-ink'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {groups.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="font-medium">No matches</p>
+              <p className="mt-1 text-sm text-ink-2">Try a different search or filter.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery('')
+                  setFilter('all')
+                }}
+                className="mt-3 text-sm font-medium underline decoration-ink/30 underline-offset-4"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="mt-2 space-y-6">
+              {groups.map((g) => (
+                <section key={g.label} aria-label={g.label}>
+                  <h2 className="t-eyebrow mb-1">{g.label}</h2>
+                  <ul className="divide-y divide-line">
+                    {g.items.map((e) => (
+                      <li key={e.barcode} className="group flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEntry(e)}
+                          className="-ml-2 flex min-w-0 flex-1 items-center gap-3.5 rounded-lg py-3 pl-2 pr-1 text-left transition-colors hover:bg-ink/[0.03]"
+                        >
+                          <ProductThumb food={e.food} size={48} />
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center gap-2">
+                              <span className="truncate font-medium">{e.food.name}</span>
+                              {e.conflict && (
+                                <ShieldAlert className="h-4 w-4 shrink-0 text-level-high" aria-label="Does not fit your profile" />
+                              )}
+                            </span>
+                            <span className="mt-0.5 block truncate text-sm text-ink-3">
+                              {[e.food.brand, timeAgo(e.lastScanned), e.times > 1 ? `scanned ${e.times}×` : null]
+                                .filter(Boolean)
+                                .join(' · ')}
+                            </span>
+                          </span>
+                          <GradeBadge grade={e.food.grade} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => remove(e)}
+                          aria-label={`Remove ${e.food.name} from history`}
+                          className="btn-icon text-ink-3 opacity-100 hover:text-level-high sm:opacity-0 sm:focus:opacity-100 sm:group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-12 border-t border-line pt-6">
+            <button type="button" onClick={() => setConfirmClear(true)} className="text-sm font-medium text-ink-3 hover:text-level-high">
+              Clear all history
+            </button>
+          </div>
+        </>
+      )}
+
+      <Modal
+        isOpen={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        title="Clear all history?"
+        description="Every scan and saved AI answer will be deleted. This cannot be undone."
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setConfirmClear(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" loading={clearing} onClick={clearAll}>
+              Clear history
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-ink-2">
+          You have {total} product{total === 1 ? '' : 's'} in your history.
+        </p>
+      </Modal>
+
+      <ChatAgent open={chatOpen} onClose={() => setChatOpen(false)} context={chatContext} />
     </div>
+  )
+}
+
+/** How a person's scans spread across the grades: their shopping at a glance. */
+function GradeMix({ counts, total }: { counts: Record<Grade | 'none', number>; total: number }) {
+  const graded = total - counts.none
+  if (graded < 3) return null
+  const good = counts.a + counts.b
+  const pct = Math.round((good / graded) * 100)
+  return (
+    <section aria-label="Grade mix" className="card mt-6 p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm text-ink-2">
+          <span className="font-display font-bold text-2xl text-ink">{pct}%</span>
+          <span className="ml-2">of what you scan grades A or B</span>
+        </p>
+        <span className="font-mono text-xs text-ink-3">{graded} graded</span>
+      </div>
+      <div className="mt-4 flex h-3 overflow-hidden rounded-full" role="img" aria-label={(['a', 'b', 'c', 'd', 'e'] as Grade[]).map((g) => `${g.toUpperCase()}: ${counts[g]}`).join(', ')}>
+        {(['a', 'b', 'c', 'd', 'e'] as Grade[]).map((g) =>
+          counts[g] > 0 ? <span key={g} className={GRADE_STYLE[g].split(' ')[0]} style={{ width: `${(counts[g] / graded) * 100}%` }} /> : null
+        )}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+        {(['a', 'b', 'c', 'd', 'e'] as Grade[]).map((g) => (
+          <span key={g} className="flex items-center gap-1.5 font-mono text-xs text-ink-3">
+            <span className={`h-2 w-2 rounded-full ${GRADE_STYLE[g].split(' ')[0]}`} aria-hidden="true" />
+            {g.toUpperCase()} {counts[g]}
+          </span>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function EmptyHistory() {
+  return (
+    <div className="card mt-8 flex flex-col items-center px-6 py-14 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2">
+        <Camera className="h-5 w-5 text-ink-2" aria-hidden="true" />
+      </span>
+      <h2 className="mt-4 font-display font-bold text-xl">Your scans will collect here</h2>
+      <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-2">
+        Every product you scan is saved with its grade, so you can compare, search, and ask questions about them later.
+      </p>
+      <Link href="/app" className="btn-primary mt-6">
+        Scan your first product
+      </Link>
+    </div>
+  )
+}
+
+function ListSkeleton() {
+  return (
+    <ul className="mt-8 divide-y divide-line" aria-hidden="true">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <li key={i} className="flex items-center gap-3.5 py-3">
+          <div className="skeleton h-12 w-12 rounded-lg" />
+          <div className="flex-1 space-y-2">
+            <div className="skeleton h-4 w-1/2" />
+            <div className="skeleton h-3 w-1/3" />
+          </div>
+          <div className="skeleton h-9 w-9 rounded-lg" />
+        </li>
+      ))}
+    </ul>
   )
 }

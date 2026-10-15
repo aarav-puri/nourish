@@ -1,78 +1,79 @@
 'use client'
 
 import { useEffect, useCallback, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
-  title?: string
+  title?: React.ReactNode
+  /** One line under the title. */
+  description?: React.ReactNode
   /** Names the dialog for screen readers when no visible title is rendered. */
   label?: string
   children: React.ReactNode
+  /** Pinned under the scrolling body, for the dialog's actions. */
+  footer?: React.ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
+const SIZES = { sm: 'sm:max-w-sm', md: 'sm:max-w-md', lg: 'sm:max-w-lg', xl: 'sm:max-w-2xl' }
+
 /**
- * The dialog is a panel clamped over the page, not a floating card: square,
- * ruled, with the signal bar across its head.
- *
- * Enter and exit run on CSS transitions rather than an animation library.
- * This dialog is mounted by the auth provider on every route, so keeping it
- * dependency-free keeps that weight off the landing page.
+ * One dialog for the whole product. On a phone it rises as a bottom sheet
+ * within thumb reach; from the small breakpoint up it is a centred panel.
+ * Focus is trapped while open and returned to the opener on close.
  */
-export default function Modal({ isOpen, onClose, title, label, children, size = 'md' }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, description, label, children, footer, size = 'md' }: ModalProps) {
   const titleId = useId()
+  const descId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   const restoreFocusRef = useRef<HTMLElement | null>(null)
-  // Mounted spans the exit transition; `shown` drives the transition itself.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+  // `mounted` spans the exit transition; `shown` drives the transition itself.
   const [mounted, setMounted] = useState(isOpen)
   const [shown, setShown] = useState(false)
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-        return
-      }
-      if (e.key !== 'Tab' || !panelRef.current) return
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation()
+      onCloseRef.current()
+      return
+    }
+    if (e.key !== 'Tab' || !panelRef.current) return
 
-      // Trap Tab inside the dialog so focus can never reach the inert page.
-      const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => el.offsetParent !== null || el === document.activeElement
-      )
-      if (items.length === 0) {
-        e.preventDefault()
-        panelRef.current.focus()
-        return
-      }
-
-      const first = items[0]
-      const last = items[items.length - 1]
-      const active = document.activeElement
-
-      if (e.shiftKey && (active === first || active === panelRef.current)) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    },
-    [onClose]
-  )
+    const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+      (el) => el.offsetParent !== null
+    )
+    if (items.length === 0) {
+      e.preventDefault()
+      panelRef.current.focus()
+      return
+    }
+    const first = items[0]
+    const last = items[items.length - 1]
+    const active = document.activeElement
+    if (e.shiftKey && (active === first || active === panelRef.current)) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
       setMounted(true)
       return
     }
-    // Hold the node through the exit transition, then drop it.
     setShown(false)
-    const t = window.setTimeout(() => setMounted(false), 200)
+    const t = window.setTimeout(() => setMounted(false), 220)
     return () => window.clearTimeout(t)
   }, [isOpen])
 
@@ -81,38 +82,33 @@ export default function Modal({ isOpen, onClose, title, label, children, size = 
 
     restoreFocusRef.current = document.activeElement as HTMLElement | null
     document.addEventListener('keydown', handleKeyDown)
+    const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
     const raf = requestAnimationFrame(() => {
       setShown(true)
-      const first = panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)
-      ;(first ?? panelRef.current)?.focus()
+      // Focus the first field if there is one, otherwise the panel itself, so
+      // a close button is never the thing a keyboard user lands on.
+      const field = panelRef.current?.querySelector<HTMLElement>('input:not([type=hidden]):not([disabled]), textarea')
+      ;(field ?? panelRef.current)?.focus({ preventScroll: true })
     })
 
     return () => {
       cancelAnimationFrame(raf)
       document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = ''
-      // Return focus to whatever opened the dialog.
-      restoreFocusRef.current?.focus?.()
+      document.body.style.overflow = prevOverflow
+      restoreFocusRef.current?.focus?.({ preventScroll: true })
     }
   }, [mounted, isOpen, handleKeyDown])
 
-  if (!mounted) return null
+  if (!mounted || typeof document === 'undefined') return null
 
-  const sizes = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-2xl',
-  }
-
-  return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[150] flex items-end justify-center sm:items-center sm:p-6">
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`absolute inset-0 bg-black/85 backdrop-blur-md transition-opacity duration-200 ${
+        className={`absolute inset-0 bg-[rgb(12_12_10/0.45)] backdrop-blur-[2px] transition-opacity duration-200 ${
           shown ? 'opacity-100' : 'opacity-0'
         }`}
       />
@@ -121,31 +117,44 @@ export default function Modal({ isOpen, onClose, title, label, children, size = 
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
+        aria-describedby={description ? descId : undefined}
         aria-label={!title ? label : undefined}
         tabIndex={-1}
-        className={`relative w-full ${sizes[size]} overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black p-1 shadow-2xl shadow-black/80 transition-[opacity,transform] duration-200 ease-scan focus:outline-none motion-reduce:transition-none ${
-          shown ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-2 scale-[0.98] opacity-0'
-        }`}
+        className={`relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-paper shadow-neu
+          transition-[opacity,transform] duration-200 ease-out focus:outline-none sm:max-h-[85dvh] sm:rounded-3xl ${SIZES[size]} ${
+            shown ? 'translate-y-0 opacity-100 sm:scale-100' : 'translate-y-full opacity-100 sm:translate-y-2 sm:scale-[0.98] sm:opacity-0'
+          }`}
       >
-        {/* A hairline of light across the head, like a scan line at rest. */}
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"
-        />
+        {/* Grab handle: a visual cue that this is a sheet on touch screens. */}
+        <span aria-hidden="true" className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-ink/15 sm:hidden" />
 
         {title && (
-          <div className="flex items-center justify-between gap-4 border-b border-white/10 px-6 py-4">
-            <h2 id={titleId} className="t-h3">
-              {title}
-            </h2>
-            <button type="button" onClick={onClose} aria-label="Close dialog" className="btn-icon -mr-2">
+          <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-3 pt-3 sm:px-6 sm:pt-5">
+            <div className="min-w-0">
+              <h2 id={titleId} className="text-lg font-semibold tracking-tight">
+                {title}
+              </h2>
+              {description && (
+                <p id={descId} className="mt-0.5 text-sm text-ink-2">
+                  {description}
+                </p>
+              )}
+            </div>
+            <button type="button" onClick={onClose} aria-label="Close" className="btn-icon -mr-2 -mt-1.5">
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
         )}
 
-        <div className="max-h-[80dvh] overflow-y-auto p-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 sm:px-6 sm:pb-6">{children}</div>
+
+        {footer && (
+          <div className="shrink-0 bg-paper px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+            {footer}
+          </div>
+        )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

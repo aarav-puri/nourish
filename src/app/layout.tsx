@@ -1,37 +1,31 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Manrope } from 'next/font/google'
-import { Toaster } from 'sonner'
+import { DM_Sans, Geist_Mono, Plus_Jakarta_Sans } from 'next/font/google'
 import { AuthProvider } from '@/lib/auth-context'
+import Toaster from '@/components/ui/Toaster'
 import './globals.css'
 
 /**
- * Manrope carries the display voice, Inter the reading voice. The data voice
- * uses the system monospace stack, so it costs no download at all.
- *
- * Both are self hosted by next/font: no render blocking request to Google,
- * display swap so text is never invisible, and a size adjusted fallback so
- * the swap costs no layout shift.
+ * DM Sans carries the interface, Plus Jakarta Sans the headlines, and Geist
+ * Mono the data (barcodes, grams, scores). All three are self-hosted by
+ * next/font.
  */
-const inter = Inter({
+const sans = DM_Sans({ subsets: ['latin'], display: 'swap', variable: '--font-sans' })
+const display = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
-  weight: ['300', '400', '500', '600'],
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-display',
 })
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-manrope',
-  weight: ['400', '600', '700', '800'],
-})
+const geistMono = Geist_Mono({ subsets: ['latin'], display: 'swap', variable: '--font-geist-mono' })
 
 export const metadata: Metadata = {
-  title: 'Nourish | Know what is in your food',
+  title: {
+    default: 'Nourish: know what is in your food',
+    template: '%s · Nourish',
+  },
   description:
-    'Scan any barcode to see what is really in a product: ingredients explained in plain English, nutrition, diet compatibility, environmental impact, and a healthier alternative.',
-  // Every icon comes from icon.tsx / apple-icon.tsx, generated from the same
-  // mark as the wordmark, so there is nothing to point at here.
+    'Scan any food barcode to see its grade, sugar, additives and allergens, checked against your own diet. Free, with no ads.',
+  applicationName: 'Nourish',
   verification: {
     google: '9_JzOdfOk3oOJkfW-pZ7t_XjlRBABpYdauzpEX9h1i0',
   },
@@ -40,30 +34,22 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  // No maximumScale / userScalable: pinch-zoom stays available.
-  themeColor: '#000000',
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#E0E5EC' },
+    { media: '(prefers-color-scheme: dark)', color: '#262A31' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${manrope.variable}`}>
+    <html lang="en" className={`${sans.variable} ${display.variable} ${geistMono.variable}`}>
       <body>
         <a href="#main" className="skip-link">
           Skip to content
         </a>
         <AuthProvider>{children}</AuthProvider>
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: '#0A0A0A',
-              border: '1px solid rgba(255,255,255,0.14)',
-              borderRadius: '14px',
-              color: '#FFFFFF',
-              fontSize: '13px',
-            },
-          }}
-        />
+        <Toaster />
       </body>
     </html>
   )
