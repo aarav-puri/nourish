@@ -3,10 +3,14 @@
 import { useState } from 'react'
 import { auth } from '@/lib/supabase'
 import { toast } from 'sonner'
-import Orb from '@/components/ui/Orb'
+import Spinner from '@/components/ui/Spinner'
 
-/** Flip back to true once the Google OAuth provider is working again. */
-const GOOGLE_ENABLED = false
+/**
+ * Flip back to true once the Google OAuth provider is working again. While it
+ * is off, the button and its "or" divider are not rendered at all: a control
+ * that cannot be used only makes the sign in form look broken.
+ */
+export const GOOGLE_ENABLED = false
 
 /** Shared on both auth pages so the OAuth path behaves identically. */
 export default function GoogleButton({ label }: { label: string }) {
@@ -23,18 +27,12 @@ export default function GoogleButton({ label }: { label: string }) {
     }
   }
 
-  if (!GOOGLE_ENABLED) {
-    return (
-      <button type="button" disabled className="btn-secondary w-full cursor-not-allowed opacity-60" title="Google sign in is temporarily unavailable">
-        Google sign in temporarily unavailable
-      </button>
-    )
-  }
+  if (!GOOGLE_ENABLED) return null
 
   return (
     <button type="button" onClick={go} disabled={busy} className="btn-secondary w-full" aria-busy={busy || undefined}>
       {busy ? (
-        <Orb />
+        <Spinner />
       ) : (
         <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

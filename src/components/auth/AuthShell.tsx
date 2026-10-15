@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { ReactNode } from 'react'
+import Wordmark from '@/components/brand/Wordmark'
+import PhoneShot from '@/components/home/PhoneShot'
 
 interface AuthShellProps {
   eyebrow: string
@@ -11,49 +13,34 @@ interface AuthShellProps {
 }
 
 /**
- * The shared frame for the sign in and sign up pages, so the two read as one
- * flow rather than two screens that happen to look similar.
+ * The shared frame for sign in, sign up and password reset: the form on
+ * paper, and on wide screens a reminder of what is on the other side.
  */
 export default function AuthShell({ eyebrow, title, lede, children, footer }: AuthShellProps) {
   return (
-    <main
-      id="main"
-      className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-black px-[var(--gutter)] py-16"
-    >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.05] blur-[130px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.028)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(circle_at_center,black_35%,transparent_75%)]"
-      />
-
-      <div className="relative w-full max-w-[26rem]">
-        <Link
-          href="/"
-          className="mb-10 flex items-center justify-center gap-2.5"
-          aria-label="Nourish home"
-        >
-          <span className="font-display text-lg font-semibold lowercase tracking-tight">nourish.</span>
+    <div className="grid min-h-dvh lg:grid-cols-2">
+      <main id="main" className="flex flex-col px-[var(--gutter)] py-6 sm:py-8">
+        <Link href="/" aria-label="Nourish home" className="self-start rounded-md">
+          <Wordmark />
         </Link>
 
-        <div className="relative overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black p-7 shadow-2xl shadow-black/80 sm:p-9">
-          {/* A hairline of light across the head, like a scan line at rest. */}
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"
-          />
-
-          <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">{eyebrow}</p>
-          <h1 className="t-h3 mt-3">{title}</h1>
-          <p className="mt-3 text-sm leading-relaxed text-zinc-400">{lede}</p>
-
+        <div className="mx-auto flex w-full max-w-[24rem] flex-1 flex-col justify-center py-12">
+          <p className="t-eyebrow">{eyebrow}</p>
+          <h1 className="t-title mt-2">{title}</h1>
+          <p className="mt-3 leading-relaxed text-ink-2">{lede}</p>
           {children}
+          <div className="mt-8 text-sm text-ink-2">{footer}</div>
         </div>
+      </main>
 
-        <div className="mt-6 text-center text-sm text-zinc-400">{footer}</div>
-      </div>
-    </main>
+      <aside aria-hidden="true" className="relative m-4 hidden overflow-hidden rounded-3xl bg-paper shadow-neu-inset-deep lg:flex lg:items-center lg:justify-center">
+        <div className="flex w-full max-w-sm flex-col items-center px-8 py-10">
+          <p className="mb-8 text-center font-display text-3xl font-extrabold leading-[1.1] tracking-tight text-ink">
+            Every scan, checked against <em className="not-italic text-accent-ink">you</em>.
+          </p>
+          <PhoneShot decorative className="w-[15.5rem] animate-float" />
+        </div>
+      </aside>
+    </div>
   )
 }

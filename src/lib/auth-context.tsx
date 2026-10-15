@@ -1,16 +1,19 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { auth } from '@/lib/supabase'
+import { auth, supabase } from '@/lib/supabase'
+import { readProfile, type FoodProfile } from '@/lib/profile'
 
 interface AuthContextValue {
   user: any
   loading: boolean
+  /** The signed-in person's diets and allergens. Empty when signed out. */
+  profile: FoodProfile
+  saveProfile: (profile: FoodProfile) => Promise<void>
   /**
    * Send the visitor to the sign in page, remembering where they were so they
-   * land back there afterwards. Replaces the old global sign in dialog:
-   * signing in is a page now, not something that interrupts one.
+   * land back there afterwards.
    */
   requireSignIn: (opts?: { reason?: 'save'; next?: string }) => void
 }
@@ -24,8 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    auth.getCurrentUser().then((currentUser) => {
-      setUser(currentUser)
+    // getSession reads the stored session without a network round trip, so
+    // protected pages render immediately instead of waiting on getUser.
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null)
       setLoading(false)
     })
 
@@ -49,12 +54,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (opts?.reason) params.set('reason', opts.reason)
       const qs = params.toString()
-      router.push(`/signin${qs ? `?${qs}` : ''}`)
+      router.replace(`/signin${qs ? `?${qs}` : ''}`)
     },
     [router, pathname]
   )
 
-  return <AuthContext.Provider value={{ user, loading, requireSignIn }}>{children}</AuthContext.Provider>
+  const profile = useMemo(() => readProfile(user), [user])
+
+  const saveProfile = useCallback(async (next: FoodProfile) => {
+    const { data, error } = await supabase.auth.updateUser({ data: { food_profile: next } })
+    if (error) throw error
+    if (data.user) setUser(data.user)
+  }, [])
+
+  return (
+    <AuthContext.Provider value={{ user, loading, profile, saveProfile, requireSignIn }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

@@ -5,39 +5,34 @@ import { forwardRef, InputHTMLAttributes, useId } from 'react'
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
-  /** Persistent guidance below the field - survives typing, unlike a placeholder. */
+  /** Persistent guidance below the field. It survives typing, unlike a placeholder. */
   hint?: string
   icon?: React.ReactNode
+  /** Rendered inside the field on the right, such as a show-password toggle. */
+  trailing?: React.ReactNode
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = '', label, error, hint, icon, id, required, ...props }, ref) => {
+  ({ className = '', label, error, hint, icon, trailing, id, required, ...props }, ref) => {
     const generatedId = useId()
     const inputId = id ?? generatedId
-    const errorId = `${inputId}-error`
-    const hintId = `${inputId}-hint`
-
-    // Wire hint and error to the field so a screen reader hears both with the label.
-    const describedBy = [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ')
+    const describedBy = [hint && !error ? `${inputId}-hint` : null, error ? `${inputId}-error` : null]
+      .filter(Boolean)
+      .join(' ')
 
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="mb-2 block text-xs font-semibold text-zinc-300">
+          <label htmlFor={inputId} className="label">
             {label}
-            {required && (
-              <span className="ml-1 text-zinc-500" aria-hidden="true">
-                *
-              </span>
-            )}
             {required && <span className="sr-only"> (required)</span>}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" aria-hidden="true">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-3" aria-hidden="true">
               {icon}
-            </div>
+            </span>
           )}
           <input
             ref={ref}
@@ -45,28 +40,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             required={required}
             aria-invalid={error ? true : undefined}
             aria-describedby={describedBy || undefined}
-            className={`
-              min-h-11 w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-[0.95rem] text-white
-              placeholder:text-zinc-500 focus:outline-none focus:ring-2
-              transition-[border-color,box-shadow,background-color] duration-[120ms]
-              ${icon ? 'pl-12' : ''}
-              ${
-                error
-                  ? 'border-white/50 focus:border-white focus:ring-white/25'
-                  : 'border-white/12 focus:border-white/50 focus:bg-white/[0.06] focus:ring-white/20'
-              }
-              ${className}
-            `}
+            className={`field ${icon ? 'pl-10' : ''} ${trailing ? 'pr-12' : ''} ${className}`}
             {...props}
           />
+          {trailing && <span className="absolute right-0 top-1/2 -translate-y-1/2">{trailing}</span>}
         </div>
         {hint && !error && (
-          <p id={hintId} className="mt-2 text-xs leading-relaxed text-zinc-500">
+          <p id={`${inputId}-hint`} className="mt-1.5 text-xs leading-relaxed text-ink-3">
             {hint}
           </p>
         )}
         {error && (
-          <p id={errorId} role="alert" className="mt-2 text-xs font-medium leading-relaxed text-white">
+          <p id={`${inputId}-error`} role="alert" className="mt-1.5 text-xs font-medium text-level-high">
             {error}
           </p>
         )}

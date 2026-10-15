@@ -6,7 +6,7 @@ import { MailCheck } from 'lucide-react'
 import { auth } from '@/lib/supabase'
 import AuthShell from '@/components/auth/AuthShell'
 import Input from '@/components/ui/Input'
-import Orb from '@/components/ui/Orb'
+import Spinner from '@/components/ui/Spinner'
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('')
@@ -45,14 +45,14 @@ export default function ResetPasswordPage() {
         title="Check your inbox"
         lede={`If an account uses ${email.trim()}, a reset link is on its way.`}
         footer={
-          <Link href="/signin" className="font-medium text-white underline underline-offset-4 hover:text-zinc-300">
+          <Link href="/signin" className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
             Back to sign in
           </Link>
         }
       >
-        <div className="mt-8 flex items-center gap-4 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-4">
+        <div className="mt-8 flex items-center gap-4 well px-5 py-4">
           <MailCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <p className="text-sm leading-relaxed text-zinc-300">
+          <p className="text-sm leading-relaxed text-ink-2">
             The link expires after a while. If nothing arrives, check your spam folder.
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
       footer={
         <>
           Remembered it?{' '}
-          <Link href="/signin" className="font-medium text-white underline underline-offset-4 hover:text-zinc-300">
+          <Link href="/signin" className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
             Sign in
           </Link>
         </>
@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
             ref={errorRef}
             tabIndex={-1}
             role="alert"
-            className="mb-5 rounded-xl border border-white/25 bg-white/[0.06] px-4 py-3 text-sm leading-relaxed text-white focus:outline-none"
+            className="mb-5 rounded-lg border border-level-high/30 bg-level-high/5 px-4 py-3 text-sm leading-relaxed text-ink focus:outline-none"
           >
             {error}
           </div>
@@ -99,7 +99,7 @@ export default function ResetPasswordPage() {
         />
 
         <button type="submit" disabled={busy} className="btn-primary mt-7 w-full" aria-busy={busy || undefined}>
-          {busy && <Orb tone="onLight" />}
+          {busy && <Spinner />}
           {busy ? 'Sending link' : 'Send reset link'}
         </button>
       </form>

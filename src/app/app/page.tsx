@@ -1,1128 +1,533 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Upload, Search, ArrowLeft, X, Home, User, ScanEye, PenLine,
-  ArrowRightLeft, ArrowUpRight, CheckSquare, Leaf, AlertCircle,
-  Check, ChevronDown, LogOut, History, ChefHat, ScanLine, Settings,
-  KeyRound, ExternalLink,
-} from 'lucide-react'
-import { auth, db } from '@/lib/supabase'
-import { useAuth } from '@/lib/auth-context'
-import { fetchProductInfo, scoreProduct, ProductData } from '@/lib/product-api'
-import { aiService, Product, getGeminiApiKey, setGeminiApiKey } from '@/lib/ai-service'
-import Button from '@/components/ui/Button'
-import SiteBackground from '@/components/brand/SiteBackground'
-import ScoreMeter from '@/components/product/ScoreMeter'
-import EcoBars from '@/components/product/EcoBars'
-import DataRow from '@/components/product/DataRow'
-import InsightResults from '@/components/product/InsightResults'
-import Input from '@/components/ui/Input'
-import Modal from '@/components/ui/Modal'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeft, Camera, ImageUp, PenLine, RotateCcw, Search, SearchX, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
-import Orb from '@/components/ui/Orb'
+import { useAuth } from '@/lib/auth-context'
+import { db } from '@/lib/supabase'
+import { getGeminiApiKey } from '@/lib/ai-service'
+import { fetchProductInfo, LookupError } from '@/lib/product-api'
+import { decodeImage, isValidGtin } from '@/lib/barcode'
+import { toFood, type Food } from '@/lib/food'
+import { isProfileEmpty } from '@/lib/profile'
+import { productCache } from '@/lib/scan-cache'
+import AppShell from '@/components/app/AppShell'
+import CameraScanner from '@/components/app/CameraScanner'
+import ManualEntry from '@/components/app/ManualEntry'
+import RecentScans, { type RecentScan } from '@/components/app/RecentScans'
+import ProductReport from '@/components/product/ProductReport'
+import Button from '@/components/ui/Button'
+import Spinner from '@/components/ui/Spinner'
 
-export default function AppPage() {
-  const { user, loading, requireSignIn } = useAuth()
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  // null until localStorage has been read, so the key gate does not flash.
-  const [apiKey, setApiKey] = useState<string | null>(null)
-  const [keyInput, setKeyInput] = useState('')
-  const [barcode, setBarcode] = useState('')
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [productLoading, setProductLoading] = useState(false)
-  const [product, setProduct] = useState<ProductData['product'] | null>(null)
-  const [showResult, setShowResult] = useState(false)
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiResult, setAiResult] = useState<{ title: string; content: any } | null>(null)
-  const [dietModalOpen, setDietModalOpen] = useState(false)
-  const [selectedDiets, setSelectedDiets] = useState<string[]>([])
-  const [profileModalOpen, setProfileModalOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [manualEntryMode, setManualEntryMode] = useState(false)
-  const [manualProduct, setManualProduct] = useState({
-    product_name: '',
-    brands: '',
-    ingredients_text: '',
-    nutriments: {
-      energy_value: '',
-      fat: '',
-      carbohydrates: '',
-      proteins: ''
-    }
-  })
-  const fileInputRef = useRef<HTMLInputElement>(null)
+const cache = productCache
+
+type View =
+  | { kind: 'idle' }
+  | { kind: 'loading'; code: string }
+  | { kind: 'result'; food: Food }
+  | { kind: 'notfound'; code: string }
+  | { kind: 'error'; code: string; message: string; offline?: boolean }
+  | { kind: 'manual'; code: string }
+
+export default function ScannerPage() {
+  return (
+    <AppShell wide>
+      <Suspense fallback={null}>
+        <Scanner />
+      </Suspense>
+    </AppShell>
+  )
+}
+
+function Scanner() {
+  const router = useRouter()
+  const params = useSearchParams()
+  const code = params.get('code')
+  const manual = params.get('manual') === '1'
+  // Changes on "Try again" for the same code, to re-run the lookup.
+  const attempt = params.get('r')
+  const { user } = useAuth()
+
+  const [hasKey, setHasKey] = useState<boolean | null>(null)
+  const [view, setView] = useState<View>({ kind: 'idle' })
+  const [camera, setCamera] = useState(false)
+  const [recent, setRecent] = useState<RecentScan[] | null>(null)
+  const requestRef = useRef(0)
 
   useEffect(() => {
-    // Check if mobile device
-    const checkMobile = () => {
-      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
-    }
-    checkMobile()
+    const present = Boolean(getGeminiApiKey())
+    setHasKey(present)
+    if (!present) router.replace(`/setup?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+  }, [router])
 
-    setApiKey(getGeminiApiKey())
-  }, [])
-
-  useEffect(() => {
-    // Not signed in: send them to the sign in page.
-    if (!loading && !user) {
-      requireSignIn()
-    }
-  }, [loading, user])
-
-  const handleSaveKey = () => {
-    const trimmed = keyInput.trim()
-    if (!trimmed) {
-      toast.error('Paste your Gemini API key to continue')
-      return
-    }
-    setGeminiApiKey(trimmed)
-    setApiKey(trimmed)
-    setKeyInput('')
-    toast.success('Key saved')
-  }
-
-  const handleLogout = async () => {
-    await auth.signOut()
-    setUserMenuOpen(false)
-  }
-
-  const handleImageUpload = useCallback((file: File) => {
-    // Require sign in
-    if (!user) {
-      toast.error('Please sign in to scan products')
-      requireSignIn()
-      return
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload a valid image file')
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      const imageSrc = e.target?.result as string
-      setImagePreview(imageSrc)
-      setProductLoading(true)
-
-      // Use Quagga for barcode detection
-      if (typeof window !== 'undefined') {
-        const Quagga = (await import('quagga')).default
-
-        Quagga.decodeSingle({
-          src: imageSrc,
-          numOfWorkers: 0,
-          decoder: {
-            readers: [
-              'ean_reader',       // EAN-13, EAN-8
-              'ean_8_reader',     // EAN-8 specifically
-              'code_128_reader',  // Code 128
-              'code_39_reader',   // Code 39
-              'upc_reader',       // UPC-A
-              'upc_e_reader',     // UPC-E
-              'codabar_reader',   // Codabar
-              'i2of5_reader',     // Interleaved 2 of 5
-            ]
-          },
-          locate: true,
-          multiple: false
-        } as any, (result: any) => {
-          if (result?.codeResult?.code) {
-            const code = result.codeResult.code
-            // Validate barcode (basic check)
-            if (code && code.length >= 8) {
-              handleBarcodeDetected(code)
-            } else {
-              setProductLoading(false)
-              setProduct(null)
-              setShowResult(true)
-              setBarcode('')
-              toast.error('Invalid barcode detected.')
-            }
-          } else {
-            setProductLoading(false)
-            setProduct(null)
-            setShowResult(true)
-            setBarcode('')
-            toast.error('No barcode found in image.')
-          }
-        })
-      }
-    }
-    reader.readAsDataURL(file)
-  }, [user])
-
-  // Handle drag and drop
-  const [isDragging, setIsDragging] = useState(false)
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(true)
-  }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(false)
-  }, [])
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(false)
-
-    const files = Array.from(e.dataTransfer.files)
-    const imageFile = files.find(file => file.type.startsWith('image/'))
-
-    if (imageFile) {
-      handleImageUpload(imageFile)
-    } else {
-      toast.error('Please drop an image file')
-    }
-  }, [handleImageUpload])
-
-  // Handle paste
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      const items = e.clipboardData?.items
-      if (!items) return
-
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile()
-          if (file) {
-            handleImageUpload(file)
-            toast.success('Image pasted! Scanning...')
-          }
-          break
+  const loadRecent = useCallback(() => {
+    db.getScannedProducts(40)
+      .then((rows) => {
+        const seen = new Set<string>()
+        const list: RecentScan[] = []
+        for (const row of rows ?? []) {
+          if (!row.barcode || seen.has(row.barcode)) continue
+          seen.add(row.barcode)
+          const food = toFood(row.product_data, row.barcode)
+          list.push({ id: row.id, food, scannedAt: row.scanned_at })
+          if (!cache.has(row.barcode)) cache.set(row.barcode, food)
         }
-      }
-    }
+        setRecent(list.slice(0, 6))
+      })
+      .catch(() => setRecent([]))
+  }, [])
 
-    window.addEventListener('paste', handlePaste)
-    return () => window.removeEventListener('paste', handlePaste)
-  }, [handleImageUpload])
+  useEffect(() => {
+    if (user) loadRecent()
+  }, [user, loadRecent])
 
-  const handleBarcodeDetected = async (code: string) => {
-    setBarcode(code)
-    toast.success(`Barcode detected: ${code}`)
-    await searchProduct(code)
-  }
-
-  const searchProduct = async (code: string) => {
-    // Require sign in
-    if (!user) {
-      toast.error('Please sign in to scan products')
-      requireSignIn()
+  /* The URL is the source of truth: ?code= shows a product, so the back
+     button returns to the scanner and a result survives a refresh. */
+  useEffect(() => {
+    if (!code) {
+      setView({ kind: 'idle' })
       return
     }
-
-    if (!code.trim()) {
-      toast.error('Please enter a barcode number')
+    if (manual) {
+      setView({ kind: 'manual', code })
       return
     }
-
-    setProductLoading(true)
-    setManualEntryMode(false) // Reset manual entry mode when searching
-    try {
-      const data = await fetchProductInfo(code)
-
-      if (data.status === 0 || !data.product || Object.keys(data.product).length === 0) {
-        setProduct(null)
-        setShowResult(true)
-      } else {
-        setProduct(data.product)
-        setShowResult(true)
-
-        // Save to history if logged in
-        if (user) {
-          try {
-            await db.saveScannedProduct(code, data.product.product_name || 'Unknown Product', data.product)
-          } catch (err) {
-            console.error('Failed to save product:', err)
-          }
-        }
-      }
-    } catch (err) {
-      toast.error('Failed to fetch product information')
-    } finally {
-      setProductLoading(false)
-    }
-  }
-
-  const handleAIFeature = async (feature: string, mood?: string) => {
-    // All features require a product
-    if (!product) return
-
-    // Non signed-in users must sign in to use AI features
-    if (!user) {
-      toast.error('Sign in to use AI insights.')
-      setTimeout(() => requireSignIn({ reason: 'save' }), 500)
+    const cached = cache.get(code)
+    if (cached) {
+      setView({ kind: 'result', food: cached })
       return
     }
+    if (!getGeminiApiKey()) return
 
-    // AI features require the user's own Gemini API key
-    if (!apiKey) {
-      toast.error('Add your BYOK key in Settings to use AI insights.')
-      setProfileModalOpen(true)
-      setDietModalOpen(false)
-      return
-    }
+    const id = ++requestRef.current
+    const controller = new AbortController()
+    setView({ kind: 'loading', code })
 
-    setAiLoading(true)
-    setDietModalOpen(false)
-
-    try {
-      let result: string
-      let title: string
-      let insightType: string
-
-      switch (feature) {
-        case 'alternatives':
-          title = 'Healthier Alternatives'
-          insightType = 'alternatives'
-          result = await aiService.getHealthierSubstitutes(product as Product)
-          break
-        case 'diet':
-          title = 'Diet Compatibility'
-          insightType = 'diet_compatibility'
-          result = await aiService.analyzeDietCompatibility(product as Product, selectedDiets)
-          break
-        case 'eco':
-          title = 'Environmental Impact'
-          insightType = 'eco_impact'
-          result = await aiService.analyzeEcoImpact(product as Product)
-          break
-        case 'recipes':
-          title = 'Recipe Ideas'
-          insightType = 'recipe_suggestions'
-          result = await aiService.getRecipeSuggestions(product as Product)
-          break
-        default:
+    fetchProductInfo(code, controller.signal)
+      .then(async (data) => {
+        if (id !== requestRef.current) return
+        if (data.status !== 1 || !data.product) {
+          setView({ kind: 'notfound', code })
           return
+        }
+        const food = toFood(data.product, code)
+        cache.set(code, food)
+        setView({ kind: 'result', food })
+        try {
+          await db.saveScannedProduct(code, food.name, data.product)
+          loadRecent()
+        } catch {
+          /* the result is on screen; history is best effort */
+        }
+      })
+      .catch((err) => {
+        if (controller.signal.aborted || id !== requestRef.current) return
+        const offline = typeof navigator !== 'undefined' && !navigator.onLine
+        setView({
+          kind: 'error',
+          code,
+          offline,
+          message: offline
+            ? 'You are offline. Reconnect and try again.'
+            : err instanceof LookupError
+              ? err.message
+              : 'Something went wrong looking that up.',
+        })
+      })
+
+    return () => controller.abort()
+  }, [code, manual, attempt, hasKey, loadRecent])
+
+  const open = useCallback(
+    (barcode: string) => {
+      const clean = barcode.replace(/\D/g, '')
+      if (clean.length < 6 || clean.length > 14) {
+        toast.error('A barcode is 6 to 14 digits. Check the number under the bars.')
+        return
       }
-
-      // Parse JSON result
-      const cleanResult = result.replace(/```json\s*/g, '').replace(/```\s*/g, '')
-      const parsed = JSON.parse(cleanResult)
-      setAiResult({ title, content: parsed })
-
-      // Save AI insight to database
-      try {
-        await db.saveAIInsight(
-          barcode,
-          product.product_name || 'Unknown Product',
-          insightType,
-          { title, content: parsed }
-        )
-      } catch (err) {
-        console.error('Failed to save AI insight:', err)
-        // Don't show error to user, insight is still displayed
+      if (clean === code) {
+        // Same code again: a retry rather than a navigation.
+        cache.delete(clean)
+        router.replace(`/app?code=${clean}&r=${Date.now()}`, { scroll: false })
+        return
       }
-    } catch (err) {
-      toast.error('AI analysis failed. Please try again.')
-    } finally {
-      setAiLoading(false)
-    }
+      router.push(`/app?code=${clean}`, { scroll: true })
+    },
+    [router, code]
+  )
+
+  const back = () => {
+    if (window.history.length > 1) router.back()
+    else router.push('/app')
   }
 
-  const resetScan = () => {
-    setImagePreview(null)
-    setBarcode('')
-    setProduct(null)
-    setShowResult(false)
-    setAiResult(null)
-    setManualEntryMode(false) // Reset manual entry mode
-  }
+  // No key in this browser: setup collects it (and the food profile) first.
+  if (!hasKey) return null
 
-  const diets = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Halal', 'Kosher', 'Gluten Free']
+  switch (view.kind) {
+    case 'loading':
+      return <LoadingReport code={view.code} onCancel={back} />
 
-  // Show loading or sign in required screen
-  if (loading || (user && apiKey === null)) {
-    return (
-      <div className="min-h-dvh bg-dark flex items-center justify-center">
-        <Orb size={64} label="Loading" />
-      </div>
-    )
-  }
-
-  // The effect above is already navigating to /signin; this is the brief
-  // state in between, and the manual link covers a blocked redirect.
-  if (!user) {
-    return (
-      <div className="min-h-dvh bg-dark flex flex-col items-center justify-center p-4">
-        <div className="text-center max-w-sm">
-          <p className="mb-6 font-display text-2xl font-semibold lowercase tracking-tight">nourish.</p>
-          <h1 className="t-h3 mb-3">Sign in to continue</h1>
-          <p className="text-zinc-400 mb-8 text-sm leading-relaxed">
-            Taking you to the sign in page. The scanner is free and unlimited once you are in.
-          </p>
-          <Link href="/signin?next=%2Fapp" className="btn-primary w-full">
-            Go to sign in
-          </Link>
-          <Link href="/" className="btn-ghost mt-3 w-full">
-            Back to home
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
-  // The app runs on the user's own Gemini key, so nothing works without one.
-  if (!apiKey) {
-    return (
-      <div className="min-h-dvh bg-dark flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-sm">
-          <p className="mb-6 text-center font-display text-2xl font-semibold lowercase tracking-tight">nourish.</p>
-          <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black p-6">
-            <div className="mb-2 flex items-center gap-2">
-              <KeyRound className="h-4 w-4 text-zinc-400" aria-hidden="true" />
-              <h1 className="font-display text-lg font-semibold tracking-tight">Add your Gemini key</h1>
-            </div>
-            <p className="mb-5 text-sm leading-relaxed text-zinc-400">
-              Nourish runs on your own Gemini API key, so usage is billed directly by Google.
-              The key stays in this browser.
-            </p>
-            <Input
-              type="password"
-              autoComplete="off"
-              label="Gemini API key"
-              placeholder="AIza..."
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
+    case 'result':
+      return (
+        <div>
+          <BackBar onBack={back} />
+          <ProductReport
+            food={view.food}
+            actions={
+              <Button variant="secondary" size="sm" icon={<Camera className="h-4 w-4" aria-hidden="true" />} onClick={() => setCamera(true)}>
+                Scan next
+              </Button>
+            }
+          />
+          <FloatingScan onClick={() => setCamera(true)} />
+          {camera && (
+            <CameraScanner
+              onDetected={(c) => {
+                setCamera(false)
+                open(c)
+              }}
+              onClose={() => setCamera(false)}
+              onTypeInstead={() => {
+                setCamera(false)
+                router.push('/app')
+              }}
             />
-            <Button onClick={handleSaveKey} className="mt-4 w-full">
-              Save and continue
-            </Button>
-            <a
-              href="https://aistudio.google.com/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex min-h-11 items-center gap-1 text-xs text-zinc-400 underline hover:text-white"
-            >
-              Get a free key from Google AI Studio
-              <ExternalLink className="h-3 w-3" aria-hidden="true" />
-            </a>
-          </div>
-          <Link href="/" className="btn-ghost mt-3 w-full">
-            Back to home
-          </Link>
+          )}
         </div>
-      </div>
-    )
+      )
+
+    case 'notfound':
+      return (
+        <StateCard
+          icon={SearchX}
+          title="Not in the database yet"
+          body={
+            <>
+              No product uses <span className="font-mono text-ink">{view.code}</span> in Open Food Facts or Go-UPC.
+              Newer and local products are often missing. Check the digits, or enter the details from the pack and
+              we will analyse them.
+            </>
+          }
+          onBack={back}
+        >
+          <Button icon={<PenLine className="h-4 w-4" aria-hidden="true" />} onClick={() => router.replace(`/app?code=${view.code}&manual=1`)}>
+            Enter details from the pack
+          </Button>
+          <Button variant="secondary" onClick={() => router.push('/app')}>
+            Try another barcode
+          </Button>
+        </StateCard>
+      )
+
+    case 'error':
+      return (
+        <StateCard
+          icon={view.offline ? WifiOff : RotateCcw}
+          title={view.offline ? 'No connection' : 'The lookup did not finish'}
+          body={view.message}
+          onBack={back}
+        >
+          <Button icon={<RotateCcw className="h-4 w-4" aria-hidden="true" />} onClick={() => open(view.code)}>
+            Try again
+          </Button>
+        </StateCard>
+      )
+
+    case 'manual':
+      return (
+        <div>
+          <BackBar onBack={back} />
+          <ManualEntry
+            barcode={view.code}
+            onDone={(food) => {
+              cache.set(view.code || `manual-${Date.now()}`, food)
+              setView({ kind: 'result', food })
+            }}
+          />
+        </div>
+      )
+
+    default:
+      return <Home onOpen={open} recent={recent} />
+  }
+}
+
+/* ---------- Home: the scan surface --------------------------------- */
+
+function Home({ onOpen, recent }: { onOpen: (code: string) => void; recent: RecentScan[] | null }) {
+  const router = useRouter()
+  const { profile } = useAuth()
+  const [camera, setCamera] = useState(false)
+  const [number, setNumber] = useState('')
+  const [reading, setReading] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const numberRef = useRef<HTMLInputElement>(null)
+
+  const readPhoto = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error('That is not an image. Use a photo of the barcode.')
+        return
+      }
+      setReading(true)
+      try {
+        const code = await decodeImage(file)
+        if (code) onOpen(code)
+        else
+          toast.error('No barcode found in that photo', {
+            description: 'Get closer, keep it flat and in focus, or type the number.',
+          })
+      } catch {
+        toast.error('Could not read that image.')
+      } finally {
+        setReading(false)
+      }
+    },
+    [onOpen]
+  )
+
+  // Paste a screenshot or photo anywhere on the page.
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const file = Array.from(e.clipboardData?.items ?? [])
+        .find((i) => i.type.startsWith('image/'))
+        ?.getAsFile()
+      if (file) {
+        e.preventDefault()
+        readPhoto(file)
+      }
+    }
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+  }, [readPhoto])
+
+  const submitNumber = (e: React.FormEvent) => {
+    e.preventDefault()
+    const clean = number.replace(/\D/g, '')
+    if (!clean) {
+      numberRef.current?.focus()
+      return
+    }
+    if ([8, 12, 13].includes(clean.length) && !isValidGtin(clean)) {
+      toast('That check digit looks off', { description: 'Looking it up anyway. Double-check the last digit if nothing comes back.' })
+    }
+    onOpen(clean)
   }
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-black">
-      <SiteBackground />
+    <div
+      onDragOver={(e) => {
+        if (Array.from(e.dataTransfer.types).includes('Files')) {
+          e.preventDefault()
+          setDragging(true)
+        }
+      }}
+      onDragLeave={(e) => {
+        if (e.currentTarget === e.target) setDragging(false)
+      }}
+      onDrop={(e) => {
+        e.preventDefault()
+        setDragging(false)
+        const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith('image/'))
+        if (file) readPhoto(file)
+      }}
+      className="relative"
+    >
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
+        <section aria-labelledby="scan-h">
+          <h1 id="scan-h" className="sr-only">
+            Scan a product
+          </h1>
 
-      {/* Header: the same capsule the marketing pages use, so moving from the
-          site into the product does not feel like changing products. */}
-      <header className="sticky top-0 z-50 px-4 pt-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-full border border-white/10 bg-black/70 px-4 py-2.5 backdrop-blur-xl">
-          <Link href="/" className="group flex items-center gap-2.5" aria-label="Nourish home">
-            <span className="flex flex-col leading-none">
-              <span className="font-display text-base font-semibold lowercase tracking-tight">nourish.</span>
-              <span className="mt-0.5 text-[10px] font-medium lowercase tracking-wide text-zinc-500">by nourish labs</span>
-            </span>
-          </Link>
+          {/* Camera: the primary action, sized for a thumb. */}
+          <button type="button" onClick={() => setCamera(true)} className="btn-primary h-16 w-full gap-3 rounded-2xl text-base">
+            <Camera className="h-5 w-5" aria-hidden="true" />
+            Scan with camera
+          </button>
 
-          {loading ? (
-            <div className="w-32 h-10 hidden md:block"></div>
-          ) : user ? (
-            <div className="relative hidden md:block">
-              <button
-                type="button"
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                aria-expanded={userMenuOpen}
-                aria-haspopup="menu"
-                aria-label="Account menu"
-                className="flex min-h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 transition-colors hover:border-white/30"
-              >
-                <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white">
-                  {user.user_metadata?.avatar_url ? (
-                    <Image
-                      src={user.user_metadata.avatar_url}
-                      alt="Profile"
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-4 w-4 text-black" aria-hidden="true" />
-                  )}
-                </div>
-                <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {userMenuOpen && (
-                <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black shadow-2xl shadow-black/70">
-                  <div className="border-b border-white/10 px-4 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-label text-zinc-500">Signed in as</p>
-                    <p className="mt-1 truncate text-sm font-medium">{user.email}</p>
-                  </div>
-
-                  <div className="py-2">
-                    <Link
-                      href="/settings"
-                      className="flex min-h-11 items-center gap-3 px-4 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <Settings className="h-4 w-4" aria-hidden="true" />
-                      Settings
-                    </Link>
-                    <Link
-                      href="/history"
-                      className="flex min-h-11 items-center gap-3 px-4 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <History className="h-4 w-4" aria-hidden="true" />
-                      Scan History
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="mt-1 flex min-h-11 w-full items-center gap-3 border-t border-white/10 px-4 text-sm text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
-                    >
-                      <LogOut className="h-4 w-4" aria-hidden="true" />
-                      Sign out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link href="/signin?next=%2Fapp" className="btn-primary min-h-11 px-5 text-xs">
-              Sign in
-            </Link>
-          )}
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main id="main" className="relative z-10 mx-auto max-w-2xl px-4 pb-28 pt-10">
-        <h1 className="sr-only">Scanner</h1>
-
-        {/* Scan Options */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          {/* Upload, with drag and drop. The clickable target is a real
-              button so the keyboard can reach it; the drop handlers sit on
-              the wrapper, and the file input lives outside the button
-              because nesting one inside is invalid. */}
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`overflow-hidden rounded-2xl border transition-colors duration-200 ${isDragging
-                ? 'border-white bg-white/[0.08]'
-                : 'border-white/10 bg-gradient-to-b from-zinc-900/60 to-black hover:border-white/25'
-              }`}
-          >
+          <div className="mt-3 grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)]">
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full px-6 py-10 text-center"
+              onClick={() => fileRef.current?.click()}
+              disabled={reading}
+              className={`btn-secondary h-12 px-4 ${dragging ? 'ring-2 ring-ink/40 ring-offset-2 ring-offset-paper' : ''}`}
             >
-              <Upload className={`mx-auto mb-4 h-10 w-10 transition-colors ${isDragging ? 'text-white' : 'text-zinc-500'
-                }`} aria-hidden="true" />
-              <span className="block font-display text-lg font-semibold tracking-tight">
-                {isDragging ? 'Drop it here' : 'Upload a photo'}
-              </span>
-              {isDragging && (
-                <span className="mt-2 block text-sm text-zinc-400">
-                  Release to read the barcode
-                </span>
-              )}
+              {reading ? <Spinner /> : <ImageUp className="h-4 w-4" aria-hidden="true" />}
+              {reading ? 'Reading photo' : dragging ? 'Drop to read' : 'Upload a photo'}
             </button>
-
             <input
-              ref={fileInputRef}
+              ref={fileRef}
               type="file"
               accept="image/*"
               className="sr-only"
-              aria-label="Upload a photo of a barcode"
-              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+              tabIndex={-1}
+              aria-hidden="true"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                e.target.value = ''
+                if (f) readPhoto(f)
+              }}
             />
-          </div>
-        </motion.div>
 
-        {/* Image Preview */}
-        {imagePreview && !showResult && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black p-3"
-          >
-            <div className="relative">
-              <img src={imagePreview} alt="The photo you uploaded" className="w-full rounded-xl" />
-              <button
-                type="button"
-                onClick={resetScan}
-                aria-label="Remove this photo"
-                className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/80 backdrop-blur-md transition-colors hover:bg-black"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Divider */}
-        <div className="my-7 flex items-center gap-4" aria-hidden="true">
-          <span className="h-px flex-1 bg-white/10" />
-          <span className="text-[11px] font-semibold uppercase tracking-label text-zinc-600">or</span>
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
-
-        {/* Manual Input */}
-        <div className="mb-6 rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black p-6">
-          <h2 className="font-display text-lg font-semibold tracking-tight">
-            Enter a barcode manually
-          </h2>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start">
-            <Input
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              label="Barcode number"
-              placeholder="8712100843792"
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchProduct(barcode)}
-              className="flex-1"
-            />
-            <Button
-              onClick={() => searchProduct(barcode)}
-              loading={productLoading}
-              className="shrink-0 whitespace-nowrap sm:mt-[26px]"
-              icon={<Search className="h-4 w-4" aria-hidden="true" />}
-            >
-              Look up
-            </Button>
-          </div>
-        </div>
-
-        {/* Loading State */}
-        {productLoading && (
-          <div
-            role="status"
-            className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black px-6 py-14 text-center"
-          >
-            <Orb state="searching" size={64} className="mx-auto mb-5 block" />
-            <p className="font-display text-lg font-semibold tracking-tight">Reading the label</p>
-            <p className="mt-2 text-sm text-zinc-400">
-              Looking up the product and calculating its score.
-            </p>
-          </div>
-        )}
-
-        {/* Results */}
-        <AnimatePresence>
-          {showResult && !productLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/60 to-black p-6 sm:p-7"
-            >
-              <div className="mb-6 flex items-center justify-between gap-4">
-                <h2 className="t-h3">Scan result</h2>
-                <button
-                  type="button"
-                  onClick={resetScan}
-                  aria-label="Clear this result and scan again"
-                  className="btn-icon -mr-1"
-                >
-                  <X className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </div>
-
-              {product ? (
-                <div className="space-y-6">
-                  {/* Product Info */}
-                  <div className="space-y-4">
-                    {/* Product Name & Brand */}
-                    {((product as any).ai_formatted || product.product_name || product.brands) && (
-                      <div>
-                        <h3 className="font-display text-2xl font-semibold tracking-tight">
-                          {(product as any).ai_formatted?.formatted_name || product.product_name || 'Unnamed product'}
-                        </h3>
-                        {((product as any).ai_formatted?.formatted_brand || product.brands) && (
-                          <p className="mt-1 text-sm text-zinc-400">
-                            {(product as any).ai_formatted?.formatted_brand || product.brands}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    <ScoreMeter
-                      grade={product.nutriscore_grade}
-                      estimated={product.ai_estimated_scores?.includes('nutriscore_grade')}
-                    />
-                    <EcoBars
-                      grade={product.ecoscore_grade}
-                      estimated={product.ai_estimated_scores?.includes('ecoscore_grade')}
-                    />
-
-                    {/* Key Highlights */}
-                    {(product as any).ai_formatted?.key_highlights && (product as any).ai_formatted.key_highlights.length > 0 && (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                        <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">
-                          What stands out
-                        </p>
-                        <ul className="m-0 mt-4 list-none">
-                          {(product as any).ai_formatted.key_highlights.map((highlight: string, idx: number) => (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-3 border-b border-white/10 py-2.5 text-sm leading-relaxed text-zinc-300 last:border-b-0"
-                            >
-                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-white" aria-hidden="true" />
-                              <span>{highlight}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Ingredients */}
-                    {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text) && (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                        <div className="mb-4 flex items-baseline justify-between gap-4">
-                          <p className="text-xs font-semibold uppercase tracking-label text-zinc-500">
-                            Ingredients
-                          </p>
-                          <p className="font-mono text-[11px] uppercase tracking-label text-zinc-400">
-                            {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text).split(',').length} listed
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {((product as any).ai_formatted?.formatted_ingredients || product.ingredients_text).split(',').map((ingredient: string, idx: number) => {
-                            const trimmed = ingredient.trim().toLowerCase()
-                            const isFirst = idx < 3
-                            return (
-                              <span
-                                key={idx}
-                                className={`rounded-full border px-3 py-1.5 text-sm
-                                  ${isFirst
-                                    ? 'border-white bg-white font-medium text-black'
-                                    : 'border-white/12 text-zinc-300'
-                                  }`}
-                              >
-                                {ingredient.trim()}
-                              </span>
-                            )
-                          })}
-                        </div>
-                        <p className="mt-4 text-xs text-zinc-500">
-                          Ingredients are listed by weight, so the first three make up most of
-                          what is inside.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Nutrition Facts */}
-                    {product.nutriments && (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                        <p className="mb-4 text-xs font-semibold uppercase tracking-label text-zinc-500">
-                          Nutrition, per 100g
-                        </p>
-                        <div>
-                          {product.nutriments.energy_value !== undefined && (
-                            <DataRow
-                              label="Energy"
-                              value={`${Math.round(Number(product.nutriments.energy_value))} ${product.nutriments.energy_unit || 'kcal'}`}
-                            />
-                          )}
-                          {product.nutriments.sugars !== undefined && (
-                            <DataRow
-                              label="Sugars"
-                              strong
-                              value={`${Number(product.nutriments.sugars).toFixed(1)}g`}
-                            />
-                          )}
-                          {product.nutriments.fat !== undefined && (
-                            <DataRow label="Fat" value={`${Number(product.nutriments.fat).toFixed(1)}g`} />
-                          )}
-                          {product.nutriments.carbohydrates !== undefined && (
-                            <DataRow
-                              label="Carbohydrates"
-                              value={`${Number(product.nutriments.carbohydrates).toFixed(1)}g`}
-                            />
-                          )}
-                          {product.nutriments.proteins !== undefined && (
-                            <DataRow
-                              label="Protein"
-                              value={`${Number(product.nutriments.proteins).toFixed(1)}g`}
-                            />
-                          )}
-                          {product.nutriments.salt !== undefined && (
-                            <DataRow label="Salt" value={`${Number(product.nutriments.salt).toFixed(2)}g`} />
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* AI Features */}
-                  <div className="border-t border-white/10 pt-6">
-                    <p className="mb-4 text-xs font-semibold uppercase tracking-label text-zinc-500">
-                      Go further
-                    </p>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {[
-                        { key: 'alternatives', icon: ArrowRightLeft, title: 'A better option', body: 'Swaps that taste alike but read cleaner.', run: () => handleAIFeature('alternatives') },
-                        { key: 'recipes', icon: ChefHat, title: 'Something to cook', body: 'Three ideas built around this product.', run: () => handleAIFeature('recipes') },
-                        { key: 'eco', icon: Leaf, title: 'Footprint detail', body: 'Carbon, water, transport and packaging.', run: () => handleAIFeature('eco') },
-                        { key: 'diet', icon: CheckSquare, title: 'Check my diet', body: 'Vegan, keto, halal and more, in one pass.', run: () => setDietModalOpen(true) },
-                      ].map(({ key, icon: Icon, title, body, run }) => (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={run}
-                          disabled={aiLoading}
-                          className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-[border-color,background-color,transform] duration-[120ms] ease-scan hover:border-white/30 hover:bg-white/[0.07] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
-                        >
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 transition-colors group-hover:bg-white group-hover:text-black">
-                            <Icon className="h-5 w-5" aria-hidden="true" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block font-display text-sm font-semibold">{title}</span>
-                            <span className="mt-1 block text-xs leading-relaxed text-zinc-500">{body}</span>
-                          </span>
-                          <ArrowUpRight
-                            className="mt-1 h-4 w-4 shrink-0 text-zinc-600 transition-[transform,color] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
-                            aria-hidden="true"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : manualEntryMode ? (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-display text-lg font-semibold tracking-tight">Enter the product details</h3>
-                    <button
-                      onClick={() => {
-                        setManualEntryMode(false)
-                        setManualProduct({
-                          product_name: '',
-                          brands: '',
-                          ingredients_text: '',
-                          nutriments: { energy_value: '', fat: '', carbohydrates: '', proteins: '' }
-                        })
-                      }}
-                      className="text-zinc-400 hover:text-white"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Product name *</label>
-                      <Input
-                        value={manualProduct.product_name}
-                        onChange={(e) => setManualProduct({ ...manualProduct, product_name: e.target.value })}
-                        placeholder="e.g., Organic Granola Bar"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Brand (optional)</label>
-                      <Input
-                        value={manualProduct.brands}
-                        onChange={(e) => setManualProduct({ ...manualProduct, brands: e.target.value })}
-                        placeholder="e.g., Nature Valley"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Ingredients *</label>
-                      <textarea
-                        value={manualProduct.ingredients_text}
-                        onChange={(e) => setManualProduct({ ...manualProduct, ingredients_text: e.target.value })}
-                        placeholder="e.g., Whole grain oats, honey, almonds, brown sugar..."
-                        className="input-field min-h-[100px] resize-none"
-                        rows={4}
-                      />
-                      <p className="text-xs text-zinc-500 mt-1">Separate ingredients with commas</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-3">Nutrition per 100g, optional</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs text-zinc-500 mb-1">Energy (kcal)</label>
-                          <Input
-                            type="number"
-                            value={manualProduct.nutriments.energy_value}
-                            onChange={(e) => setManualProduct({
-                              ...manualProduct,
-                              nutriments: { ...manualProduct.nutriments, energy_value: e.target.value }
-                            })}
-                            placeholder="400"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-zinc-500 mb-1">Fat (g)</label>
-                          <Input
-                            type="number"
-                            value={manualProduct.nutriments.fat}
-                            onChange={(e) => setManualProduct({
-                              ...manualProduct,
-                              nutriments: { ...manualProduct.nutriments, fat: e.target.value }
-                            })}
-                            placeholder="15"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-zinc-500 mb-1">Carbs (g)</label>
-                          <Input
-                            type="number"
-                            value={manualProduct.nutriments.carbohydrates}
-                            onChange={(e) => setManualProduct({
-                              ...manualProduct,
-                              nutriments: { ...manualProduct.nutriments, carbohydrates: e.target.value }
-                            })}
-                            placeholder="60"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-zinc-500 mb-1">Protein (g)</label>
-                          <Input
-                            type="number"
-                            value={manualProduct.nutriments.proteins}
-                            onChange={(e) => setManualProduct({
-                              ...manualProduct,
-                              nutriments: { ...manualProduct.nutriments, proteins: e.target.value }
-                            })}
-                            placeholder="8"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={async () => {
-                      if (!manualProduct.product_name || !manualProduct.ingredients_text) {
-                        toast.error('Please fill in product name and ingredients')
-                        return
-                      }
-                      // Convert to product format and set
-                      const formattedProduct = {
-                        ...manualProduct,
-                        barcode: barcode,
-                        nutriments: {
-                          energy_value: parseFloat(manualProduct.nutriments.energy_value) || undefined,
-                          energy_unit: 'kcal',
-                          fat: parseFloat(manualProduct.nutriments.fat) || undefined,
-                          carbohydrates: parseFloat(manualProduct.nutriments.carbohydrates) || undefined,
-                          proteins: parseFloat(manualProduct.nutriments.proteins) || undefined,
-                        }
-                      }
-                      // Hand-entered products have no published grades, so Gemini scores them.
-                      setProductLoading(true)
-                      try {
-                        Object.assign(formattedProduct, await scoreProduct(formattedProduct as any))
-                      } catch (err) {
-                        console.error('Failed to score product:', err)
-                      }
-                      setProductLoading(false)
-                      setProduct(formattedProduct as any)
-                      setManualEntryMode(false)
-                      toast.success('Product details saved! Use AI insights below.')
-                    }}
-                    className="w-full"
-                  >
-                    Save & Analyze with AI
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">
-                    {barcode ? 'Product Not Found' : 'No Barcode Detected'}
-                  </h3>
-                  <p className="text-zinc-400 mb-2">
-                    {barcode
-                      ? "We couldn't find this product in our database."
-                      : "We couldn't detect a barcode in the uploaded image."}
-                  </p>
-                  {barcode && <p className="text-sm text-zinc-500 mb-6">Barcode: {barcode}</p>}
-
-                  <div className="max-w-md mx-auto space-y-4">
-                    <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-left">
-                      <p className="text-sm text-blue-300 mb-2">
-                        <ScanEye className="w-4 h-4 inline mr-1" aria-hidden="true" />
-                        What would you like to do?
-                      </p>
-                      <p className="text-xs text-zinc-400">
-                        {barcode
-                          ? 'You can try entering the barcode again, or manually enter product details for AI analysis.'
-                          : 'You can manually enter the barcode or full product details for AI analysis.'}
-                      </p>
-                    </div>
-
-                    <div className="grid gap-3">
-                      <Button
-                        onClick={() => {
-                          setShowResult(false)
-                          setBarcode('')
-                          setImagePreview(null)
-                        }}
-                        variant="secondary"
-                        className="w-full"
-                      >
-                        <Search className="w-5 h-5" />
-                        {barcode ? 'Try Different Barcode' : 'Enter Barcode Manually'}
-                      </Button>
-
-                      <Button
-                        onClick={() => setManualEntryMode(true)}
-                        className="w-full"
-                      >
-                        <PenLine className="w-5 h-5" aria-hidden="true" />
-                        Enter Product Details Manually
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-dark-card/95 backdrop-blur-lg border-t border-zinc-800 md:hidden">
-        <div className="flex justify-around py-3">
-          <Link href="/" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors">
-            <Home className="w-6 h-6" />
-            <span className="text-xs">Home</span>
-          </Link>
-          <Link href="/app" className="flex flex-col items-center gap-1 text-white">
-            <Upload className="w-6 h-6" />
-            <span className="text-xs">Scan</span>
-          </Link>
-          <button
-            onClick={() => setProfileModalOpen(true)}
-            className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors"
-          >
-            <User className="w-6 h-6" />
-            <span className="text-xs">Profile</span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Diet Selection Modal */}
-      <Modal isOpen={dietModalOpen} onClose={() => setDietModalOpen(false)} title="Select Diets to Check">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            {diets.map((diet) => (
-              <label
-                key={diet}
-                className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${selectedDiets.includes(diet)
-                    ? 'border-white bg-white/10'
-                    : 'border-zinc-700 hover:border-zinc-500'
-                  }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedDiets.includes(diet)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedDiets([...selectedDiets, diet])
-                    } else {
-                      setSelectedDiets(selectedDiets.filter((d) => d !== diet))
-                    }
-                  }}
-                  className="sr-only"
-                />
-                <div className={`w-5 h-5 rounded border flex items-center justify-center ${selectedDiets.includes(diet) ? 'bg-white border-white' : 'border-zinc-600'
-                  }`}>
-                  {selectedDiets.includes(diet) && <Check className="w-3 h-3 text-dark" />}
-                </div>
-                <span>{diet}</span>
+            <form onSubmit={submitNumber} className="flex gap-2" role="search" aria-label="Look up a barcode number">
+              <label htmlFor="barcode-number" className="sr-only">
+                Barcode number
               </label>
-            ))}
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
+                <input
+                  ref={numberRef}
+                  id="barcode-number"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  enterKeyHint="search"
+                  placeholder="Type the barcode number"
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value.replace(/[^\d\s]/g, ''))}
+                  className="field h-12 pl-10 font-mono text-[0.9375rem] placeholder:font-sans"
+                />
+              </div>
+              <Button type="submit" className="h-12" disabled={!number.trim()}>
+                Look up
+              </Button>
+            </form>
           </div>
-          <Button
-            onClick={() => handleAIFeature('diet')}
-            disabled={selectedDiets.length === 0}
-            className="w-full"
-          >
-            Check Compatibility
-          </Button>
-        </div>
-      </Modal>
 
-      {/* Profile Modal (Mobile) */}
-      <Modal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} title="Profile">
-        <div className="space-y-3">
-          <div className="p-3 bg-white/5 rounded-xl border border-zinc-800">
-            <p className="text-xs text-zinc-400 mb-1">Signed in as</p>
-            <p className="text-sm font-medium truncate">{user?.email}</p>
-          </div>
+          {isProfileEmpty(profile) && (
+            <button
+              type="button"
+              onClick={() => router.push('/settings#profile')}
+              className="mt-8 flex w-full items-center justify-between gap-4 rounded-xl border border-dashed border-ink/20 px-5 py-4 text-left transition-colors hover:border-ink/40 hover:bg-surface/60"
+            >
+              <span>
+                <span className="block text-sm font-semibold">Vegetarian? Avoiding nuts?</span>
+                <span className="mt-0.5 block text-sm text-ink-2">Add your food profile and every scan warns you.</span>
+              </span>
+              <span className="text-sm font-medium text-accent-ink">Set up</span>
+            </button>
+          )}
+        </section>
 
-          <Link href="/settings" onClick={() => setProfileModalOpen(false)} className="block">
-            <Button variant="secondary" className="w-full justify-center">
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
-            </Button>
-          </Link>
+        <RecentScans items={recent} onOpen={onOpen} />
+      </div>
 
-          <Link href="/history" onClick={() => setProfileModalOpen(false)} className="block">
-            <Button variant="secondary" className="w-full justify-center">
-              <History className="w-4 h-4" />
-              <span>History</span>
-            </Button>
-          </Link>
-
-          <Button
-            onClick={() => {
-              handleLogout()
-              setProfileModalOpen(false)
-            }}
-            variant="secondary"
-            className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 justify-center"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign out</span>
-          </Button>
-        </div>
-      </Modal>
-
-      {/* AI Result Modal */}
-      <Modal
-        isOpen={!!aiResult}
-        onClose={() => setAiResult(null)}
-        title={aiResult?.title}
-        size="xl"
-      >
-        {aiResult && <InsightResults content={aiResult.content} />}
-      </Modal>
-
-      {/* AI Loading Overlay */}
-      {aiLoading && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="text-center">
-            <Orb state="solving" size={64} className="mx-auto mb-4 block" />
-            <p className="text-zinc-300">Analyzing</p>
-          </div>
-        </div>
+      {camera && (
+        <CameraScanner
+          onDetected={(c) => {
+            setCamera(false)
+            onOpen(c)
+          }}
+          onClose={() => setCamera(false)}
+          onTypeInstead={() => {
+            setCamera(false)
+            requestAnimationFrame(() => numberRef.current?.focus())
+          }}
+        />
       )}
+    </div>
+  )
+}
+
+/* ---------- Pieces ------------------------------------------------- */
+
+function BackBar({ onBack }: { onBack: () => void }) {
+  return (
+    <button type="button" onClick={onBack} className="btn-ghost -ml-3 mb-4 h-9 min-h-9 px-3 text-ink-2">
+      <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+      Scanner
+    </button>
+  )
+}
+
+/** On phones, the next scan is always one thumb away while reading a result. */
+function FloatingScan({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-30 flex h-14 items-center gap-2 rounded-full bg-accent pl-4 pr-5 text-sm font-semibold text-on-accent shadow-pop transition-transform active:scale-95 sm:hidden"
+    >
+      <Camera className="h-5 w-5" aria-hidden="true" />
+      Scan next
+    </button>
+  )
+}
+
+function StateCard({
+  icon: Icon,
+  title,
+  body,
+  children,
+  onBack,
+}: {
+  icon: typeof SearchX
+  title: string
+  body: React.ReactNode
+  children: React.ReactNode
+  onBack: () => void
+}) {
+  return (
+    <div className="mx-auto max-w-lg">
+      <BackBar onBack={onBack} />
+      <div className="card animate-rise p-6 sm:p-8">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-2">
+          <Icon className="h-5 w-5 text-ink-2" aria-hidden="true" />
+        </span>
+        <h1 className="mt-4 font-display font-bold text-2xl leading-tight">{title}</h1>
+        <p className="mt-2 leading-relaxed text-ink-2">{body}</p>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row">{children}</div>
+      </div>
+    </div>
+  )
+}
+
+function LoadingReport({ code, onCancel }: { code: string; onCancel: () => void }) {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 6000)
+    return () => clearTimeout(t)
+  }, [])
+
+  return (
+    <div role="status" aria-live="polite">
+      <BackBar onBack={onCancel} />
+      <span className="sr-only">Looking up {code}</span>
+      <div className="flex items-start gap-5" aria-hidden="true">
+        <div className="skeleton h-20 w-20 rounded-xl sm:h-24 sm:w-24" />
+        <div className="flex-1 space-y-3 pt-1">
+          <div className="skeleton h-4 w-24" />
+          <div className="skeleton h-8 w-3/4" />
+          <div className="skeleton h-3 w-32" />
+        </div>
+      </div>
+      <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-6" aria-hidden="true">
+        <div className="space-y-4">
+          <div className="card h-56 p-6">
+            <div className="skeleton h-3 w-20" />
+            <div className="mt-6 flex gap-1">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton h-10 w-8" />
+              ))}
+            </div>
+            <div className="skeleton mt-6 h-3 w-4/5" />
+          </div>
+          <div className="card h-28" />
+        </div>
+        <div className="card h-80 p-6">
+          <div className="skeleton h-6 w-28" />
+          <div className="mt-3 h-[6px] bg-ink/10" />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="skeleton mt-5 h-3" />
+          ))}
+        </div>
+      </div>
+      <p className="mt-6 flex items-center gap-2 text-sm text-ink-2">
+        <Spinner />
+        {slow ? 'Still working. The food database is slow right now.' : <>Looking up <span className="font-mono">{code}</span></>}
+      </p>
     </div>
   )
 }

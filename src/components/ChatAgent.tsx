@@ -1,281 +1,176 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, X, ArrowUp, Bot } from 'lucide-react'
+import { ArrowUp, History } from 'lucide-react'
 import { toast } from 'sonner'
-import Orb from '@/components/ui/Orb'
 import { getGeminiApiKey } from '@/lib/ai-service'
+import Modal from '@/components/ui/Modal'
+import Thinking from '@/components/ui/Thinking'
 
 interface Message {
-    role: 'user' | 'assistant'
-    content: string
-}
-
-interface ChatAgentProps {
-    context?: any
+  role: 'user' | 'assistant'
+  content: string
 }
 
 const SUGGESTED_QUESTIONS = [
-    "Which of my scans is the healthiest?",
-    "Which ones are suitable for vegans?",
-    "Show me the ones highest in protein",
-    "Which has the smallest footprint?",
+  'Which of my scans is the healthiest?',
+  'Which ones are vegan?',
+  'What should I swap first?',
+  'Which are highest in protein?',
 ]
 
-// The composer grows with what you type, up to five lines, then scrolls.
 const MAX_COMPOSER_HEIGHT = 132
 
-export default function ChatAgent({ context }: ChatAgentProps) {
-    const [isOpen, setIsOpen] = useState(false)
-    const [messages, setMessages] = useState<Message[]>([])
-    const [input, setInput] = useState('')
-    const [loading, setLoading] = useState(false)
-    const messagesEndRef = useRef<HTMLDivElement>(null)
-    const inputRef = useRef<HTMLTextAreaElement>(null)
+/**
+ * Aisle: questions answered from the person's own scan history. Opens as a
+ * sheet so it never fights the tab bar for the bottom of a phone screen.
+ */
+export default function ChatAgent({ context, open, onClose }: { context?: any; open: boolean; onClose: () => void }) {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const endRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const productCount: number = Array.isArray(context?.products) ? context.products.length : 0
 
-    /** Match the composer's height to its content. */
-    const autosize = useCallback(() => {
-        const el = inputRef.current
-        if (!el) return
-        // Reset first so the box can shrink again when text is deleted.
-        el.style.height = 'auto'
-        el.style.height = `${Math.min(el.scrollHeight, MAX_COMPOSER_HEIGHT)}px`
-        el.style.overflowY = el.scrollHeight > MAX_COMPOSER_HEIGHT ? 'auto' : 'hidden'
-    }, [])
+  const autosize = useCallback(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, MAX_COMPOSER_HEIGHT)}px`
+    el.style.overflowY = el.scrollHeight > MAX_COMPOSER_HEIGHT ? 'auto' : 'hidden'
+  }, [])
 
-    useEffect(autosize, [input, autosize])
+  useEffect(autosize, [input, autosize])
 
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [messages])
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [messages, loading])
 
-    useEffect(() => {
-        if (isOpen) inputRef.current?.focus()
-    }, [isOpen])
-
-    // Escape closes the panel, like every other overlay in the product.
-    useEffect(() => {
-        if (!isOpen) return
-        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false)
-        window.addEventListener('keydown', onKey)
-        return () => window.removeEventListener('keydown', onKey)
-    }, [isOpen])
-
-    const sendMessage = async (messageText: string) => {
-        if (!messageText.trim() || loading) return
-
-        const userMessage: Message = { role: 'user', content: messageText }
-        const apiKey = getGeminiApiKey()
-        if (!apiKey) {
-            toast.error('Add your BYOK key in Settings to use Aisle.')
-            return
-        }
-
-        setMessages(prev => [...prev, userMessage])
-        setInput('')
-        setLoading(true)
-
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-gemini-api-key': apiKey },
-                body: JSON.stringify({
-                    messages: [...messages, userMessage],
-                    context,
-                }),
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to get response')
-            }
-
-            const data = await response.json()
-            const assistantMessage: Message = {
-                role: 'assistant',
-                content: data.choices[0].message.content,
-            }
-
-            setMessages(prev => [...prev, assistantMessage])
-        } catch (error: any) {
-            console.error('Chat error:', error)
-            toast.error(error.message || 'That message did not go through. Try again.')
-            // Drop the user message again so the thread matches what was sent.
-            setMessages(prev => prev.slice(0, -1))
-        } finally {
-            setLoading(false)
-        }
+  const send = async (text: string) => {
+    if (!text.trim() || loading) return
+    const apiKey = getGeminiApiKey()
+    if (!apiKey) {
+      toast.error('Add your Gemini key in Settings to use Aisle.')
+      return
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        sendMessage(input)
-    }
+    const userMessage: Message = { role: 'user', content: text.trim() }
+    const thread = [...messages, userMessage]
+    setMessages(thread)
+    setInput('')
+    setLoading(true)
 
-    // Enter sends. Shift and Enter starts a new line.
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-gemini-api-key': apiKey },
+        body: JSON.stringify({ messages: thread, context }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'That message did not go through. Try again.')
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.choices[0].message.content }])
+    } catch (error: any) {
+      toast.error(typeof error?.message === 'string' ? error.message : 'That message did not go through. Try again.')
+      setMessages((prev) => prev.slice(0, -1))
+      setInput(text)
+    } finally {
+      setLoading(false)
+      requestAnimationFrame(() => inputRef.current?.focus())
+    }
+  }
+
+  return (
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      title="Ask Aisle"
+      description="Answers come from your own scan history."
+      size="lg"
+      footer={
+        <form
+          onSubmit={(e) => {
             e.preventDefault()
-            sendMessage(input)
-        }
-    }
-
-    const canSend = Boolean(input.trim()) && !loading
-
-    return (
-        <>
-            {/* Launcher */}
-            <AnimatePresence>
-                {!isOpen && (
-                    <motion.button
-                        type="button"
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        onClick={() => setIsOpen(true)}
-                        aria-label="Open Aisle"
-                        className="group fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white text-black shadow-2xl shadow-black/50 transition-transform hover:scale-105 active:scale-95"
-                    >
-                        <MessageCircle className="h-6 w-6" aria-hidden="true" />
-                    </motion.button>
+            send(input)
+          }}
+          className="rounded-2xl bg-paper shadow-neu-inset transition-[box-shadow] duration-300 focus-within:shadow-neu-inset-deep focus-within:ring-2 focus-within:ring-ink/40 focus-within:ring-offset-2 focus-within:ring-offset-paper"
+        >
+          <label htmlFor="chat-input" className="sr-only">
+            Ask about your scans
+          </label>
+          <textarea
+            id="chat-input"
+            ref={inputRef}
+            rows={1}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                send(input)
+              }
+            }}
+            placeholder="Ask about your scans"
+            className="block max-h-[132px] w-full resize-none bg-transparent px-3.5 pb-1 pt-3 text-[0.9375rem] leading-relaxed placeholder:text-ink-3 focus:outline-none"
+          />
+          <div className="flex items-center justify-between gap-2 p-2 pl-3">
+            <span className="chip">
+              <History className="h-3 w-3" aria-hidden="true" />
+              {productCount} product{productCount === 1 ? '' : 's'} from your history
+            </span>
+            <button
+              type="submit"
+              disabled={!input.trim() || loading}
+              aria-label="Send"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-accent text-on-accent shadow-neu-sm transition-[opacity,box-shadow] active:shadow-neu-press-color disabled:opacity-30 disabled:shadow-none"
+            >
+              <ArrowUp className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        </form>
+      }
+    >
+      <div className="min-h-[40dvh]">
+        {messages.length === 0 ? (
+          <div className="pt-2">
+            <p className="text-sm text-ink-2">Try one of these, or ask your own.</p>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {SUGGESTED_QUESTIONS.map((q) => (
+                <li key={q}>
+                  <button
+                    type="button"
+                    onClick={() => send(q)}
+                    className="tile w-full px-4 py-3.5 text-left text-sm"
+                  >
+                    {q}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div aria-live="polite" className="space-y-5 pt-1">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {m.role === 'user' ? (
+                  <p className="max-w-[85%] whitespace-pre-wrap rounded-2xl bg-paper px-4 py-2.5 text-[0.9375rem] shadow-neu-sm leading-relaxed [overflow-wrap:anywhere]">
+                    {m.content}
+                  </p>
+                ) : (
+                  <div className="max-w-[92%]">
+                    <p className="mb-1 text-xs font-semibold text-ink-3">Aisle</p>
+                    <p className="whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-ink [overflow-wrap:anywhere]">{m.content}</p>
+                  </div>
                 )}
-            </AnimatePresence>
-
-            {/* Panel */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        role="dialog"
-                        aria-label="Aisle"
-                        initial={{ opacity: 0, y: 16, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 16, scale: 0.98 }}
-                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="fixed bottom-6 right-6 z-50 flex h-[600px] max-h-[calc(100dvh-3rem)] w-[400px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-zinc-900 to-black shadow-2xl shadow-black/70"
-                    >
-                        {/* A hairline of light across the head, as on the dialogs. */}
-                        <span
-                            aria-hidden="true"
-                            className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"
-                        />
-
-                        <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
-                            <div className="flex items-center gap-2.5">
-                                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                                    <Bot className="h-4 w-4" aria-hidden="true" />
-                                </span>
-                                <div>
-                                    <h2 className="font-display text-sm font-semibold tracking-tight">Aisle</h2>
-                                    <p className="text-xs text-zinc-500">Knows everything you have scanned</p>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsOpen(false)}
-                                aria-label="Close Aisle"
-                                className="btn-icon -mr-1"
-                            >
-                                <X className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                        </div>
-
-                        {/* Thread */}
-                        <div className="flex-1 space-y-4 overflow-y-auto p-4">
-                            {messages.length === 0 ? (
-                                <div className="py-6 text-center">
-                                    <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
-                                        <Bot className="h-6 w-6" aria-hidden="true" />
-                                    </span>
-                                    <h3 className="font-display text-base font-semibold tracking-tight">
-                                        Ask about your scans
-                                    </h3>
-                                    <p className="mx-auto mt-2 max-w-[16rem] text-sm leading-relaxed text-zinc-400">
-                                        It has read your whole history, so the answer is about your food, not food
-                                        in general.
-                                    </p>
-
-                                    <p className="mb-3 mt-7 text-[11px] font-semibold uppercase tracking-label text-zinc-600">
-                                        Try asking
-                                    </p>
-                                    <ul className="m-0 list-none space-y-2 text-left">
-                                        {SUGGESTED_QUESTIONS.map((question) => (
-                                            <li key={question}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => sendMessage(question)}
-                                                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] p-3 text-left text-sm text-zinc-300 transition-colors hover:border-white/25 hover:bg-white/[0.07] hover:text-white"
-                                                >
-                                                    {question}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ) : (
-                                <div aria-live="polite" className="space-y-4">
-                                    {messages.map((message, i) => (
-                                        <div
-                                            key={i}
-                                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                        >
-                                            {/* Bubbles hug their text and stop at 85%. */}
-                                            <div
-                                                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
-                                                    message.role === 'user'
-                                                        ? 'bg-white text-black'
-                                                        : 'border border-white/10 bg-white/[0.06] text-zinc-100'
-                                                }`}
-                                            >
-                                                <p className="whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]">
-                                                    {message.content}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {loading && (
-                                        <div className="flex justify-start">
-                                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3">
-                                                <Orb state="composing" />
-                                                <span className="sr-only">Thinking</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
-
-                        {/* Composer: one line to start, growing with the text. */}
-                        <form onSubmit={handleSubmit} className="border-t border-white/10 p-3">
-                            <div className="flex items-end gap-2 rounded-2xl border border-white/12 bg-white/[0.04] p-2 transition-colors focus-within:border-white/40">
-                                <label htmlFor="chat-input" className="sr-only">
-                                    Ask about your scans
-                                </label>
-                                <textarea
-                                    id="chat-input"
-                                    ref={inputRef}
-                                    rows={1}
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Ask a question"
-                                    disabled={loading}
-                                    className="max-h-[132px] flex-1 resize-none bg-transparent px-2 py-1.5 text-sm leading-relaxed text-white placeholder:text-zinc-500 focus:outline-none disabled:opacity-50"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={!canSend}
-                                    aria-label="Send"
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-black transition-opacity hover:opacity-90 disabled:opacity-30"
-                                >
-                                    <ArrowUp className="h-4 w-4" aria-hidden="true" />
-                                </button>
-                            </div>
-                        </form>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </>
-    )
+              </div>
+            ))}
+            {loading && (
+              <Thinking label={`Reading ${productCount} product${productCount === 1 ? '' : 's'}`} className="text-ink-2" />
+            )}
+          </div>
+        )}
+        <div ref={endRef} />
+      </div>
+    </Modal>
+  )
 }

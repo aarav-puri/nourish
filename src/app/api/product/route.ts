@@ -87,10 +87,46 @@ async function fetchWithRetry(
 
 // Open Food Facts is the primary source: it carries nutrition and scores.
 // Resolves to null when the product is unknown.
+// Only the fields the interface reads. A full record runs to hundreds of
+// kilobytes; this keeps the lookup fast and the stored history row small.
+const OFF_FIELDS = [
+  'code', 'product_name', 'product_name_en', 'brands', 'quantity', 'categories', 'categories_tags',
+  'ingredients_text', 'ingredients_text_en', 'image_front_url', 'image_url', 'nutriments',
+  'nutriscore_grade', 'ecoscore_grade', 'nova_group', 'additives_tags', 'allergens_tags',
+  'traces_tags', 'ingredients_analysis_tags', 'labels_tags', 'packaging', 'countries', 'serving_size',
+].join(',')
+
+const NUTRIMENT_KEYS = [
+  'energy-kcal_100g', 'energy_100g', 'energy_value', 'energy_unit', 'fat_100g', 'saturated-fat_100g',
+  'carbohydrates_100g', 'sugars_100g', 'fiber_100g', 'proteins_100g', 'salt_100g', 'sodium_100g',
+]
+
+const USER_AGENT = `Nourish/2.0 (${process.env.NEXT_PUBLIC_APP_URL || 'https://nourish.app'})`
+
+function slimProduct(product: any) {
+  const nutriments: Record<string, unknown> = {}
+  for (const key of NUTRIMENT_KEYS) {
+    if (product.nutriments?.[key] !== undefined) nutriments[key] = product.nutriments[key]
+  }
+  const slim: Record<string, unknown> = {}
+  for (const key of OFF_FIELDS.split(',')) {
+    if (key !== 'nutriments' && product[key] !== undefined && product[key] !== '') slim[key] = product[key]
+  }
+  // Prefer the English text where the record has it; the default field is in
+  // whatever language the product was first entered in.
+  if (product.ingredients_text_en) slim.ingredients_text = product.ingredients_text_en
+  if (product.product_name_en) slim.product_name = product.product_name_en
+  delete slim.ingredients_text_en
+  delete slim.product_name_en
+  slim.nutriments = nutriments
+  return slim
+}
+
 async function lookupOpenFoodFacts(barcode: string): Promise<any | null> {
   const response = await fetchWithRetry(
     'Open Food Facts',
-    `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(barcode)}.json`
+    `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}?fields=${OFF_FIELDS}`,
+    { 'User-Agent': USER_AGENT }
   )
   if (response.status === 404) return null
 
@@ -99,7 +135,7 @@ async function lookupOpenFoodFacts(barcode: string): Promise<any | null> {
     throw new Error(`Open Food Facts returned ${response.status}`)
   }
   return data.status === 1 && data.product && Object.keys(data.product).length > 0
-    ? data.product
+    ? slimProduct(data.product)
     : null
 }
 
@@ -195,7 +231,7 @@ Return JSON with these exact keys:
           }
         ],
         temperature: 0.3,
-        max_tokens: 500,
+        max_tokens: 1200,
       }),
       signal: geminiController.signal,
     })
@@ -222,11 +258,11 @@ Return JSON with these exact keys:
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const barcode = searchParams.get('barcode')
+  const barcode = (searchParams.get('barcode') || '').replace(/\s+/g, '')
 
-  if (!barcode) {
+  if (!/^\d{6,14}$/.test(barcode)) {
     return NextResponse.json(
-      { error: 'Barcode parameter is required' },
+      { error: 'Enter a barcode of 6 to 14 digits' },
       { status: 400 }
     )
   }

@@ -8,7 +8,7 @@ import { auth, supabase } from '@/lib/supabase'
 import AuthShell from '@/components/auth/AuthShell'
 import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
-import Orb from '@/components/ui/Orb'
+import Spinner from '@/components/ui/Spinner'
 
 type Stage = 'checking' | 'ready' | 'invalid'
 
@@ -130,13 +130,13 @@ export default function ResetPasswordLandingPage() {
         title="One moment"
         lede="Checking your reset link."
         footer={
-          <Link href="/signin" className="font-medium text-white underline underline-offset-4 hover:text-zinc-300">
+          <Link href="/signin" className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
             Back to sign in
           </Link>
         }
       >
-        <div className="mt-8 flex items-center gap-3 text-sm text-zinc-400">
-          <Orb state="searching" />
+        <div className="mt-8 flex items-center gap-3 text-sm text-ink-2">
+          <Spinner />
           Verifying
         </div>
       </AuthShell>
@@ -150,14 +150,14 @@ export default function ResetPasswordLandingPage() {
         title="That link has expired"
         lede="Reset links are single use and time limited. Ask for a fresh one and it will work."
         footer={
-          <Link href="/signin" className="font-medium text-white underline underline-offset-4 hover:text-zinc-300">
+          <Link href="/signin" className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
             Back to sign in
           </Link>
         }
       >
-        <div className="mt-8 flex items-center gap-4 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-4">
+        <div className="mt-8 flex items-center gap-4 well px-5 py-4">
           <ShieldAlert className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <p className="text-sm leading-relaxed text-zinc-300">
+          <p className="text-sm leading-relaxed text-ink-2">
             If you opened the link in a different browser than you requested it from, ask for a new one here.
           </p>
         </div>
@@ -175,7 +175,7 @@ export default function ResetPasswordLandingPage() {
       title="Set a new password"
       lede="Pick something you have not used here before. You will be signed in once it is saved."
       footer={
-        <Link href="/signin" className="font-medium text-white underline underline-offset-4 hover:text-zinc-300">
+        <Link href="/signin" className="font-medium text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
           Back to sign in
         </Link>
       }
@@ -186,7 +186,7 @@ export default function ResetPasswordLandingPage() {
             ref={errorRef}
             tabIndex={-1}
             role="alert"
-            className="mb-5 rounded-xl border border-white/25 bg-white/[0.06] px-4 py-3 text-sm leading-relaxed text-white focus:outline-none"
+            className="mb-5 rounded-lg border border-level-high/30 bg-level-high/5 px-4 py-3 text-sm leading-relaxed text-ink focus:outline-none"
           >
             {error}
           </div>
@@ -218,7 +218,7 @@ export default function ResetPasswordLandingPage() {
         </div>
 
         <button type="submit" disabled={busy} className="btn-primary mt-7 w-full" aria-busy={busy || undefined}>
-          {busy && <Orb tone="onLight" />}
+          {busy && <Spinner />}
           {busy ? 'Saving' : 'Save new password'}
         </button>
       </form>

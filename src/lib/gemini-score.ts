@@ -31,7 +31,7 @@ Product Data:
 - Categories: ${product.categories || 'Unknown'}
 - Ingredients: ${product.ingredients_text || 'Not available'}
 - Packaging: ${product.packaging || 'Unknown'}
-- Per 100g: energy ${n.energy_value ?? n['energy-kcal_100g'] ?? '?'} ${n.energy_unit || 'kcal'}, fat ${n.fat ?? '?'}g, saturated fat ${n['saturated-fat'] ?? '?'}g, sugars ${n.sugars ?? '?'}g, salt ${n.salt ?? '?'}g, fiber ${n.fiber ?? '?'}g, protein ${n.proteins ?? '?'}g
+- Per 100g: energy ${n['energy-kcal_100g'] ?? n.energy_value ?? '?'} kcal, fat ${n.fat_100g ?? n.fat ?? '?'}g, saturated fat ${n['saturated-fat_100g'] ?? n['saturated-fat'] ?? '?'}g, sugars ${n.sugars_100g ?? n.sugars ?? '?'}g, salt ${n.salt_100g ?? n.salt ?? '?'}g, fiber ${n.fiber_100g ?? n.fiber ?? '?'}g, protein ${n.proteins_100g ?? n.proteins ?? '?'}g
 
 Use the official Nutri-Score and Eco-Score methods as closely as the data allows. Grades are a (best) to e (worst).
 If the item is not food or drink, or there is too little information to judge, use null.

@@ -1,10 +1,16 @@
+import type { Food } from '@/lib/food'
+
 const API_URL = '/api/ai'
 const MODEL = 'gemini-3.8-flash'
 const API_KEY_STORAGE_KEY = 'gemini_api_key'
 
 export function getGeminiApiKey() {
   if (typeof window === 'undefined') return ''
-  return localStorage.getItem(API_KEY_STORAGE_KEY) || ''
+  try {
+    return localStorage.getItem(API_KEY_STORAGE_KEY) || ''
+  } catch {
+    return ''
+  }
 }
 
 export function setGeminiApiKey(key: string) {
@@ -13,142 +19,133 @@ export function setGeminiApiKey(key: string) {
   else localStorage.removeItem(API_KEY_STORAGE_KEY)
 }
 
-async function callAI(prompt: string, systemPrompt = 'You are a helpful food and nutrition assistant.') {
-  const apiKey = getGeminiApiKey()
-  if (!apiKey) {
-    throw new Error('MISSING_API_KEY')
+/** Shows the first and last few characters so a person can tell which key is saved. */
+export function maskKey(key: string) {
+  if (key.length <= 10) return '•'.repeat(key.length)
+  return `${key.slice(0, 4)}••••••••${key.slice(-4)}`
+}
+
+export class AIError extends Error {
+  constructor(message: string, public code: 'missing_key' | 'bad_key' | 'rate_limited' | 'failed') {
+    super(message)
   }
+}
+
+async function callAI(prompt: string, systemPrompt: string) {
+  const apiKey = getGeminiApiKey()
+  if (!apiKey) throw new AIError('Add your Gemini key in Settings to use AI insights.', 'missing_key')
 
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-gemini-api-key': apiKey,
-    },
+    headers: { 'Content-Type': 'application/json', 'x-gemini-api-key': apiKey },
     body: JSON.stringify({
       model: MODEL,
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: `${systemPrompt} Respond with valid JSON only, no markdown.` },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.7,
+      temperature: 0.6,
       max_tokens: 8000,
     }),
   })
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(`API error: ${response.status} - ${errorData.error || 'Unknown error'}`)
+    if (response.status === 400 || response.status === 401 || response.status === 403) {
+      throw new AIError('Google rejected your Gemini key. Check it in Settings.', 'bad_key')
+    }
+    if (response.status === 429) {
+      throw new AIError('Your Gemini key hit its rate limit. Wait a minute and try again.', 'rate_limited')
+    }
+    throw new AIError('The AI did not respond. Try again.', 'failed')
   }
 
   const data = await response.json()
-  return data.choices[0].message.content
+  return parseJSON(data?.choices?.[0]?.message?.content ?? '')
 }
 
-export interface Product {
-  product_name?: string
-  name?: string
-  ingredients_text?: string
-  categories?: string
-  countries?: string
-  packaging?: string
-  nutriments?: {
-    energy_value?: number
-    energy_unit?: string
-    fat?: number
-    carbohydrates?: number
-    proteins?: number
-    sugars?: number
-    salt?: number
+/** Models sometimes wrap JSON in fences or prose; take the outermost object or array. */
+function parseJSON(text: string) {
+  const clean = text.replace(/```(?:json)?/g, '').trim()
+  try {
+    return JSON.parse(clean)
+  } catch {
+    const start = clean.search(/[[{]/)
+    const end = Math.max(clean.lastIndexOf('}'), clean.lastIndexOf(']'))
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(clean.slice(start, end + 1))
+      } catch {
+        /* fall through */
+      }
+    }
+    throw new AIError('The AI returned something we could not read. Try again.', 'failed')
   }
-  code?: string
-  barcode?: string
+}
+
+function describe(food: Food) {
+  const n = food.nutrition
+  return `Product: ${food.name}${food.brand ? ` by ${food.brand}` : ''}${food.quantity ? ` (${food.quantity})` : ''}
+Categories: ${food.categories || 'Unknown'}
+Ingredients: ${food.ingredientsText || 'Not available'}
+Allergens declared: ${food.allergens.join(', ') || 'None listed'}
+Nutri-Score: ${food.grade?.toUpperCase() ?? 'Unknown'}; processing (NOVA): ${food.nova ?? 'Unknown'}
+Per 100${food.isBeverage ? 'ml' : 'g'}: ${n.energyKcal ?? '?'} kcal, fat ${n.fat ?? '?'}g, saturated fat ${n.saturatedFat ?? '?'}g, carbs ${n.carbs ?? '?'}g, sugars ${n.sugars ?? '?'}g, fibre ${n.fiber ?? '?'}g, protein ${n.protein ?? '?'}g, salt ${n.salt ?? '?'}g`
+}
+
+export type InsightKind = 'alternatives' | 'diet_compatibility' | 'eco_impact' | 'recipe_suggestions'
+
+export const INSIGHT_TITLES: Record<InsightKind, string> = {
+  alternatives: 'Better swaps',
+  diet_compatibility: 'Diet check',
+  eco_impact: 'Footprint',
+  recipe_suggestions: 'Recipe ideas',
 }
 
 export const aiService = {
-  async getHealthierSubstitutes(product: Product) {
-    const prompt = `
-Product: ${product.product_name || product.name}
-Ingredients: ${product.ingredients_text || 'Not available'}
-Nutrition (per 100g): 
-- Calories: ${product.nutriments?.energy_value || 'N/A'}
-- Fat: ${product.nutriments?.fat || 'N/A'}g
-- Carbs: ${product.nutriments?.carbohydrates || 'N/A'}g
-- Protein: ${product.nutriments?.proteins || 'N/A'}g
-- Sugar: ${product.nutriments?.sugars || 'N/A'}g
+  getHealthierSubstitutes(food: Food, diets: string[] = []) {
+    return callAI(
+      `${describe(food)}
+${diets.length ? `The shopper follows: ${diets.join(', ')}. Every suggestion must fit.` : ''}
 
-Suggest 3 healthier alternatives with similar flavor profiles. For each, provide:
-1. product_name: The specific product name or brand
-2. why_healthier: Why it's healthier
-3. flavor_similarity: Flavor similarity (1-10)
-4. price_range: Estimated price range
-5. sugar_diff: How its sugar per 100g compares to the original, as a short phrase (e.g. "4g less sugar" or "About the same sugar")
-6. additive_diff: How its additive count compares to the original, as a short phrase (e.g. "2 fewer additives" or "No additives, vs 3 in the original")
-
-Format as JSON array with these exact keys.`
-
-    return await callAI(prompt, 'You are a nutrition expert. Provide practical, realistic food substitutions. Always respond with valid JSON.')
+Suggest 3 widely available, healthier alternatives in the same category with a similar flavour. Name real products or brands where you can. For each give:
+product_name, why_healthier (one sentence), flavor_similarity (1-10), price_range (e.g. "$3-5"), sugar_diff (short phrase such as "4g less sugar"), additive_diff (short phrase such as "2 fewer additives").
+Return a JSON array of 3 objects with exactly these keys.`,
+      'You are a practical nutritionist who knows supermarket shelves well.'
+    )
   },
 
-  async analyzeDietCompatibility(product: Product, diets: string[]) {
-    const prompt = `
-Product: ${product.product_name || product.name}
-Ingredients: ${product.ingredients_text || 'Not available'}
-Categories: ${product.categories || 'Not available'}
+  analyzeDietCompatibility(food: Food, diets: string[]) {
+    return callAI(
+      `${describe(food)}
 
-Check compatibility with these diets: ${diets.join(', ')}
-
-For each diet, provide a JSON object with these exact keys:
-1. compatible: "Yes", "No", or "Maybe"
-2. confidence: number 1-10
-3. reason: Brief explanation
-4. concerns: Specific ingredients or issues (or null if none)
-5. alternatives: Brief suggestion if not compatible (or null if compatible)
-
-Format as JSON object where each diet name is a key.`
-
-    return await callAI(prompt, 'You are a dietary expert. Always respond with valid JSON.')
+Check this product against these diets: ${diets.join(', ')}.
+Return a JSON object where each diet name is a key and each value has:
+compatible ("Yes", "No" or "Maybe"), confidence (1-10), reason (one sentence), concerns (specific ingredients, or null), alternatives (a brief suggestion if not compatible, or null).`,
+      'You are a careful dietitian. When ingredients are ambiguous, say Maybe rather than guess.'
+    )
   },
 
-  async analyzeEcoImpact(product: Product) {
-    const prompt = `
-Product: ${product.product_name || product.name}
-Categories: ${product.categories || 'Not available'}
-Origin: ${product.countries || 'Unknown'}
-Packaging: ${product.packaging || 'Unknown'}
+  analyzeEcoImpact(food: Food) {
+    return callAI(
+      `${describe(food)}
+Origin: ${food.countries || 'Unknown'}
+Packaging: ${food.packaging || 'Unknown'}
 
-Estimate the environmental impact with these exact keys:
-1. carbon_footprint: "Low", "Medium", or "High"
-2. water_usage: "Low", "Medium", or "High"
-3. packaging_score: number 1-10
-4. transportation_impact: "Low", "Medium", or "High"
-5. overall_score: number 1-10
-6. category_comparison: One sentence on how this product's footprint compares to typical products in the same category (better, worse, or about the same, and why)
-7. explanation: Brief 2-3 sentence explanation
-8. tips: Array of 2-3 eco friendly tips
-
-Format as JSON object with these exact keys.`
-
-    return await callAI(prompt, 'You are an environmental sustainability expert. Always respond with valid JSON.')
+Estimate the environmental impact. Return a JSON object with:
+carbon_footprint, water_usage, transportation_impact (each "Low", "Medium" or "High"), packaging_score (1-10), overall_score (1-10, higher is better), category_comparison (one sentence versus typical products in the category), explanation (2-3 sentences), tips (array of 2-3 short tips).`,
+      'You are an environmental scientist specialising in food systems.'
+    )
   },
 
-  async getRecipeSuggestions(product: Product) {
-    const prompt = `
-Product: ${product.product_name || product.name}
-Ingredients: ${product.ingredients_text || 'Not available'}
-Categories: ${product.categories || 'Not available'}
+  getRecipeSuggestions(food: Food, diets: string[] = []) {
+    return callAI(
+      `${describe(food)}
+${diets.length ? `The cook follows: ${diets.join(', ')}. Every recipe must fit.` : ''}
 
-Suggest 3 creative and practical recipes that can be made using this product as a key ingredient. For each recipe provide:
-1. recipe_name: Name of the recipe
-2. description: Brief 1-sentence description
-3. difficulty: "Easy", "Medium", or "Hard"
-4. prep_time: Estimated time in minutes
-5. calories: Estimated calories per serving
-6. other_ingredients: Array of 4-6 other main ingredients needed
-7. health_benefits: Brief explanation of nutritional benefits
-
-Format as JSON array with these exact keys.`
-
-    return await callAI(prompt, 'You are a creative chef and nutritionist. Provide practical, delicious recipes. Always respond with valid JSON.')
+Suggest 3 practical recipes that use this product as a key ingredient. For each give:
+recipe_name, description (one sentence), difficulty ("Easy", "Medium" or "Hard"), prep_time (minutes, number), calories (per serving, number), other_ingredients (array of 4-6 items), health_benefits (one sentence).
+Return a JSON array of 3 objects with exactly these keys.`,
+      'You are a creative home cook and nutritionist.'
+    )
   },
 }
