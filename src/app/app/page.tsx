@@ -2,20 +2,18 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, Camera, ImageUp, PenLine, RotateCcw, Search, SearchX, WifiOff } from 'lucide-react'
+import { ArrowLeft, Camera, PenLine, RotateCcw, SearchX, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-context'
 import { db } from '@/lib/supabase'
 import { getGeminiApiKey } from '@/lib/ai-service'
 import { fetchProductInfo, LookupError } from '@/lib/product-api'
-import { decodeImage, isValidGtin } from '@/lib/barcode'
 import { toFood, type Food } from '@/lib/food'
-import { isProfileEmpty } from '@/lib/profile'
 import { productCache } from '@/lib/scan-cache'
 import AppShell from '@/components/app/AppShell'
 import CameraScanner from '@/components/app/CameraScanner'
 import ManualEntry from '@/components/app/ManualEntry'
-import RecentScans, { type RecentScan } from '@/components/app/RecentScans'
+import ScannerHome from '@/components/app/ScannerHome'
 import ProductReport from '@/components/product/ProductReport'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
@@ -52,7 +50,6 @@ function Scanner() {
   const [hasKey, setHasKey] = useState<boolean | null>(null)
   const [view, setView] = useState<View>({ kind: 'idle' })
   const [camera, setCamera] = useState(false)
-  const [recent, setRecent] = useState<RecentScan[] | null>(null)
   const requestRef = useRef(0)
 
   useEffect(() => {
@@ -61,26 +58,23 @@ function Scanner() {
     if (!present) router.replace(`/setup?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
   }, [router])
 
-  const loadRecent = useCallback(() => {
+  const warmHistoryCache = useCallback(() => {
     db.getScannedProducts(40)
       .then((rows) => {
         const seen = new Set<string>()
-        const list: RecentScan[] = []
         for (const row of rows ?? []) {
           if (!row.barcode || seen.has(row.barcode)) continue
           seen.add(row.barcode)
           const food = toFood(row.product_data, row.barcode)
-          list.push({ id: row.id, food, scannedAt: row.scanned_at })
           if (!cache.has(row.barcode)) cache.set(row.barcode, food)
         }
-        setRecent(list.slice(0, 6))
       })
-      .catch(() => setRecent([]))
+      .catch(() => { /* History cache warming is optional. */ })
   }, [])
 
   useEffect(() => {
-    if (user) loadRecent()
-  }, [user, loadRecent])
+    if (user) warmHistoryCache()
+  }, [user, warmHistoryCache])
 
   /* The URL is the source of truth: ?code= shows a product, so the back
      button returns to the scanner and a result survives a refresh. */
@@ -116,7 +110,7 @@ function Scanner() {
         setView({ kind: 'result', food })
         try {
           await db.saveScannedProduct(code, food.name, data.product)
-          loadRecent()
+          warmHistoryCache()
         } catch {
           /* the result is on screen; history is best effort */
         }
@@ -137,7 +131,7 @@ function Scanner() {
       })
 
     return () => controller.abort()
-  }, [code, manual, attempt, hasKey, loadRecent])
+  }, [code, manual, attempt, hasKey, warmHistoryCache])
 
   const open = useCallback(
     (barcode: string) => {
@@ -250,186 +244,11 @@ function Scanner() {
       )
 
     default:
-      return <Home onOpen={open} recent={recent} />
+      return <ScannerHome onOpen={open} />
   }
 }
 
 /* ---------- Home: the scan surface --------------------------------- */
-
-function Home({ onOpen, recent }: { onOpen: (code: string) => void; recent: RecentScan[] | null }) {
-  const router = useRouter()
-  const { profile } = useAuth()
-  const [camera, setCamera] = useState(false)
-  const [number, setNumber] = useState('')
-  const [reading, setReading] = useState(false)
-  const [dragging, setDragging] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const numberRef = useRef<HTMLInputElement>(null)
-
-  const readPhoto = useCallback(
-    async (file: File) => {
-      if (!file.type.startsWith('image/')) {
-        toast.error('That is not an image. Use a photo of the barcode.')
-        return
-      }
-      setReading(true)
-      try {
-        const code = await decodeImage(file)
-        if (code) onOpen(code)
-        else
-          toast.error('No barcode found in that photo', {
-            description: 'Get closer, keep it flat and in focus, or type the number.',
-          })
-      } catch {
-        toast.error('Could not read that image.')
-      } finally {
-        setReading(false)
-      }
-    },
-    [onOpen]
-  )
-
-  // Paste a screenshot or photo anywhere on the page.
-  useEffect(() => {
-    const onPaste = (e: ClipboardEvent) => {
-      const file = Array.from(e.clipboardData?.items ?? [])
-        .find((i) => i.type.startsWith('image/'))
-        ?.getAsFile()
-      if (file) {
-        e.preventDefault()
-        readPhoto(file)
-      }
-    }
-    window.addEventListener('paste', onPaste)
-    return () => window.removeEventListener('paste', onPaste)
-  }, [readPhoto])
-
-  const submitNumber = (e: React.FormEvent) => {
-    e.preventDefault()
-    const clean = number.replace(/\D/g, '')
-    if (!clean) {
-      numberRef.current?.focus()
-      return
-    }
-    if ([8, 12, 13].includes(clean.length) && !isValidGtin(clean)) {
-      toast('That check digit looks off', { description: 'Looking it up anyway. Double-check the last digit if nothing comes back.' })
-    }
-    onOpen(clean)
-  }
-
-  return (
-    <div
-      onDragOver={(e) => {
-        if (Array.from(e.dataTransfer.types).includes('Files')) {
-          e.preventDefault()
-          setDragging(true)
-        }
-      }}
-      onDragLeave={(e) => {
-        if (e.currentTarget === e.target) setDragging(false)
-      }}
-      onDrop={(e) => {
-        e.preventDefault()
-        setDragging(false)
-        const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith('image/'))
-        if (file) readPhoto(file)
-      }}
-      className="relative"
-    >
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
-        <section aria-labelledby="scan-h">
-          <h1 id="scan-h" className="sr-only">
-            Scan a product
-          </h1>
-
-          {/* Camera: the primary action, sized for a thumb. */}
-          <button type="button" onClick={() => setCamera(true)} className="btn-primary h-16 w-full gap-3 rounded-2xl text-base">
-            <Camera className="h-5 w-5" aria-hidden="true" />
-            Scan with camera
-          </button>
-
-          <div className="mt-3 grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)]">
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={reading}
-              className={`btn-secondary h-12 px-4 ${dragging ? 'ring-2 ring-ink/40 ring-offset-2 ring-offset-paper' : ''}`}
-            >
-              {reading ? <Spinner /> : <ImageUp className="h-4 w-4" aria-hidden="true" />}
-              {reading ? 'Reading photo' : dragging ? 'Drop to read' : 'Upload a photo'}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              tabIndex={-1}
-              aria-hidden="true"
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                e.target.value = ''
-                if (f) readPhoto(f)
-              }}
-            />
-
-            <form onSubmit={submitNumber} className="flex gap-2" role="search" aria-label="Look up a barcode number">
-              <label htmlFor="barcode-number" className="sr-only">
-                Barcode number
-              </label>
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
-                <input
-                  ref={numberRef}
-                  id="barcode-number"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  enterKeyHint="search"
-                  placeholder="Type the barcode number"
-                  value={number}
-                  onChange={(e) => setNumber(e.target.value.replace(/[^\d\s]/g, ''))}
-                  className="field h-12 pl-10 font-mono text-[0.9375rem] placeholder:font-sans"
-                />
-              </div>
-              <Button type="submit" className="h-12" disabled={!number.trim()}>
-                Look up
-              </Button>
-            </form>
-          </div>
-
-          {isProfileEmpty(profile) && (
-            <button
-              type="button"
-              onClick={() => router.push('/settings#profile')}
-              className="mt-8 flex w-full items-center justify-between gap-4 rounded-xl border border-dashed border-ink/20 px-5 py-4 text-left transition-colors hover:border-ink/40 hover:bg-surface/60"
-            >
-              <span>
-                <span className="block text-sm font-semibold">Vegetarian? Avoiding nuts?</span>
-                <span className="mt-0.5 block text-sm text-ink-2">Add your food profile and every scan warns you.</span>
-              </span>
-              <span className="text-sm font-medium text-accent-ink">Set up</span>
-            </button>
-          )}
-        </section>
-
-        <RecentScans items={recent} onOpen={onOpen} />
-      </div>
-
-      {camera && (
-        <CameraScanner
-          onDetected={(c) => {
-            setCamera(false)
-            onOpen(c)
-          }}
-          onClose={() => setCamera(false)}
-          onTypeInstead={() => {
-            setCamera(false)
-            requestAnimationFrame(() => numberRef.current?.focus())
-          }}
-        />
-      )}
-    </div>
-  )
-}
 
 /* ---------- Pieces ------------------------------------------------- */
 

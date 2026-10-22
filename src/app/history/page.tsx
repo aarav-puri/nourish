@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Camera, MessagesSquare, Search, ShieldAlert, Trash2, X } from 'lucide-react'
+import { Camera, Search, ShieldAlert, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { db } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
@@ -13,6 +13,7 @@ import { productCache } from '@/lib/scan-cache'
 import { dayBucket, timeAgo } from '@/lib/time'
 import AppShell from '@/components/app/AppShell'
 import ChatAgent from '@/components/ChatAgent'
+import OliveAvatar from '@/components/brand/OliveAvatar'
 import { GRADE_STYLE, GradeBadge } from '@/components/product/Grade'
 import ProductThumb from '@/components/product/ProductThumb'
 import Modal from '@/components/ui/Modal'
@@ -191,7 +192,7 @@ function History() {
     setClearing(false)
   }
 
-  // A compact, readable summary for Aisle rather than raw database records.
+  // A compact, readable summary for Olive rather than raw database records.
   const chatContext = useMemo(
     () => ({
       profile: { diets: profile.diets.map(dietLabel), avoids: profile.avoid },
@@ -219,14 +220,14 @@ function History() {
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="t-title">History</h1>
+          <div><h1 className="t-title app-editorial-title"><em>History.</em></h1></div>
           <p className="mt-1 text-ink-2">
             {rows === null ? ' ' : total === 0 ? 'Nothing here yet.' : `${total} product${total === 1 ? '' : 's'} scanned`}
           </p>
         </div>
         {total > 0 && (
-          <Button variant="secondary" icon={<MessagesSquare className="h-4 w-4 text-ink-2" aria-hidden="true" />} onClick={() => setChatOpen(true)}>
-            Ask about your scans
+          <Button variant="secondary" icon={<OliveAvatar size={24} className="-my-1 -ml-1" />} onClick={() => setChatOpen(true)}>
+            Ask Olive
           </Button>
         )}
       </div>

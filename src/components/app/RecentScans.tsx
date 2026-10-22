@@ -21,9 +21,9 @@ const EXAMPLES = [
 
 export default function RecentScans({ items, onOpen }: { items: RecentScan[] | null; onOpen: (code: string) => void }) {
   return (
-    <section aria-labelledby="recent-h" className="lg:pt-2">
+    <section aria-labelledby="recent-h" className="card self-start p-5 sm:p-6">
       <div className="flex items-baseline justify-between">
-        <h2 id="recent-h" className="t-eyebrow">
+        <h2 id="recent-h" className="font-display text-lg font-bold tracking-tight">
           Recent scans
         </h2>
         {items && items.length > 0 && (
@@ -46,7 +46,7 @@ export default function RecentScans({ items, onOpen }: { items: RecentScan[] | n
           ))}
         </ul>
       ) : items.length === 0 ? (
-        <div className="well mt-3 p-5">
+        <div className="mt-5 rounded-2xl border border-dashed border-line bg-paper/70 p-5">
           <p className="font-medium">Nothing scanned yet</p>
           <p className="mt-1 text-sm text-ink-2">No product to hand? Try one of these.</p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -63,7 +63,7 @@ export default function RecentScans({ items, onOpen }: { items: RecentScan[] | n
           </div>
         </div>
       ) : (
-        <ul className="mt-2 divide-y divide-line">
+        <ul className="mt-4 divide-y divide-line">
           {items.map(({ id, food, scannedAt }) => (
             <li key={id}>
               <button

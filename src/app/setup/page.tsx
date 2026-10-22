@@ -15,8 +15,9 @@ import ProfileFields from '@/components/app/ProfileFields'
 import SetupProgress from '@/components/app/SetupProgress'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
+import Input from '@/components/ui/Input'
 
-const STEP_LABELS = ['Account', 'Food profile', 'Gemini key', 'Review']
+const STEP_LABELS = ['Account', 'Your profile', 'Gemini key', 'Review']
 
 export default function SetupPage() {
   return (
@@ -35,6 +36,8 @@ function Setup() {
   const router = useRouter()
   const next = useSearchParams().get('next') || '/app'
 
+  const [name, setName] = useState('')
+  const [nameError, setNameError] = useState('')
   const [step, setStep] = useState(1)
   const [diets, setDiets] = useState<DietId[]>([])
   const [avoid, setAvoid] = useState<string[]>([])
@@ -49,6 +52,7 @@ function Setup() {
   // Start from whatever is already saved to the account, once.
   useEffect(() => {
     if (!user || seeded) return
+    setName(user.user_metadata?.display_name || user.user_metadata?.full_name || '')
     setDiets(profile.diets)
     setAvoid(profile.avoid)
     setKey(getGeminiApiKey())
@@ -73,13 +77,15 @@ function Setup() {
   }))
 
   const saveAndContinue = async () => {
-    const changed =
+    if (!name.trim()) { setNameError('Enter your name.'); document.getElementById('setup-name')?.focus(); return }
+    setNameError('')
+    const changed = name.trim() !== (user.user_metadata?.display_name || '') ||
       [...diets].sort().join() !== [...profile.diets].sort().join() ||
       [...avoid].sort().join() !== [...profile.avoid].sort().join()
     if (changed) {
       setSaving(true)
       try {
-        await saveProfile({ diets, avoid })
+        await saveProfile({ diets, avoid }, name)
       } catch {
         toast.error('Could not save your profile. Try again.')
         setSaving(false)
@@ -93,7 +99,7 @@ function Setup() {
   const avoidLabels = ALLERGENS.filter((a) => avoid.includes(a.id)).map((a) => a.label)
 
   return (
-    <div className="min-h-dvh px-[var(--gutter)] pb-16">
+    <div className="nourish-app min-h-dvh px-[var(--gutter)] pb-16">
       <header className="mx-auto flex h-16 max-w-5xl items-center">
         <Link href="/" aria-label="Nourish home" className="rounded-md">
           <Wordmark byline />
@@ -114,10 +120,11 @@ function Setup() {
 
           {step === 1 && (
             <section aria-labelledby="setup-h">
-              <h1 id="setup-h" className="t-title mt-2">
-                Your food profile
+              <h1 id="setup-h" className="t-title app-editorial-title mt-2">
+                Your profile
               </h1>
               <div className="card mt-6 p-5 sm:p-6">
+                <div className="mb-8"><Input id="setup-name" label="What should we call you?" autoComplete="given-name" maxLength={80} value={name} onChange={(e) => { setName(e.target.value); setNameError('') }} error={nameError} placeholder="Your name" /></div>
                 <ProfileFields diets={diets} avoid={avoid} onDiets={setDiets} onAvoid={setAvoid} />
               </div>
               <div className="mt-6 flex justify-end">
@@ -131,7 +138,7 @@ function Setup() {
 
           {step === 2 && (
             <section aria-labelledby="setup-h">
-              <h1 id="setup-h" className="t-title mt-2">
+              <h1 id="setup-h" className="t-title app-editorial-title mt-2">
                 Connect Gemini
               </h1>
               <div className="card mt-6 p-5 sm:p-6">
@@ -153,10 +160,11 @@ function Setup() {
 
           {step === 3 && (
             <section aria-labelledby="setup-h">
-              <h1 id="setup-h" className="t-title mt-2">
+              <h1 id="setup-h" className="t-title app-editorial-title mt-2">
                 Review
               </h1>
               <dl className="card mt-6 divide-y divide-line overflow-hidden">
+                <ReviewRow term="Name" value={name.trim()} onEdit={() => setStep(1)} />
                 <ReviewRow
                   term="Diets"
                   value={diets.length ? diets.map(dietLabel).join(', ') : 'None'}

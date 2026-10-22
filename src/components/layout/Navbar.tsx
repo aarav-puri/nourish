@@ -49,7 +49,7 @@ export default function Navbar() {
           : 'bg-paper'
       }`}
     >
-      <nav aria-label="Primary" className="relative flex h-16 items-center justify-between gap-4 px-4 sm:px-8">
+      <nav aria-label="Primary" className="relative flex h-20 max-w-[84rem] mx-auto items-center justify-between gap-4 px-4 sm:px-8">
         <Link href="/" aria-label="Nourish home" className="rounded-md">
           <Wordmark byline />
         </Link>
@@ -79,15 +79,15 @@ export default function Navbar() {
           >
             {open ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
-          <div className={`transition-opacity ${loading ? 'opacity-0' : 'opacity-100'}`}>
-            <Link href={user ? '/app' : '/signin'} className="btn-primary h-10 min-h-10 px-4 sm:px-5">
-              {cta}
+          <div className="flex items-center" aria-busy={loading || undefined}>
+            <Link href={user ? '/app' : '/signin'} className="btn-primary h-11 min-h-11 rounded-full px-5 sm:px-6">
+              {loading ? 'Get started' : cta}
             </Link>
           </div>
         </div>
       </nav>
 
-      <div id="mobile-nav" hidden={!open} className="fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col bg-paper md:hidden">
+      <div id="mobile-nav" hidden={!open} className="fixed inset-x-0 bottom-0 top-20 z-40 flex flex-col bg-paper md:hidden">
         <ul className="flex-1 px-[var(--gutter)] pt-2">
           {NAV.map((l, i) => (
             <li key={l.href} className="animate-rise border-b border-line" style={{ animationDelay: `${i * 40}ms` }}>

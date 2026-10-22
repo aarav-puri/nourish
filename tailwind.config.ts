@@ -1,18 +1,6 @@
 import type { Config } from 'tailwindcss'
 
-/**
- * Nourish design system: soft UI.
- *
- * Everything is molded from one cool grey clay. Depth comes from paired
- * shadows, light from the top left and shade to the bottom right, so
- * elements read as raised from the surface or pressed into it. Colour is
- * kept for meaning: the Nutri-Score ramp (A to E) and the traffic-light
- * nutrient levels. Actions are white, raised from the clay; the rest is
- * grey.
- *
- * Every colour is a CSS variable so the whole system flips for dark mode in
- * globals.css without a single `dark:` variant in the markup.
- */
+/** Warm, readable surfaces with sage actions and semantic food grades. */
 const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
 
 const config: Config = {
@@ -66,13 +54,13 @@ const config: Config = {
       boxShadow: {
         neu: '9px 9px 16px rgb(var(--sh-dark) / var(--sh-dark-a)), -9px -9px 16px rgb(var(--sh-light) / var(--sh-light-a))',
         'neu-hover': '12px 12px 20px rgb(var(--sh-dark) / var(--sh-dark-a-strong)), -12px -12px 20px rgb(var(--sh-light) / var(--sh-light-a-strong))',
-        'neu-sm': '5px 5px 10px rgb(var(--sh-dark) / var(--sh-dark-a)), -5px -5px 10px rgb(var(--sh-light) / var(--sh-light-a))',
-        'neu-inset': 'inset 6px 6px 10px rgb(var(--sh-dark) / var(--sh-dark-a)), inset -6px -6px 10px rgb(var(--sh-light) / var(--sh-light-a))',
+        'neu-sm': '0 4px 14px rgb(var(--shadow) / 0.07), inset 0 1px 0 rgb(var(--sh-light) / 0.35)',
+        'neu-inset': 'inset 0 1px 3px rgb(var(--shadow) / 0.07)',
         'neu-inset-deep': 'inset 10px 10px 20px rgb(var(--sh-dark) / var(--sh-dark-a-strong)), inset -10px -10px 20px rgb(var(--sh-light) / var(--sh-light-a-strong))',
         'neu-inset-sm': 'inset 3px 3px 6px rgb(var(--sh-dark) / var(--sh-dark-a)), inset -3px -3px 6px rgb(var(--sh-light) / var(--sh-light-a))',
         // Pressed into a white button.
         'neu-press-color': 'inset 4px 4px 8px rgb(var(--sh-dark) / 0.55), inset -4px -4px 8px rgb(255 255 255 / 0.8)',
-        card: '5px 5px 10px rgb(var(--sh-dark) / var(--sh-dark-a)), -5px -5px 10px rgb(var(--sh-light) / var(--sh-light-a))',
+        card: '0 4px 14px rgb(var(--shadow) / 0.07), inset 0 1px 0 rgb(var(--sh-light) / 0.35)',
         pop: '9px 9px 16px rgb(var(--sh-dark) / var(--sh-dark-a)), -9px -9px 16px rgb(var(--sh-light) / var(--sh-light-a))',
       },
       transitionTimingFunction: {

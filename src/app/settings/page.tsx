@@ -37,7 +37,7 @@ function Settings() {
 
   return (
     <div>
-      <h1 className="t-title">Settings</h1>
+      <div><h1 className="t-title app-editorial-title"><em>Settings.</em></h1></div>
       <div className="mt-8 space-y-10">
         <AccountSection />
         <FoodProfileSection />
