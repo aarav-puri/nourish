@@ -10,7 +10,7 @@ interface AuthContextValue {
   loading: boolean
   /** The signed-in person's diets and allergens. Empty when signed out. */
   profile: FoodProfile
-  saveProfile: (profile: FoodProfile) => Promise<void>
+  saveProfile: (profile: FoodProfile, displayName?: string) => Promise<void>
   /**
    * Send the visitor to the sign in page, remembering where they were so they
    * land back there afterwards.
@@ -61,8 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const profile = useMemo(() => readProfile(user), [user])
 
-  const saveProfile = useCallback(async (next: FoodProfile) => {
-    const { data, error } = await supabase.auth.updateUser({ data: { food_profile: next } })
+  const saveProfile = useCallback(async (next: FoodProfile, displayName?: string) => {
+    const { data, error } = await supabase.auth.updateUser({ data: { food_profile: next, ...(displayName !== undefined ? { display_name: displayName.trim() } : {}) } })
     if (error) throw error
     if (data.user) setUser(data.user)
   }, [])

@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { ReactNode } from 'react'
 import Wordmark from '@/components/brand/Wordmark'
-import PhoneShot from '@/components/home/PhoneShot'
 
 interface AuthShellProps {
   eyebrow: string
@@ -33,12 +32,11 @@ export default function AuthShell({ eyebrow, title, lede, children, footer }: Au
         </div>
       </main>
 
-      <aside aria-hidden="true" className="relative m-4 hidden overflow-hidden rounded-3xl bg-paper shadow-neu-inset-deep lg:flex lg:items-center lg:justify-center">
+      <aside aria-hidden="true" className="relative m-4 hidden overflow-hidden rounded-3xl border border-accent/10 bg-accent-soft/60 lg:flex lg:items-center lg:justify-center">
         <div className="flex w-full max-w-sm flex-col items-center px-8 py-10">
-          <p className="mb-8 text-center font-display text-3xl font-extrabold leading-[1.1] tracking-tight text-ink">
-            Every scan, checked against <em className="not-italic text-accent-ink">you</em>.
+          <p className="text-center font-display text-3xl font-extrabold leading-[1.1] tracking-tight text-ink">
+            Food choices that feel a little more <em className="not-italic text-accent-ink">you</em>.
           </p>
-          <PhoneShot decorative className="w-[15.5rem] animate-float" />
         </div>
       </aside>
     </div>

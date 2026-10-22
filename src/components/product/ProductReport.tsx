@@ -57,7 +57,7 @@ export default function ProductReport({ food, actions }: { food: Food; actions?:
           <NutritionPanel food={food} />
           <Processing food={food} />
           <Ingredients food={food} />
-          <Footnote food={food} />
+          {food.manual && <Footnote />}
         </div>
       </div>
     </article>
@@ -69,7 +69,7 @@ export default function ProductReport({ food, actions }: { food: Food; actions?:
 function ProductHeader({ food, actions }: { food: Food; actions?: React.ReactNode }) {
   const [imgOk, setImgOk] = useState(true)
   return (
-    <header className="flex items-start gap-4 sm:gap-5">
+    <header className="card flex items-start gap-4 p-5 sm:gap-5 sm:p-6">
       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-neu-sm sm:h-24 sm:w-24">
         {food.image && imgOk ? (
           // Product photos come from many hosts at unknown sizes, so a plain
@@ -109,7 +109,7 @@ function ProductHeader({ food, actions }: { food: Food; actions?: React.ReactNod
 function Verdict({ food, points }: { food: Food; points: ReturnType<typeof keyPoints> }) {
   const info = food.grade ? GRADE_INFO[food.grade] : null
   return (
-    <section aria-labelledby="verdict-h" className="card overflow-hidden">
+    <section aria-labelledby="verdict-h" className="card overflow-hidden bg-accent-soft/30">
       <div className="p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 id="verdict-h" className="t-eyebrow">
@@ -468,15 +468,8 @@ function Ingredients({ food }: { food: Food }) {
   )
 }
 
-function Footnote({ food }: { food: Food }) {
-  return (
-    <p className="px-1 text-xs leading-relaxed text-ink-3">
-      {food.manual
-        ? 'You entered these details by hand.'
-        : 'Product data from Open Food Facts and Go-UPC, maintained by volunteers and manufacturers.'}{' '}
-      Always check the pack if you have an allergy. Not medical advice.
-    </p>
-  )
+function Footnote() {
+  return <p className="px-1 text-xs leading-relaxed text-ink-3">You entered these details by hand.</p>
 }
 
 /* ---------- AI ------------------------------------------------------- */

@@ -12,7 +12,6 @@ import {
 import Navbar from '@/components/layout/Navbar'
 import Hero from '@/components/home/Hero'
 import Footer from '@/components/layout/Footer'
-import PhoneShot from '@/components/home/PhoneShot'
 
 const STEPS = [
   {
@@ -102,7 +101,7 @@ export default function HomePage() {
 
         {/* ============ How it works ============ */}
         <section id="how" aria-labelledby="how-h" className="scroll-mt-20 overflow-x-clip px-[var(--gutter)] py-20 lg:py-28">
-          <div className="mx-auto grid max-w-6xl items-start gap-14 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
+          <div className="mx-auto max-w-6xl">
             <div>
               <SectionLabel n="01" name="How it works" />
               <h2 id="how-h" className="t-title max-w-xl">
@@ -110,7 +109,7 @@ export default function HomePage() {
               </h2>
               <ol className="mt-12 space-y-10">
                 {STEPS.map((s) => (
-                  <li key={s.n} className="grid gap-x-6 border-t-[3px] border-ink pt-5 sm:grid-cols-[4rem_1fr]">
+                  <li key={s.n} className="grid gap-x-6 border-t border-line pt-5 sm:grid-cols-[4rem_1fr]">
                     <span className="font-mono text-sm text-accent-ink">{s.n}</span>
                     <div>
                       <h3 className="text-2xl font-semibold tracking-tight">{s.title}</h3>
@@ -120,17 +119,6 @@ export default function HomePage() {
                 ))}
               </ol>
             </div>
-            <figure className="relative mx-auto w-full max-w-[19rem] py-10 lg:sticky lg:top-12">
-              {/* Concentric rings, raised then pressed, molded from the page. */}
-              <div aria-hidden="true" className="absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2">
-                <div className="flex h-[30rem] w-[30rem] items-center justify-center rounded-full shadow-neu">
-                  <div className="flex h-[22rem] w-[22rem] items-center justify-center rounded-full shadow-neu-inset-deep">
-                    <div className="h-[14rem] w-[14rem] rounded-full shadow-neu" />
-                  </div>
-                </div>
-              </div>
-              <PhoneShot className="animate-float" />
-            </figure>
           </div>
         </section>
 
@@ -152,7 +140,7 @@ export default function HomePage() {
                   key={f.title}
                   className="card p-7 transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-neu-hover"
                 >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl text-accent-ink shadow-neu-inset-deep">
+                  <span className="nourish-feature-icon">
                     <f.icon className="h-6 w-6" aria-hidden="true" />
                   </span>
                   <h3 className="mt-5 font-display text-lg font-bold tracking-tight">{f.title}</h3>
@@ -223,7 +211,7 @@ export default function HomePage() {
 
         {/* ============ CTA ============ */}
         <section className="px-[var(--gutter)] pb-20 lg:pb-28">
-          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 card p-8 sm:p-14 lg:flex-row lg:items-center">
+          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 rounded-3xl border border-accent/10 bg-accent-soft/70 p-8 sm:p-14 lg:flex-row lg:items-center">
             <h2 className="t-title">Try it on the next thing you eat.</h2>
             <Link href="/app" className="btn-primary group h-12 shrink-0 px-6 text-[0.9375rem]">
               Scan your first product

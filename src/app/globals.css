@@ -2,86 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================
-   NOURISH: soft UI
-   One cool grey clay. Depth comes from paired shadows, light from
-   the top left and shade to the bottom right; nothing has a border.
-   Colour only where it carries meaning: the A to E grade ramp and
-   the nutrient traffic lights. Actions are white, raised from the clay.
-   Tokens are RGB channels so Tailwind opacity modifiers work.
-   ============================================================ */
-
+/* Nourish: warm paper, clear white surfaces, and a grounded sage accent.
+   Shared RGB tokens keep scanner, reports, account screens and dark mode aligned. */
 :root {
   color-scheme: light;
-
-  --paper: 224 229 236; /* #E0E5EC, the clay everything is molded from */
-  --surface: 224 229 236;
-  --surface-2: 214 220 229;
-  --surface-3: 203 211 222;
-  --ink: 61 72 82; /* #3D4852, 7.5:1 on clay */
-  --ink-2: 75 85 99; /* 6.4:1 */
-  --ink-3: 100 108 122; /* 4.6:1, meta text only */
-  --line: 203 211 222;
-  --line-strong: 61 72 82;
-  --accent: 255 255 255; /* actions: white, raised from the clay */
-  --on-accent: 61 72 82;
-  --accent-ink: 61 72 82; /* emphasis as text: the ink itself */
-  --accent-soft: 255 255 255;
+  --paper: 247 248 242;
+  --surface: 255 255 252;
+  --surface-2: 235 240 229;
+  --surface-3: 219 229 212;
+  --ink: 35 57 45;
+  --ink-2: 78 96 83;
+  --ink-3: 101 116 105;
+  --line: 220 227 215;
+  --line-strong: 64 88 70;
+  --accent: 45 95 70;
+  --on-accent: 255 255 255;
+  --accent-ink: 40 87 62;
+  --accent-soft: 228 238 220;
   --on-ink: 255 255 255;
-  --shadow: 163 177 198;
-
-  --sh-dark: 163 177 198;
-  --sh-dark-a: 0.6;
-  --sh-dark-a-strong: 0.7;
+  --shadow: 112 135 115;
+  --sh-dark: 117 138 115;
+  --sh-dark-a: 0.11;
+  --sh-dark-a-strong: 0.16;
   --sh-light: 255 255 255;
-  --sh-light-a: 0.5;
-  --sh-light-a-strong: 0.6;
-
-  /* The Nutri-Score ramp, as printed on packs. */
+  --sh-light-a: 0.65;
+  --sh-light-a-strong: 0.8;
   --grade-a: 3 129 65;
   --grade-b: 133 187 47;
   --grade-c: 254 203 2;
   --grade-d: 238 129 0;
   --grade-e: 230 62 17;
-
-  /* Traffic-light nutrient levels. */
   --level-low: 25 128 70;
-  --level-moderate: 176 120 0;
-  --level-high: 205 55 14;
-
+  --level-moderate: 147 97 0;
+  --level-high: 185 53 21;
   --gutter: clamp(1rem, 4vw, 2.5rem);
 }
-
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-
-    --paper: 38 42 49; /* #262A31 */
-    --surface: 38 42 49;
-    --surface-2: 46 51 59;
-    --surface-3: 56 62 71;
-    --ink: 226 231 238;
-    --ink-2: 184 192 204;
-    --ink-3: 150 159 173;
-    --line: 52 57 66;
-    --line-strong: 226 231 238;
-    --accent: 236 239 243;
-    --on-accent: 38 42 49;
-    --accent-ink: 255 255 255;
-    --accent-soft: 56 62 71;
-    --on-ink: 255 255 255;
+    --paper: 16 27 22;
+    --surface: 25 40 32;
+    --surface-2: 34 51 41;
+    --surface-3: 48 67 54;
+    --ink: 237 243 232;
+    --ink-2: 188 204 187;
+    --ink-3: 156 177 157;
+    --line: 53 73 58;
+    --line-strong: 155 180 155;
+    --accent: 177 207 157;
+    --on-accent: 20 44 28;
+    --accent-ink: 187 219 166;
+    --accent-soft: 40 61 42;
+    --on-ink: 16 27 22;
     --shadow: 0 0 0;
-
-    --sh-dark: 14 16 20;
-    --sh-dark-a: 0.65;
-    --sh-dark-a-strong: 0.75;
-    --sh-light: 255 255 255;
-    --sh-light-a: 0.05;
-    --sh-light-a-strong: 0.07;
-
-    --level-low: 72 187 120;
-    --level-moderate: 236 180 40;
-    --level-high: 246 98 58;
+    --sh-dark: 0 0 0;
+    --sh-dark-a: 0.2;
+    --sh-dark-a-strong: 0.3;
+    --sh-light: 124 159 124;
+    --sh-light-a: 0.035;
+    --sh-light-a-strong: 0.05;
+    --level-low: 117 207 143;
+    --level-moderate: 235 196 96;
+    --level-high: 255 139 113;
   }
 }
 
@@ -133,14 +115,14 @@ body {
 /* ---------- Type ----------------------------------------------------- */
 @layer components {
   .t-display {
-    @apply font-display font-extrabold text-ink;
+    @apply font-display font-bold text-ink;
     font-size: clamp(2.4rem, 6vw, 4.5rem);
-    line-height: 1.02;
+    line-height: 1.08;
     letter-spacing: -0.035em;
   }
 
   .t-title {
-    @apply font-display font-extrabold text-ink;
+    @apply font-display font-bold text-ink;
     font-size: clamp(1.75rem, 3.4vw, 2.6rem);
     line-height: 1.1;
     letter-spacing: -0.03em;
@@ -173,7 +155,7 @@ body {
   }
 
   .btn-secondary {
-    @apply btn bg-paper text-ink shadow-neu-sm hover:-translate-y-px hover:shadow-neu-hover
+    @apply btn border border-line bg-surface text-ink shadow-neu-sm hover:-translate-y-px hover:shadow-neu-hover
            active:translate-y-[0.5px] active:shadow-neu-inset-sm;
   }
 
@@ -193,7 +175,7 @@ body {
 
   /* Wells: inputs are pressed into the surface, deeper when focused. */
   .field {
-    @apply min-h-12 w-full rounded-xl bg-paper px-4 py-2.5 text-[0.9375rem] text-ink shadow-neu-inset
+    @apply min-h-12 w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-[0.9375rem] text-ink shadow-neu-inset
            transition-[box-shadow] duration-300 ease-out placeholder:text-ink-3
            focus:shadow-neu-inset-deep focus:outline-none focus:ring-2 focus:ring-ink/40 focus:ring-offset-2 focus:ring-offset-paper
            aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-level-high;
@@ -205,18 +187,18 @@ body {
 
   /* ---------- Surfaces ------------------------------------------------ */
   .card {
-    @apply rounded-3xl bg-paper shadow-neu;
+    @apply rounded-3xl border border-line/70 bg-surface shadow-card;
   }
 
   /* A raised tile you can press. */
   .tile {
-    @apply rounded-2xl bg-paper shadow-neu-sm transition-[box-shadow,transform] duration-300 ease-out
+    @apply rounded-2xl border border-line/70 bg-surface shadow-neu-sm transition-[box-shadow,transform] duration-300 ease-out
            hover:-translate-y-0.5 hover:shadow-neu-hover active:translate-y-[0.5px] active:shadow-neu-inset-sm;
   }
 
   /* A shallow well, pressed into the surface. */
   .well {
-    @apply rounded-2xl bg-paper shadow-neu-inset;
+    @apply rounded-2xl border border-line/60 bg-surface-2/50 shadow-neu-inset-sm;
   }
 
   /* The heavy rule from a nutrition facts panel. */
@@ -225,7 +207,7 @@ body {
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full bg-paper px-3 py-1 text-xs font-medium text-ink-2 shadow-neu-inset-sm;
+    @apply inline-flex items-center gap-1.5 rounded-full bg-accent-soft/60 px-3 py-1 text-xs font-medium text-ink-2 shadow-neu-inset-sm;
   }
 
   .kbd {
@@ -365,6 +347,133 @@ summary::-webkit-details-marker {
   }
 }
 
+/* ---------- Olive, the assistant ---------- */
+
+.olive-avatar svg * {
+  transform-box: view-box;
+}
+.olive-sway {
+  transform-origin: 24px 4.5px;
+}
+.olive-leaf {
+  transform-origin: 25px 8.5px;
+}
+.olive-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.olive-idle .olive-sway {
+  animation: olive-sway 4.8s ease-in-out infinite;
+}
+.olive-idle .olive-leaf {
+  animation: olive-leaf 4.8s ease-in-out infinite;
+}
+.olive-idle .olive-eye,
+.olive-thinking .olive-eye {
+  animation: olive-blink 5.2s ease-in-out infinite;
+}
+.olive-thinking .olive-sway {
+  animation: olive-sway 1.6s ease-in-out infinite;
+}
+.olive-thinking .olive-body {
+  animation: olive-bob 0.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.olive-thinking .olive-eyes {
+  animation: olive-glance 2.4s ease-in-out infinite;
+}
+
+@keyframes olive-sway {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes olive-leaf {
+  0%,
+  100% {
+    transform: rotate(4deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+}
+
+@keyframes olive-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes olive-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+
+@keyframes olive-glance {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  30% {
+    transform: translate(-1.5px, -1px);
+  }
+  65% {
+    transform: translate(1.5px, -1px);
+  }
+}
+
+/* Chat entrance, after Beautiful UI: rise, fade and come into focus. */
+.chat-in {
+  animation: chat-in 400ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  transform-origin: top left;
+}
+
+@keyframes chat-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+/* The cursor at the end of a reply as it streams in. */
+.stream-caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.85em;
+  margin-left: 2px;
+  border-radius: 9999px;
+  background: rgb(var(--ink));
+  vertical-align: -0.1em;
+  animation: caret-in 150ms ease-out both;
+}
+
+@keyframes caret-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Type pressed lightly into the clay: a highlight under the bottom edge. */
 .emboss {
   text-shadow: 1px 1px 1px rgb(255 255 255 / 0.85);
@@ -375,3 +484,73 @@ summary::-webkit-details-marker {
     text-shadow: 1px 1px 1px rgb(0 0 0 / 0.6);
   }
 }
+
+/* Product-wide surface and hierarchy refinements. */
+.nourish-hero { position: relative; padding: 2.5rem var(--gutter) 3rem; }
+.nourish-hero-inner { max-width: 76rem; margin-inline: auto; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+.nourish-hero-copy { padding-block: 1.5rem; }
+.nourish-hero h1 { font-family: var(--font-display), sans-serif; font-size: clamp(2.8rem, 5.1vw, 5rem); line-height: 1.07; font-weight: 700; letter-spacing: -.055em; max-width: 10ch; margin: 1.5rem 0; }
+.nourish-hero h1 span { color: rgb(var(--accent-ink)); }
+.nourish-hero-visual { position: relative; min-height: 36rem; border-radius: 2.5rem; isolation: isolate; }
+.nourish-hero-photo { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+.nourish-hero-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgb(11 31 17 / .36)); }
+.nourish-hero-photo img { object-fit: cover; object-position: 48% center; filter: saturate(.8) brightness(.92); }
+.nourish-hero-sticker { position: absolute; left: -2rem; right: 2rem; bottom: 2rem; padding: 1.4rem; background: rgb(var(--surface) / .96); backdrop-filter: blur(16px); border: 1px solid rgb(var(--line) / .65); border-radius: 1.5rem; box-shadow: 0 15px 55px rgb(10 35 15 / .16); }
+.scan-art { position: relative; display: flex; align-items: center; justify-content: center; height: 150px; width: 190px; margin: 1.5rem auto 1rem; border: 1px solid rgb(var(--accent) / .14); border-radius: 22px; background: rgb(var(--surface) / .45); }
+.scan-art::before,.scan-art::after { content: ''; position: absolute; width: 25px; height: 25px; border-color: rgb(var(--accent)); border-style: solid; }
+.scan-art::before { top: 14px; left: 14px; border-width: 2px 0 0 2px; border-radius: 8px 0 0; }
+.scan-art::after { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; border-radius: 0 0 8px; }
+.scan-art-bars { width: 100px; height: 64px; background: repeating-linear-gradient(90deg,rgb(var(--ink) / .72) 0 2px,transparent 2px 5px,rgb(var(--ink) / .72) 5px 9px,transparent 9px 12px,rgb(var(--ink) / .72) 12px 13px,transparent 13px 17px); }
+.scan-art-line { position: absolute; height: 2px; width: 150px; background: rgb(var(--accent)); box-shadow: 0 0 15px rgb(var(--accent) / .25); }
+.scan-primary { border-radius: 2rem; border: 1px solid rgb(var(--accent) / .12); background: linear-gradient(145deg,rgb(var(--accent-soft)),rgb(var(--surface-2) / .65)); padding: 1.6rem; }
+.scanner-method { border: 1px solid rgb(var(--line)); border-radius: 1.5rem; background: rgb(var(--surface)); padding: 1.3rem; }
+.nourish-feature-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; background: rgb(var(--accent-soft)); color: rgb(var(--accent-ink)); }
+@media(max-width: 900px) { .nourish-hero-inner { gap: 2.5rem; } .nourish-hero-visual { min-height: 31rem; } .nourish-hero-sticker { left: -1rem; right: 1rem; bottom: 1rem; } }
+@media(max-width: 640px) { .nourish-hero { padding-top: 1.5rem; } .nourish-hero-inner { grid-template-columns: 1fr; gap: 1.5rem; } .nourish-hero-copy { padding-block: .5rem; } .nourish-hero h1 { font-size: clamp(2.8rem, 12vw, 4rem); max-width: 12ch; } .nourish-hero-visual { min-height: 25rem; border-radius: 1.75rem; margin-left: .5rem; } .nourish-hero-sticker { padding: 1rem; } .scan-primary { padding: 1.25rem; } }
+
+/* Supplied liquid-sculpture composition, using Nourish's shared palette. */
+.nourish-sculpture.sh-root { background: rgb(var(--paper)); }
+.nourish-sculpture .sh-btn { background: rgb(var(--accent)); color: rgb(var(--on-accent)); min-height: 48px; }
+.nourish-sculpture .sh-content { padding-inline: var(--gutter); }
+.nourish-sculpture .sh-h1 { font-size: clamp(40px, 6.2cqw, 100px); }
+.nourish-sculpture .sh-hint { opacity: .75; }
+.nourish-sculpture .sh-txt { min-height: 44px; }
+@media (max-width: 639px) {
+  .nourish-sculpture.sh-root { height: max(760px, calc(100svh - 80px)); }
+  .nourish-sculpture .sh-h1 { font-size: clamp(36px, 10.5cqw, 64px); }
+  .nourish-sculpture .sh-content { gap: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nourish-sculpture .sh-hint { display: none !important; }
+}
+
+/* Editorial app surfaces echo the sculpture hero without adding motion to tasks. */
+.nourish-app .app-editorial-title { font-size: clamp(2.5rem, 5.4vw, 4.5rem); line-height: 1.03; font-weight: 500; letter-spacing: -.05em; }
+.nourish-app .app-editorial-title em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color: rgb(var(--accent-ink)); }
+.nourish-app .card { border-radius: 1.5rem; box-shadow: 0 8px 32px rgb(var(--shadow) / .035); }
+.nourish-app .scan-primary { padding: 2rem; border-radius: 1.75rem; background: radial-gradient(ellipse at 50% 30%, rgb(var(--surface)) 0%, rgb(var(--accent-soft)) 80%); }
+.nourish-app .scan-art { border-radius: 50%; width: 200px; height: 200px; background: rgb(var(--surface) / .5); box-shadow: 0 0 0 14px rgb(var(--surface) / .2), 0 0 0 28px rgb(var(--surface) / .12); margin-block: 2rem; transform: rotate(-5deg); }
+.nourish-app .scan-art-bars { transform: rotate(5deg); }
+.nourish-app .scan-art::before { top: 40px; left: 35px; }
+.nourish-app .scan-art::after { bottom: 40px; right: 35px; }
+.nourish-app .btn-primary, .nourish-app .btn-secondary { border-radius: 999px; }
+.nourish-app #recent-h { font-family: Georgia, 'Times New Roman', serif; font-size: 1.6rem; font-style: italic; font-weight: 400; }
+@media (max-width: 639px) {
+  .nourish-app .scan-primary { padding: 1.25rem; }
+  .nourish-app .scan-art { width: 130px; height: 130px; margin-block: 1.5rem; }
+  .nourish-app .scan-art-bars { width: 78px; height: 52px; }
+  .nourish-app .scan-art-line { width: 110px; }
+  .nourish-app .scan-art::before { top: 24px; left: 20px; }
+  .nourish-app .scan-art::after { bottom: 24px; right: 20px; }
+  .nourish-app .app-editorial-title { font-size: 2.6rem; }
+}
+.nourish-sculpture-placeholder { height: max(740px, calc(100svh - 80px)); background: rgb(var(--paper)); }
+.scanner-workspace { border: 1px solid rgb(var(--line)); border-radius: 2rem; padding: 12px; background: rgb(var(--surface)); box-shadow: 0 20px 70px rgb(var(--shadow) / .08); }
+.scan-switch { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; padding: 5px; background: rgb(var(--surface-2)); border-radius: 999px; }
+.scan-switch button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 999px; font-size: 13px; font-weight: 500; color: rgb(var(--ink-2)); transition: background .2s, color .2s, box-shadow .2s; }
+.scan-switch button[aria-selected="true"] { background: rgb(var(--surface)); color: rgb(var(--accent-ink)); box-shadow: 0 2px 8px rgb(var(--shadow) / .12); }
+.scan-switch button:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
+.scan-panel { min-height: 350px; padding: 30px; text-align: center; }
+.scan-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; width: 100%; min-height: 280px; border: 1px dashed rgb(var(--line-strong) / .4); border-radius: 1.5rem; background: rgb(var(--paper)); transition: background .2s; }
+.scan-upload:hover, .scan-upload.is-dragging { background: rgb(var(--accent-soft)); }
+@media(max-width:639px) { .scan-switch button { flex-direction: column; gap: 5px; font-size: 11px; min-height: 58px; } .scan-panel { padding: 24px 12px; min-height: 320px; } .nourish-sculpture-placeholder { height: max(760px, calc(100svh - 80px)); } }
