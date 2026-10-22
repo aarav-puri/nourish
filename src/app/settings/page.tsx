@@ -166,7 +166,6 @@ function AccountSection() {
   const { user } = useAuth()
   const fileRef = useRef<HTMLInputElement>(null)
   const [avatarBusy, setAvatarBusy] = useState(false)
-  const [resetBusy, setResetBusy] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [confirmText, setConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
@@ -196,17 +195,6 @@ function AccountSection() {
       toast.error(err instanceof Error ? err.message : 'Could not remove the photo.')
     }
     setAvatarBusy(false)
-  }
-
-  const sendReset = async () => {
-    setResetBusy(true)
-    try {
-      await auth.resetPassword(user.email)
-      toast.success('Check your inbox', { description: `We sent a link to ${user.email} to set a new password.` })
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not send the email.')
-    }
-    setResetBusy(false)
   }
 
   const deleteAccount = async () => {
@@ -247,13 +235,6 @@ function AccountSection() {
               </Button>
             )}
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-4 p-5 sm:px-6">
-          <p className="text-sm font-medium">Password</p>
-          <Button variant="secondary" size="sm" loading={resetBusy} onClick={sendReset}>
-            Send reset link
-          </Button>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 p-5 sm:px-6">

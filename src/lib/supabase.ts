@@ -35,26 +35,6 @@ export const auth = {
     return user
   },
 
-  async resetPassword(email: string) {
-    const redirectUrl = typeof window !== 'undefined' 
-      ? `${window.location.origin}/auth/reset-password`
-      : process.env.NEXT_PUBLIC_APP_URL + '/auth/reset-password'
-    
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
-    })
-    if (error) throw error
-    return data
-  },
-
-  async updatePassword(newPassword: string) {
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
-    })
-    if (error) throw error
-    return data
-  },
-
   async uploadAvatar(file: File) {
     const user = await auth.getCurrentUser()
     if (!user) throw new Error('User not authenticated')
