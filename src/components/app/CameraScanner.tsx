@@ -278,7 +278,7 @@ export default function CameraScanner({ onDetected, onClose, onTypeInstead }: Pr
       <div className="relative z-20 flex flex-col items-center gap-4 px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         {phase === 'scanning' && (
           <p className="text-center text-sm text-white/80" aria-live="polite">
-            Line the barcode up inside the frame. It reads on its own.
+            Line the barcode up inside the frame.
           </p>
         )}
         <button
