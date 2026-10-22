@@ -516,15 +516,19 @@ summary::-webkit-details-marker {
 }
 .scanner-workspace { border: 1px solid rgb(var(--line)); border-radius: 2rem; padding: 12px; background: rgb(var(--surface)); box-shadow: 0 20px 70px rgb(var(--shadow) / .08); }
 .scan-switch { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; padding: 5px; background: rgb(var(--surface-2)); border-radius: 999px; }
-.scan-switch button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 999px; font-size: 13px; font-weight: 500; color: rgb(var(--ink-2)); transition: background .2s, color .2s, box-shadow .2s; }
-.scan-switch button[aria-selected="true"] { background: rgb(var(--surface)); color: rgb(var(--accent-ink)); box-shadow: 0 2px 8px rgb(var(--shadow) / .12); }
+.scan-switch button { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 999px; font-size: 13px; font-weight: 500; color: rgb(var(--ink-2)); transition: background .2s, color .2s, box-shadow .2s; }
+.scan-switch button[aria-selected="true"] { color: rgb(var(--accent-ink)); }
+/* The selected tab's raised pill; it slides between tabs. */
+.scan-switch-pill { position: absolute; inset: 0; border-radius: inherit; background: rgb(var(--surface)); box-shadow: 0 2px 8px rgb(var(--shadow) / .12); }
 .scan-switch button:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
-.scan-panel { min-height: 350px; padding: 30px; text-align: center; }
-/* A lone action sits in the middle of the panel, not at its top. */
-.scan-panel-center:not([hidden]) { display: flex; flex-direction: column; justify-content: center; }
+.scan-panel { padding: 28px 24px 20px; text-align: center; }
+/* The camera tab is one large target; the card's own padding frames it. */
+.scan-panel.scan-panel-flush { padding: 12px 0 0; }
+/* Viewfinder: a soft sage wash, brightest where the lens sits. */
+.camera-launcher { background: radial-gradient(60% 70% at 50% 45%, rgb(var(--accent-soft)) 0%, rgb(var(--surface-2) / .55) 70%, rgb(var(--surface-2) / .35) 100%); box-shadow: inset 0 0 0 1px rgb(var(--line) / .7); }
 .scan-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; width: 100%; min-height: 280px; border: 1px dashed rgb(var(--line-strong) / .4); border-radius: 1.5rem; background: rgb(var(--paper)); transition: background .2s; }
 .scan-upload:hover, .scan-upload.is-dragging { background: rgb(var(--accent-soft)); }
-@media(max-width:639px) { .scan-switch button { flex-direction: column; gap: 5px; font-size: 11px; min-height: 58px; } .scan-panel { padding: 24px 12px; min-height: 320px; } }
+@media(max-width:639px) { .scan-switch button { flex-direction: column; gap: 5px; font-size: 11px; min-height: 58px; } .scan-panel { padding: 22px 8px 12px; } .scan-panel.scan-panel-flush { padding: 10px 0 0; } }
 
 /* ---------- Landing hero: from blur to clarity ---------- */
 

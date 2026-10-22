@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Camera, ImageUp, Leaf, Search, Keyboard } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
+import { Camera, ImageUp, Leaf, Search, Keyboard } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-context'
 import { decodeImage, isValidGtin } from '@/lib/barcode'
 import { isProfileEmpty } from '@/lib/profile'
+import CameraLauncher from '@/components/app/CameraLauncher'
 import CameraScanner from '@/components/app/CameraScanner'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
@@ -21,6 +23,18 @@ export default function ScannerHome({ onOpen }: { onOpen: (code: string) => void
   const [dragging, setDragging] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const numberRef = useRef<HTMLInputElement>(null)
+  const reduce = useReducedMotion()
+  // The tab panels differ in height; measure the open one so the card eases between them.
+  const panelsRef = useRef<HTMLDivElement>(null)
+  const [panelsHeight, setPanelsHeight] = useState<number>()
+
+  useEffect(() => {
+    const el = panelsRef.current
+    if (!el) return
+    const observer = new ResizeObserver(() => setPanelsHeight(el.offsetHeight))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const readPhoto = useCallback(
     async (file: File) => {
@@ -109,30 +123,37 @@ export default function ScannerHome({ onOpen }: { onOpen: (code: string) => void
                 e.preventDefault(); setMethod(items[target].id)
                 document.getElementById(`tab-${items[target].id}`)?.focus()
               }}>
-              <item.icon className="h-4 w-4" aria-hidden="true" /><span>{item.label}</span>
+              {method === item.id && (
+                <motion.span layoutId="scan-tab" aria-hidden="true" className="scan-switch-pill" transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 38 }} />
+              )}
+              <item.icon className="relative h-4 w-4" aria-hidden="true" /><span className="relative">{item.label}</span>
             </button>
           ))}
         </div>
-        <div id="panel-camera" role="tabpanel" aria-labelledby="tab-camera" hidden={method !== 'camera'} tabIndex={0} className="scan-panel scan-panel-center">
-          <button type="button" onClick={() => setCamera(true)} className="btn-primary min-h-12 w-full gap-3"><Camera className="h-4 w-4" aria-hidden="true" />Open camera<ArrowRight className="ml-auto h-4 w-4" aria-hidden="true" /></button>
-        </div>
-        <div id="panel-upload" role="tabpanel" aria-labelledby="tab-upload" hidden={method !== 'upload'} tabIndex={0} className="scan-panel">
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={reading} className={`scan-upload ${dragging ? 'is-dragging' : ''}`}>
-            {reading ? <Spinner className="h-8 w-8" /> : <ImageUp className="h-9 w-9 text-accent-ink" aria-hidden="true" />}
-            <span className="font-medium">{reading ? 'Reading barcode…' : dragging ? 'Drop your photo here' : 'Choose a barcode photo'}</span>
-            <span className="text-sm text-ink-2">Or drag and drop, or paste an image</span>
-          </button>
-          <input ref={fileRef} type="file" accept="image/*" className="sr-only" tabIndex={-1} aria-label="Barcode photo" onChange={(e) => { const f=e.target.files?.[0]; e.target.value=''; if(f) readPhoto(f) }} />
-          <p role="status" className="sr-only">{reading ? 'Reading barcode from your photo' : ''}</p>
-        </div>
-        <div id="panel-manual" role="tabpanel" aria-labelledby="tab-manual" hidden={method !== 'manual'} tabIndex={0} className="scan-panel">
-          <div className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-accent-soft text-accent-ink"><Keyboard className="h-7 w-7" aria-hidden="true" /></div>
-          <form onSubmit={submitNumber} className="text-left" role="search" aria-label="Look up a barcode number">
-            <label htmlFor="barcode-number" className="mb-2 block text-sm font-medium">Barcode number</label>
-            <input ref={numberRef} id="barcode-number" inputMode="numeric" autoComplete="off" enterKeyHint="search" placeholder="e.g. 3017620422003" value={number} onChange={(e) => setNumber(e.target.value.replace(/[^\d\s]/g, ''))} className="field h-14 font-mono text-base tracking-wider" />
-            <Button type="submit" className="mt-5 h-12 w-full" disabled={!number.trim()}><Search className="h-4 w-4" aria-hidden="true" />Look up product</Button>
-          </form>
-        </div>
+        <motion.div animate={{ height: panelsHeight ?? 'auto' }} transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36 }} className="overflow-hidden">
+          <div ref={panelsRef}>
+          <div id="panel-camera" role="tabpanel" aria-labelledby="tab-camera" hidden={method !== 'camera'} tabIndex={-1} className="scan-panel scan-panel-flush">
+            <CameraLauncher onOpen={() => setCamera(true)} />
+          </div>
+          <div id="panel-upload" role="tabpanel" aria-labelledby="tab-upload" hidden={method !== 'upload'} tabIndex={0} className="scan-panel">
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={reading} className={`scan-upload ${dragging ? 'is-dragging' : ''}`}>
+              {reading ? <Spinner className="h-8 w-8" /> : <ImageUp className="h-9 w-9 text-accent-ink" aria-hidden="true" />}
+              <span className="font-medium">{reading ? 'Reading barcode…' : dragging ? 'Drop your photo here' : 'Choose a barcode photo'}</span>
+              <span className="text-sm text-ink-2">Or drag and drop, or paste an image</span>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="sr-only" tabIndex={-1} aria-label="Barcode photo" onChange={(e) => { const f=e.target.files?.[0]; e.target.value=''; if(f) readPhoto(f) }} />
+            <p role="status" className="sr-only">{reading ? 'Reading barcode from your photo' : ''}</p>
+          </div>
+          <div id="panel-manual" role="tabpanel" aria-labelledby="tab-manual" hidden={method !== 'manual'} tabIndex={0} className="scan-panel">
+            <div className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-accent-soft text-accent-ink"><Keyboard className="h-7 w-7" aria-hidden="true" /></div>
+            <form onSubmit={submitNumber} className="text-left" role="search" aria-label="Look up a barcode number">
+              <label htmlFor="barcode-number" className="mb-2 block text-sm font-medium">Barcode number</label>
+              <input ref={numberRef} id="barcode-number" inputMode="numeric" autoComplete="off" enterKeyHint="search" placeholder="e.g. 3017620422003" value={number} onChange={(e) => setNumber(e.target.value.replace(/[^\d\s]/g, ''))} className="field h-14 font-mono text-base tracking-wider" />
+              <Button type="submit" className="mt-5 h-12 w-full" disabled={!number.trim()}><Search className="h-4 w-4" aria-hidden="true" />Look up product</Button>
+            </form>
+          </div>
+          </div>
+        </motion.div>
       </section>
           {isProfileEmpty(profile) && (
             <button
