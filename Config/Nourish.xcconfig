@@ -1,0 +1,11 @@
+// Build settings shared by every configuration.
+//
+// Supabase credentials live in Secrets.xcconfig, which is git-ignored.
+// Copy Secrets.example.xcconfig to Secrets.xcconfig and fill it in.
+// xcconfig treats "//" as a comment, so the URL is split into scheme and
+// host: write only the host here, Info.plist adds "https://".
+
+SUPABASE_HOST = your-project.supabase.co
+SUPABASE_ANON_KEY =
+
+#include? "Secrets.xcconfig"
