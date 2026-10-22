@@ -508,23 +508,7 @@ summary::-webkit-details-marker {
 @media(max-width: 900px) { .nourish-hero-inner { gap: 2.5rem; } .nourish-hero-visual { min-height: 31rem; } .nourish-hero-sticker { left: -1rem; right: 1rem; bottom: 1rem; } }
 @media(max-width: 640px) { .nourish-hero { padding-top: 1.5rem; } .nourish-hero-inner { grid-template-columns: 1fr; gap: 1.5rem; } .nourish-hero-copy { padding-block: .5rem; } .nourish-hero h1 { font-size: clamp(2.8rem, 12vw, 4rem); max-width: 12ch; } .nourish-hero-visual { min-height: 25rem; border-radius: 1.75rem; margin-left: .5rem; } .nourish-hero-sticker { padding: 1rem; } .scan-primary { padding: 1.25rem; } }
 
-/* Supplied liquid-sculpture composition, using Nourish's shared palette. */
-.nourish-sculpture.sh-root { background: rgb(var(--paper)); }
-.nourish-sculpture .sh-btn { background: rgb(var(--accent)); color: rgb(var(--on-accent)); min-height: 48px; }
-.nourish-sculpture .sh-content { padding-inline: var(--gutter); }
-.nourish-sculpture .sh-h1 { font-size: clamp(40px, 6.2cqw, 100px); }
-.nourish-sculpture .sh-hint { opacity: .75; }
-.nourish-sculpture .sh-txt { min-height: 44px; }
-@media (max-width: 639px) {
-  .nourish-sculpture.sh-root { height: max(760px, calc(100svh - 80px)); }
-  .nourish-sculpture .sh-h1 { font-size: clamp(36px, 10.5cqw, 64px); }
-  .nourish-sculpture .sh-content { gap: 24px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .nourish-sculpture .sh-hint { display: none !important; }
-}
-
-/* Editorial app surfaces echo the sculpture hero without adding motion to tasks. */
+/* Editorial app surfaces echo the landing hero without adding motion to tasks. */
 .nourish-app .app-editorial-title { font-size: clamp(2.5rem, 5.4vw, 4.5rem); line-height: 1.03; font-weight: 500; letter-spacing: -.05em; }
 .nourish-app .app-editorial-title em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color: rgb(var(--accent-ink)); }
 .nourish-app .card { border-radius: 1.5rem; box-shadow: 0 8px 32px rgb(var(--shadow) / .035); }
@@ -544,7 +528,6 @@ summary::-webkit-details-marker {
   .nourish-app .scan-art::after { bottom: 24px; right: 20px; }
   .nourish-app .app-editorial-title { font-size: 2.6rem; }
 }
-.nourish-sculpture-placeholder { height: max(740px, calc(100svh - 80px)); background: rgb(var(--paper)); }
 .scanner-workspace { border: 1px solid rgb(var(--line)); border-radius: 2rem; padding: 12px; background: rgb(var(--surface)); box-shadow: 0 20px 70px rgb(var(--shadow) / .08); }
 .scan-switch { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; padding: 5px; background: rgb(var(--surface-2)); border-radius: 999px; }
 .scan-switch button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 999px; font-size: 13px; font-weight: 500; color: rgb(var(--ink-2)); transition: background .2s, color .2s, box-shadow .2s; }
@@ -553,4 +536,99 @@ summary::-webkit-details-marker {
 .scan-panel { min-height: 350px; padding: 30px; text-align: center; }
 .scan-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; width: 100%; min-height: 280px; border: 1px dashed rgb(var(--line-strong) / .4); border-radius: 1.5rem; background: rgb(var(--paper)); transition: background .2s; }
 .scan-upload:hover, .scan-upload.is-dragging { background: rgb(var(--accent-soft)); }
-@media(max-width:639px) { .scan-switch button { flex-direction: column; gap: 5px; font-size: 11px; min-height: 58px; } .scan-panel { padding: 24px 12px; min-height: 320px; } .nourish-sculpture-placeholder { height: max(760px, calc(100svh - 80px)); } }
+@media(max-width:639px) { .scan-switch button { flex-direction: column; gap: 5px; font-size: 11px; min-height: 58px; } .scan-panel { padding: 24px 12px; min-height: 320px; } }
+
+/* ---------- Landing hero: floating food that gathers into a tray ---------- */
+
+.food-stage {
+  --spread-x: min(44vw, 620px);
+  --spread-y: calc((100svh - 5rem) * 0.42);
+  /* Item scale: at rest, and once docked. */
+  --m: 1;
+  --md: 1;
+}
+@media (max-width: 639px) {
+  .food-stage {
+    --spread-x: 47vw;
+    --spread-y: calc((100svh - 5rem) * 0.44);
+    --m: 0.62;
+    --md: 0.78;
+  }
+  .food-item {
+    --fx: var(--mfx) !important;
+    --fy: var(--mfy) !important;
+  }
+}
+
+.food-item {
+  --dx: 0px;
+  --dy: 0px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  transform:
+    translate(
+      calc(var(--fx) * var(--spread-x) * (1 - var(--e)) + var(--dx) * var(--e)),
+      calc(var(--fy) * var(--spread-y) * (1 - var(--e)) + var(--dy) * var(--e))
+    )
+    rotate(calc(var(--r) * (1 - var(--e))))
+    scale(calc(var(--s) * var(--m) * (1 - var(--e)) + var(--ds) * var(--md) * var(--e)));
+  filter: blur(calc(var(--b) * (1 - var(--e))));
+  opacity: calc(var(--o) + (1 - var(--o)) * var(--e));
+  will-change: transform, filter;
+}
+
+.food-float {
+  animation: food-float 5s ease-in-out infinite;
+}
+
+@keyframes food-float {
+  0%,
+  100% {
+    transform: translateY(calc(-8px * var(--amp))) rotate(calc(-2deg * var(--amp)));
+  }
+  50% {
+    transform: translateY(calc(8px * var(--amp))) rotate(calc(2deg * var(--amp)));
+  }
+}
+
+.food-card {
+  border: 1px solid rgb(var(--line) / 0.8);
+  border-radius: 1.1rem;
+  background: rgb(var(--surface) / 0.94);
+  box-shadow: 0 14px 30px -10px rgb(var(--shadow) / 0.28), inset 0 1px 0 rgb(var(--sh-light) / 0.5);
+}
+
+/* A soft, slightly liquid wallpaper, in the sage palette. */
+.food-frame {
+  opacity: var(--f);
+  transform: translateY(calc((1 - var(--f)) * 48px)) scale(calc(0.94 + var(--f) * 0.06));
+  background:
+    radial-gradient(60% 70% at 12% 18%, rgb(var(--accent-soft)) 0%, transparent 70%),
+    radial-gradient(50% 60% at 88% 26%, rgb(var(--surface-3) / 0.9) 0%, transparent 70%),
+    radial-gradient(70% 60% at 60% 100%, rgb(var(--grade-b) / 0.14) 0%, transparent 70%),
+    linear-gradient(160deg, rgb(var(--surface)) 0%, rgb(var(--surface-2)) 100%);
+  box-shadow: 0 30px 80px -30px rgb(var(--shadow) / 0.35), inset 0 0 0 1px rgb(var(--line) / 0.7);
+}
+
+.food-tray {
+  background: rgb(var(--surface) / 0.65);
+  border: 1px solid rgb(var(--line) / 0.8);
+  box-shadow: 0 18px 40px -16px rgb(var(--shadow) / 0.35), inset 0 1px 0 rgb(var(--sh-light) / 0.55);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.food-cue {
+  animation: food-cue 1.8s ease-in-out infinite;
+}
+
+@keyframes food-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}

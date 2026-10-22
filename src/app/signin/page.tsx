@@ -118,14 +118,6 @@ function SignInForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Your password"
             />
-            <div className="mt-2 text-right">
-              <Link
-                href="/signin/reset"
-                className="text-xs text-ink-2 underline decoration-ink/30 underline-offset-4 hover:text-ink"
-              >
-                Forgot your password?
-              </Link>
-            </div>
           </div>
         </div>
 

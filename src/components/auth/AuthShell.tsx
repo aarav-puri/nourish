@@ -12,7 +12,7 @@ interface AuthShellProps {
 }
 
 /**
- * The shared frame for sign in, sign up and password reset: the form on
+ * The shared frame for sign in and sign up: the form on
  * paper, and on wide screens a reminder of what is on the other side.
  */
 export default function AuthShell({ eyebrow, title, lede, children, footer }: AuthShellProps) {
