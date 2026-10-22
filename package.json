@@ -13,6 +13,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "lucide-react": "^0.469.0",
+    "motion": "^12.23.12",
     "next": "^15.1.6",
     "quagga": "^0.12.1",
     "react": "^19.0.0",
