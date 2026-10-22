@@ -113,10 +113,8 @@ export default function ScannerHome({ onOpen }: { onOpen: (code: string) => void
             </button>
           ))}
         </div>
-        <div id="panel-camera" role="tabpanel" aria-labelledby="tab-camera" hidden={method !== 'camera'} tabIndex={0} className="scan-panel">
-          <div className="scan-art" aria-hidden="true"><div className="scan-art-bars" /><div className="scan-art-line" /></div>
-          <p className="text-sm text-ink-2">Point your camera at a barcode.</p>
-          <button type="button" onClick={() => setCamera(true)} className="btn-primary mt-6 min-h-12 w-full gap-3"><Camera className="h-4 w-4" aria-hidden="true" />Open camera<ArrowRight className="ml-auto h-4 w-4" aria-hidden="true" /></button>
+        <div id="panel-camera" role="tabpanel" aria-labelledby="tab-camera" hidden={method !== 'camera'} tabIndex={0} className="scan-panel scan-panel-center">
+          <button type="button" onClick={() => setCamera(true)} className="btn-primary min-h-12 w-full gap-3"><Camera className="h-4 w-4" aria-hidden="true" />Open camera<ArrowRight className="ml-auto h-4 w-4" aria-hidden="true" /></button>
         </div>
         <div id="panel-upload" role="tabpanel" aria-labelledby="tab-upload" hidden={method !== 'upload'} tabIndex={0} className="scan-panel">
           <button type="button" onClick={() => fileRef.current?.click()} disabled={reading} className={`scan-upload ${dragging ? 'is-dragging' : ''}`}>
