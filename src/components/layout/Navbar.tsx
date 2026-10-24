@@ -38,7 +38,7 @@ export default function Navbar() {
     }
   }, [open])
 
-  const cta = user ? 'Open scanner' : 'Sign in'
+  const cta = user ? 'Go to dashboard' : 'Sign in'
 
   return (
     <header

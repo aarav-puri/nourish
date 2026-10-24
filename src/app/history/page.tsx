@@ -14,7 +14,7 @@ import { dayBucket, timeAgo } from '@/lib/time'
 import AppShell from '@/components/app/AppShell'
 import PageHeader from '@/components/app/PageHeader'
 import ChatAgent from '@/components/ChatAgent'
-import OliveAvatar from '@/components/brand/OliveAvatar'
+import AssistantAvatar from '@/components/brand/AssistantAvatar'
 import { GRADE_STYLE, ScoreBadge } from '@/components/product/Grade'
 import ProductThumb from '@/components/product/ProductThumb'
 import Modal from '@/components/ui/Modal'
@@ -193,7 +193,7 @@ function History() {
     setClearing(false)
   }
 
-  // A compact, readable summary for Olive rather than raw database records.
+  // A compact, readable summary for NourishAI rather than raw database records.
   const chatContext = useMemo(
     () => ({
       profile: { diets: profile.diets.map(dietLabel), avoids: profile.avoid },
@@ -224,8 +224,8 @@ function History() {
         subtitle={rows === null ? '\u00a0' : total === 0 ? 'Nothing here yet.' : `${total} product${total === 1 ? '' : 's'} scanned`}
         actions={
           total > 0 && (
-            <Button variant="secondary" icon={<OliveAvatar size={24} className="-my-1 -ml-1" />} onClick={() => setChatOpen(true)}>
-              Ask Olive
+            <Button variant="secondary" icon={<AssistantAvatar size={24} className="-my-1 -ml-1" />} onClick={() => setChatOpen(true)}>
+              Ask NourishAI
             </Button>
           )
         }
