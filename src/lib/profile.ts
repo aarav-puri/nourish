@@ -2,18 +2,21 @@ import {
   ANIMAL_PRODUCT,
   MEAT_FISH,
   NOT_HALAL,
+  NOT_PALEO,
   allergenLabel,
   fmt,
+  isKnownAllergen,
   type Food,
 } from '@/lib/food'
 
 /**
  * A person's food profile: the diets they follow and the allergens they
  * avoid. It lives in Supabase auth user metadata, so it follows the account
- * to every device without a schema change.
+ * to every device without a schema change. Both lists hold known ids or,
+ * for anything typed in, the person's own words.
  */
 export interface FoodProfile {
-  diets: DietId[]
+  diets: string[]
   avoid: string[]
 }
 
@@ -28,29 +31,64 @@ export type DietId =
   | 'keto'
   | 'low-sugar'
   | 'low-salt'
+  | 'mediterranean'
+  | 'paleo'
+  | 'low-carb'
+  | 'high-protein'
+  | 'low-fat'
 
-export const DIETS: { id: DietId; label: string; hint: string }[] = [
-  { id: 'vegetarian', label: 'Vegetarian', hint: 'No meat or fish' },
-  { id: 'vegan', label: 'Vegan', hint: 'No animal products' },
-  { id: 'pescatarian', label: 'Pescatarian', hint: 'Fish, no meat' },
-  { id: 'gluten-free', label: 'Gluten-free', hint: 'No wheat, barley or rye' },
-  { id: 'dairy-free', label: 'Dairy-free', hint: 'No milk products' },
-  { id: 'halal', label: 'Halal', hint: 'No pork or alcohol' },
-  { id: 'kosher', label: 'Kosher', hint: 'Certified kosher' },
-  { id: 'keto', label: 'Keto', hint: 'Very low carbohydrate' },
-  { id: 'low-sugar', label: 'Low sugar', hint: 'Flags high-sugar foods' },
-  { id: 'low-salt', label: 'Low salt', hint: 'Flags high-salt foods' },
+export type DietGroup = 'style' | 'goal' | 'need'
+
+export const DIET_GROUPS: { id: DietGroup; label: string }[] = [
+  { id: 'style', label: 'Eating styles' },
+  { id: 'goal', label: 'Health goals' },
+  { id: 'need', label: 'Faith and intolerances' },
 ]
+
+// The most followed eating patterns in U.S. surveys (IFIC Food & Health),
+// limited to ones a label can actually be checked against.
+export const DIETS: { id: DietId; label: string; hint: string; group: DietGroup }[] = [
+  { id: 'vegetarian', label: 'Vegetarian', hint: 'No meat or fish', group: 'style' },
+  { id: 'vegan', label: 'Vegan', hint: 'No animal products', group: 'style' },
+  { id: 'pescatarian', label: 'Pescatarian', hint: 'Fish, no meat', group: 'style' },
+  { id: 'mediterranean', label: 'Mediterranean', hint: 'Whole foods, olive oil', group: 'style' },
+  { id: 'paleo', label: 'Paleo', hint: 'No grains, dairy or legumes', group: 'style' },
+  { id: 'keto', label: 'Keto', hint: 'Very low carbohydrate', group: 'style' },
+  { id: 'high-protein', label: 'High protein', hint: 'Favors protein-rich foods', group: 'goal' },
+  { id: 'low-carb', label: 'Low carb', hint: 'Fewer carbohydrates', group: 'goal' },
+  { id: 'low-sugar', label: 'Low sugar', hint: 'Flags high-sugar foods', group: 'goal' },
+  { id: 'low-salt', label: 'Low salt', hint: 'Flags high-salt foods', group: 'goal' },
+  { id: 'low-fat', label: 'Low fat', hint: 'Flags high-fat foods', group: 'goal' },
+  { id: 'gluten-free', label: 'Gluten-free', hint: 'No wheat, barley or rye', group: 'need' },
+  { id: 'dairy-free', label: 'Dairy-free', hint: 'No milk products', group: 'need' },
+  { id: 'halal', label: 'Halal', hint: 'No pork or alcohol', group: 'need' },
+  { id: 'kosher', label: 'Kosher', hint: 'Certified kosher', group: 'need' },
+]
+
+/** Longest custom diet or allergen a person can type, and how many they can keep. */
+export const MAX_ENTRY_LENGTH = 40
+const MAX_ENTRIES = 30
+
+const cleanList = (raw: unknown) =>
+  Array.isArray(raw)
+    ? [...new Set(raw.filter((x): x is string => typeof x === 'string').map((x) => x.trim().slice(0, MAX_ENTRY_LENGTH)).filter(Boolean))].slice(0, MAX_ENTRIES)
+    : []
 
 export const EMPTY_PROFILE: FoodProfile = { diets: [], avoid: [] }
 
 export function readProfile(user: any): FoodProfile {
   const raw = user?.user_metadata?.food_profile
   if (!raw || typeof raw !== 'object') return EMPTY_PROFILE
-  return {
-    diets: Array.isArray(raw.diets) ? raw.diets.filter((d: string) => DIETS.some((x) => x.id === d)) : [],
-    avoid: Array.isArray(raw.avoid) ? raw.avoid.filter((a: unknown) => typeof a === 'string') : [],
-  }
+  return { diets: cleanList(raw.diets), avoid: cleanList(raw.avoid) }
+}
+
+/**
+ * Whether this account has been through first-run onboarding. Accounts from
+ * before the flag existed count as done once they have saved a profile.
+ */
+export function isOnboarded(user: any) {
+  const meta = user?.user_metadata
+  return meta?.onboarded === true || (meta?.food_profile && typeof meta.food_profile === 'object')
 }
 
 export function isProfileEmpty(p: FoodProfile) {
@@ -60,6 +98,12 @@ export function isProfileEmpty(p: FoodProfile) {
 export function dietLabel(id: string) {
   return DIETS.find((d) => d.id === id)?.label ?? id
 }
+
+export function isKnownDiet(id: string) {
+  return DIETS.some((d) => d.id === id)
+}
+
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /* ---------- Checking a product against a profile ------------------------- */
 
@@ -94,6 +138,14 @@ export function checkProduct(food: Food, profile: FoodProfile): Check[] {
 
   for (const id of profile.avoid) {
     const label = allergenLabel(id)
+    if (!isKnownAllergen(id)) {
+      // Typed in by the person: only the ingredient text can answer, singular or plural.
+      const hit = ingredientMatch(food, new RegExp(`\\b${escapeRegExp(id)}(e?s)?\\b`, 'i'))
+      if (hit) checks.push({ key: `a-${id}`, status: 'conflict', title: `Contains ${label.toLowerCase()}` })
+      else if (hasIngredients) checks.push({ key: `a-${id}`, status: 'ok', title: `No ${label.toLowerCase()} in the ingredients` })
+      else checks.push({ key: `a-${id}`, status: 'unknown', title: `${label}: no ingredient list` })
+      continue
+    }
     if (has(id)) checks.push({ key: `a-${id}`, status: 'conflict', title: `Contains ${label.toLowerCase()}` })
     else if (mayHave(id))
       checks.push({ key: `a-${id}`, status: 'caution', title: `May contain ${label.toLowerCase()}`, detail: 'Listed as a trace' })
@@ -103,7 +155,7 @@ export function checkProduct(food: Food, profile: FoodProfile): Check[] {
   }
 
   for (const diet of profile.diets) {
-    switch (diet) {
+    switch (diet as DietId) {
       case 'vegan': {
         const hit = ingredientMatch(food, MEAT_FISH) ?? ingredientMatch(food, ANIMAL_PRODUCT)
         if (food.vegan === 'no' || has('milk') || has('eggs') || has('fish') || has('crustaceans'))
@@ -177,6 +229,46 @@ export function checkProduct(food: Food, profile: FoodProfile): Check[] {
         else checks.push({ key: diet, status: 'ok', title: 'Low in salt' })
         break
       }
+      case 'low-fat': {
+        const l = food.levels.fat
+        if (!l) checks.push({ key: diet, status: 'unknown', title: 'Fat: no data' })
+        else if (l === 'high') checks.push({ key: diet, status: 'conflict', title: 'High in fat', detail: `${fmt(food.nutrition.fat)}g per 100g` })
+        else if (l === 'moderate') checks.push({ key: diet, status: 'caution', title: 'Moderate fat', detail: `${fmt(food.nutrition.fat)}g per 100g` })
+        else checks.push({ key: diet, status: 'ok', title: 'Low in fat' })
+        break
+      }
+      case 'low-carb': {
+        const c = food.nutrition.carbs
+        if (c === undefined) checks.push({ key: diet, status: 'unknown', title: 'Low carb: no carb data' })
+        else if (c > 22.5) checks.push({ key: diet, status: 'conflict', title: 'High in carbs', detail: `${fmt(c)}g per 100g` })
+        else if (c > 10) checks.push({ key: diet, status: 'caution', title: 'Moderate carbs', detail: `${fmt(c)}g per 100g` })
+        else checks.push({ key: diet, status: 'ok', title: 'Low in carbs', detail: `${fmt(c)}g per 100g` })
+        break
+      }
+      case 'high-protein': {
+        const p = food.nutrition.protein
+        if (p === undefined) checks.push({ key: diet, status: 'unknown', title: 'Protein: no data' })
+        else if (p >= 10) checks.push({ key: diet, status: 'ok', title: 'High in protein', detail: `${fmt(p)}g per 100g` })
+        else checks.push({ key: diet, status: 'caution', title: 'Not a strong protein source', detail: `${fmt(p)}g per 100g` })
+        break
+      }
+      case 'paleo': {
+        const hit = ingredientMatch(food, NOT_PALEO)
+        if (hit || has('milk') || has('gluten') || has('peanuts') || has('soybeans'))
+          checks.push({ key: diet, status: 'conflict', title: 'Not paleo', detail: hit ? `Contains ${hit}` : undefined })
+        else checks.push({ key: diet, status: hasIngredients ? 'ok' : 'unknown', title: hasIngredients ? 'Looks paleo' : 'Paleo: not enough data' })
+        break
+      }
+      case 'mediterranean':
+        if (food.nova === 4) checks.push({ key: diet, status: 'caution', title: 'Ultra-processed', detail: 'A Mediterranean diet favors whole foods' })
+        else if (food.levels.saturatedFat === 'high' || food.levels.sugars === 'high')
+          checks.push({ key: diet, status: 'caution', title: food.levels.sugars === 'high' ? 'High in sugar' : 'High in saturated fat' })
+        else if (food.nova || hasIngredients) checks.push({ key: diet, status: 'ok', title: 'Fits a Mediterranean diet' })
+        else checks.push({ key: diet, status: 'unknown', title: 'Mediterranean: not enough data' })
+        break
+      default:
+        // A diet the person typed in: there is no rule for it, so the AI diet check covers it.
+        checks.push({ key: diet, status: 'unknown', title: `${diet}: not checked automatically`, detail: 'Run the AI diet check below' })
     }
   }
 

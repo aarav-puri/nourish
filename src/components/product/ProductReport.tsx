@@ -593,7 +593,7 @@ function AskAI({ food }: { food: Food }) {
         }
       >
         <div className="grid grid-cols-2 gap-2" role="group" aria-label="Diets">
-          {[...DIETS.map((d) => d.label), 'Paleo', 'Low FODMAP', 'Jain'].map((label) => {
+          {[...new Set([...DIETS.map((d) => d.label), 'Low FODMAP', 'Jain', ...profileDiets])].map((label) => {
             const on = diets.includes(label)
             return (
               <button

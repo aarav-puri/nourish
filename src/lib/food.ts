@@ -127,6 +127,10 @@ export const ALLERGENS: { id: string; label: string }[] = [
 
 const ALLERGEN_LABEL = Object.fromEntries(ALLERGENS.map((a) => [a.id, a.label]))
 
+export function isKnownAllergen(id: string) {
+  return id in ALLERGEN_LABEL
+}
+
 // Words in an ingredient list that reveal an allergen, for records with no
 // declared allergens (hand-entered products, sparse database entries).
 // Lookbehinds skip the usual false friends: cocoa butter, coconut milk.
@@ -412,6 +416,7 @@ export function fmt(value: number | undefined, digits = 1) {
 /** Ingredients a quick text search can tie to a diet, used when the database has no analysis. */
 const MEAT_FISH = /\b(beef|pork|chicken|turkey|lamb|mutton|veal|bacon|ham|lard|tallow|gelatine?|anchov(y|ies)|fish|tuna|salmon|shrimp|prawn|crab|lobster|carmine|cochineal|rennet|chorizo|salami|pepperoni|meat)\b/i
 const ANIMAL_PRODUCT = /\b((?<!(coconut|almond|oat|soy|soya|rice|cashew) )milk|buttermilk|whey|casein|caseinate|lactose|(?<!(cocoa|shea|peanut|nut|almond) )butter|cream|cheese|yogh?urt|eggs?|honey|beeswax|ghee|albumin)\b/i
+const NOT_PALEO = /\b(wheat|barley|rye|oats?|rice|corn|maize|flour|bread|pasta|beans?|lentils?|chickpeas?|peas|soy|soya|peanuts?|(?<!(coconut|almond|cashew) )milk|cheese|yogh?urt|cream|whey|sugar|glucose|fructose|dextrose|syrup)\b/i
 const NOT_HALAL = /\b(pork|bacon|ham|lard|gelatine?|wine|rum|beer|alcohol|ethanol|chorizo|salami|pepperoni)\b/i
 
-export { MEAT_FISH, ANIMAL_PRODUCT, NOT_HALAL }
+export { MEAT_FISH, ANIMAL_PRODUCT, NOT_HALAL, NOT_PALEO }

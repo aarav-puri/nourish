@@ -59,7 +59,7 @@ export default function KeySetup({ onSaved, submitLabel = 'Save key' }: { onSave
         value={value}
         onChange={(e) => setValue(e.target.value)}
         error={error}
-        hint="Stored in this browser only. Never sent to our database."
+        hint="Your key is stored only in this browser and passed to Google with each request, never saved on our servers."
         className="font-mono text-sm"
         trailing={
           <button

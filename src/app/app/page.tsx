@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Camera, PenLine, RotateCcw, SearchX, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-context'
+import { isOnboarded } from '@/lib/profile'
 import { db } from '@/lib/supabase'
 import { getGeminiApiKey } from '@/lib/ai-service'
 import { fetchProductInfo, LookupError } from '@/lib/product-api'
@@ -45,18 +46,21 @@ function Scanner() {
   const manual = params.get('manual') === '1'
   // Changes on "Try again" for the same code, to re-run the lookup.
   const attempt = params.get('r')
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
 
   const [hasKey, setHasKey] = useState<boolean | null>(null)
   const [view, setView] = useState<View>({ kind: 'idle' })
   const [camera, setCamera] = useState(false)
   const requestRef = useRef(0)
 
+  // New accounts (including Google sign-ups, which land here) and browsers with no key go through onboarding first.
   useEffect(() => {
+    if (loading) return
     const present = Boolean(getGeminiApiKey())
-    setHasKey(present)
-    if (!present) router.replace(`/setup?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
-  }, [router])
+    const ready = present && (!user || isOnboarded(user))
+    setHasKey(ready)
+    if (!ready) router.replace(`/setup?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+  }, [router, loading, user])
 
   const warmHistoryCache = useCallback(() => {
     db.getScannedProducts(40)
