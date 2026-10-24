@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import type { Food } from '@/lib/food'
 import { timeAgo } from '@/lib/time'
-import { GradeBadge } from '@/components/product/Grade'
+import { ScoreBadge } from '@/components/product/Grade'
 import ProductThumb from '@/components/product/ProductThumb'
 
 export interface RecentScan {
@@ -80,7 +80,7 @@ export default function RecentScans({ items, onOpen }: { items: RecentScan[] | n
                     {[food.brand, timeAgo(scannedAt)].filter(Boolean).join(' · ')}
                   </span>
                 </span>
-                <GradeBadge grade={food.grade} size="sm" />
+                <ScoreBadge grade={food.grade} score={food.score} size="sm" />
               </button>
             </li>
           ))}

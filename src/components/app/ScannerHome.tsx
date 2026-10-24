@@ -8,15 +8,15 @@ import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-context'
 import { decodeImage, isValidGtin } from '@/lib/barcode'
 import { isProfileEmpty } from '@/lib/profile'
-import CameraLauncher from '@/components/app/CameraLauncher'
 import CameraScanner from '@/components/app/CameraScanner'
+import PageHeader from '@/components/app/PageHeader'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
 
 export default function ScannerHome({ onOpen }: { onOpen: (code: string) => void }) {
   const router = useRouter()
   const { profile, user } = useAuth()
-  const [method, setMethod] = useState<'camera' | 'upload' | 'manual'>('camera')
+  const [method, setMethod] = useState<'upload' | 'manual'>('upload')
   const [camera, setCamera] = useState(false)
   const [number, setNumber] = useState('')
   const [reading, setReading] = useState(false)
@@ -108,17 +108,24 @@ export default function ScannerHome({ onOpen }: { onOpen: (code: string) => void
       className="relative"
     >
       <div className="mx-auto max-w-2xl">
-      <div className="mb-8 text-center">
-        <h1 id="scan-h" className="t-title app-editorial-title"><em>Scan your food.</em></h1>
-        {user?.user_metadata?.display_name && <p className="mt-3 text-sm text-ink-2">Ready, {user.user_metadata.display_name}?</p>}
-      </div>
+      <PageHeader
+        id="scan-h"
+        title="Scan your food."
+        subtitle={user?.user_metadata?.display_name ? `Ready, ${user.user_metadata.display_name}?` : 'Point your camera at a barcode, or use a photo or the number.'}
+      />
       <section aria-labelledby="scan-h" className="scanner-workspace">
-        <div role="tablist" aria-label="Scan method" className="scan-switch">
-          {([{id:'camera',label:'Camera',icon:Camera},{id:'upload',label:'Upload photo',icon:ImageUp},{id:'manual',label:'Enter manually',icon:Keyboard}] as const).map((item,index,items) => (
+        {/* The live camera is the main way in; the tabs below are the fallbacks. */}
+        <button type="button" onClick={() => setCamera(true)} className="scan-camera-button">
+          <Camera className="h-5 w-5" aria-hidden="true" />
+          Scan with camera
+        </button>
+        <div role="tablist" aria-label="Other ways to scan" className="scan-switch">
+          {([{id:'upload',label:'Upload photo',icon:ImageUp},{id:'manual',label:'Enter manually',icon:Keyboard}] as const).map((item,index,items) => (
             <button key={item.id} id={`tab-${item.id}`} role="tab" type="button" aria-selected={method === item.id} aria-controls={`panel-${item.id}`} tabIndex={method === item.id ? 0 : -1}
               onClick={() => setMethod(item.id)}
               onKeyDown={(e) => {
-                const target = e.key === 'ArrowRight' ? (index + 1) % 3 : e.key === 'ArrowLeft' ? (index + 2) % 3 : e.key === 'Home' ? 0 : e.key === 'End' ? 2 : -1
+                const n = items.length
+                const target = e.key === 'ArrowRight' ? (index + 1) % n : e.key === 'ArrowLeft' ? (index + n - 1) % n : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : -1
                 if (target < 0) return
                 e.preventDefault(); setMethod(items[target].id)
                 document.getElementById(`tab-${items[target].id}`)?.focus()
@@ -132,9 +139,6 @@ export default function ScannerHome({ onOpen }: { onOpen: (code: string) => void
         </div>
         <motion.div animate={{ height: panelsHeight ?? 'auto' }} transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36 }} className="overflow-hidden">
           <div ref={panelsRef}>
-          <div id="panel-camera" role="tabpanel" aria-labelledby="tab-camera" hidden={method !== 'camera'} tabIndex={-1} className="scan-panel scan-panel-flush">
-            <CameraLauncher onOpen={() => setCamera(true)} />
-          </div>
           <div id="panel-upload" role="tabpanel" aria-labelledby="tab-upload" hidden={method !== 'upload'} tabIndex={0} className="scan-panel">
             <button type="button" onClick={() => fileRef.current?.click()} disabled={reading} className={`scan-upload ${dragging ? 'is-dragging' : ''}`}>
               {reading ? <Spinner className="h-8 w-8" /> : <ImageUp className="h-9 w-9 text-accent-ink" aria-hidden="true" />}

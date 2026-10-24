@@ -7,14 +7,15 @@ import { Camera, Search, ShieldAlert, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { db } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import { toFood, type Food, type Grade } from '@/lib/food'
+import { SCORE_BANDS, toFood, type Food, type Grade } from '@/lib/food'
 import { checkProduct, dietLabel, isProfileEmpty, overallStatus } from '@/lib/profile'
 import { productCache } from '@/lib/scan-cache'
 import { dayBucket, timeAgo } from '@/lib/time'
 import AppShell from '@/components/app/AppShell'
+import PageHeader from '@/components/app/PageHeader'
 import ChatAgent from '@/components/ChatAgent'
 import OliveAvatar from '@/components/brand/OliveAvatar'
-import { GRADE_STYLE, GradeBadge } from '@/components/product/Grade'
+import { GRADE_STYLE, ScoreBadge } from '@/components/product/Grade'
 import ProductThumb from '@/components/product/ProductThumb'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
@@ -31,9 +32,9 @@ type Filter = 'all' | 'good' | 'middle' | 'poor' | 'conflict'
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'good', label: 'A–B' },
-  { id: 'middle', label: 'C' },
-  { id: 'poor', label: 'D–E' },
+  { id: 'good', label: '60+' },
+  { id: 'middle', label: '40–59' },
+  { id: 'poor', label: 'Under 40' },
   { id: 'conflict', label: 'Not for me' },
 ]
 
@@ -199,7 +200,7 @@ function History() {
       products: entries.slice(0, 60).map(({ food, lastScanned, times }) => ({
         name: food.name,
         brand: food.brand,
-        nutri_score: food.grade?.toUpperCase() ?? null,
+        health_score_out_of_100: food.score,
         processing_nova: food.nova,
         per_100g: food.nutrition,
         allergens: food.allergens,
@@ -217,20 +218,18 @@ function History() {
   const total = entries.length - hidden.size
 
   return (
-    <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div><h1 className="t-title app-editorial-title"><em>History.</em></h1></div>
-          <p className="mt-1 text-ink-2">
-            {rows === null ? ' ' : total === 0 ? 'Nothing here yet.' : `${total} product${total === 1 ? '' : 's'} scanned`}
-          </p>
-        </div>
-        {total > 0 && (
-          <Button variant="secondary" icon={<OliveAvatar size={24} className="-my-1 -ml-1" />} onClick={() => setChatOpen(true)}>
-            Ask Olive
-          </Button>
-        )}
-      </div>
+    <div className="mx-auto max-w-2xl">
+      <PageHeader
+        title="History."
+        subtitle={rows === null ? '\u00a0' : total === 0 ? 'Nothing here yet.' : `${total} product${total === 1 ? '' : 's'} scanned`}
+        actions={
+          total > 0 && (
+            <Button variant="secondary" icon={<OliveAvatar size={24} className="-my-1 -ml-1" />} onClick={() => setChatOpen(true)}>
+              Ask Olive
+            </Button>
+          )
+        }
+      />
 
       {error ? (
         <div className="card mt-8 p-6 text-center">
@@ -248,7 +247,7 @@ function History() {
         <>
           <GradeMix counts={counts} total={total} />
 
-          <div className="sticky top-16 z-10 -mx-[var(--gutter)] mt-6 bg-paper/90 px-[var(--gutter)] py-3 backdrop-blur-md">
+          <div className="app-sticky-tools sticky top-20 z-10 -mx-3 mt-6 rounded-3xl px-3 py-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
@@ -334,7 +333,7 @@ function History() {
                                 .join(' · ')}
                             </span>
                           </span>
-                          <GradeBadge grade={e.food.grade} />
+                          <ScoreBadge grade={e.food.grade} score={e.food.score} />
                         </button>
                         <button
                           type="button"
@@ -398,11 +397,11 @@ function GradeMix({ counts, total }: { counts: Record<Grade | 'none', number>; t
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-sm text-ink-2">
           <span className="font-display font-bold text-2xl text-ink">{pct}%</span>
-          <span className="ml-2">of what you scan grades A or B</span>
+          <span className="ml-2">of what you scan scores 60 or higher</span>
         </p>
-        <span className="font-mono text-xs text-ink-3">{graded} graded</span>
+        <span className="font-mono text-xs text-ink-3">{graded} scored</span>
       </div>
-      <div className="mt-4 flex h-3 overflow-hidden rounded-full" role="img" aria-label={(['a', 'b', 'c', 'd', 'e'] as Grade[]).map((g) => `${g.toUpperCase()}: ${counts[g]}`).join(', ')}>
+      <div className="mt-4 flex h-3 overflow-hidden rounded-full" role="img" aria-label={(['a', 'b', 'c', 'd', 'e'] as Grade[]).map((g) => `${SCORE_BANDS[g][0]} to ${SCORE_BANDS[g][1]}: ${counts[g]}`).join(', ')}>
         {(['a', 'b', 'c', 'd', 'e'] as Grade[]).map((g) =>
           counts[g] > 0 ? <span key={g} className={GRADE_STYLE[g].split(' ')[0]} style={{ width: `${(counts[g] / graded) * 100}%` }} /> : null
         )}
@@ -411,7 +410,7 @@ function GradeMix({ counts, total }: { counts: Record<Grade | 'none', number>; t
         {(['a', 'b', 'c', 'd', 'e'] as Grade[]).map((g) => (
           <span key={g} className="flex items-center gap-1.5 font-mono text-xs text-ink-3">
             <span className={`h-2 w-2 rounded-full ${GRADE_STYLE[g].split(' ')[0]}`} aria-hidden="true" />
-            {g.toUpperCase()} {counts[g]}
+            {SCORE_BANDS[g][0]}–{SCORE_BANDS[g][1]}: {counts[g]}
           </span>
         ))}
       </div>

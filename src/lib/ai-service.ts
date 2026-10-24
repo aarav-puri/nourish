@@ -88,8 +88,8 @@ function describe(food: Food) {
 Categories: ${food.categories || 'Unknown'}
 Ingredients: ${food.ingredientsText || 'Not available'}
 Allergens declared: ${food.allergens.join(', ') || 'None listed'}
-Nutri-Score: ${food.grade?.toUpperCase() ?? 'Unknown'}; processing (NOVA): ${food.nova ?? 'Unknown'}
-Per 100${food.isBeverage ? 'ml' : 'g'}: ${n.energyKcal ?? '?'} kcal, fat ${n.fat ?? '?'}g, saturated fat ${n.saturatedFat ?? '?'}g, carbs ${n.carbs ?? '?'}g, sugars ${n.sugars ?? '?'}g, fibre ${n.fiber ?? '?'}g, protein ${n.protein ?? '?'}g, salt ${n.salt ?? '?'}g`
+Health score (0-100, from the Nutri-Score): ${food.score ?? 'Unknown'}; processing (NOVA): ${food.nova ?? 'Unknown'}
+Per 100${food.isBeverage ? 'ml' : 'g'}: ${n.energyKcal ?? '?'} kcal, fat ${n.fat ?? '?'}g, saturated fat ${n.saturatedFat ?? '?'}g, carbs ${n.carbs ?? '?'}g, sugars ${n.sugars ?? '?'}g, fiber ${n.fiber ?? '?'}g, protein ${n.protein ?? '?'}g, salt ${n.salt ?? '?'}g`
 }
 
 export type InsightKind = 'alternatives' | 'diet_compatibility' | 'eco_impact' | 'recipe_suggestions'
@@ -107,7 +107,7 @@ export const aiService = {
       `${describe(food)}
 ${diets.length ? `The shopper follows: ${diets.join(', ')}. Every suggestion must fit.` : ''}
 
-Suggest 3 widely available, healthier alternatives in the same category with a similar flavour. Name real products or brands where you can. For each give:
+Suggest 3 widely available, healthier alternatives in the same category with a similar flavor. Name real products or brands where you can. For each give:
 product_name, why_healthier (one sentence), flavor_similarity (1-10), price_range (e.g. "$3-5"), sugar_diff (short phrase such as "4g less sugar"), additive_diff (short phrase such as "2 fewer additives").
 Return a JSON array of 3 objects with exactly these keys.`,
       'You are a practical nutritionist who knows supermarket shelves well.'

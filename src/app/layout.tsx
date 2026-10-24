@@ -20,11 +20,11 @@ const geistMono = Geist_Mono({ subsets: ['latin'], display: 'swap', variable: '-
 
 export const metadata: Metadata = {
   title: {
-    default: 'Nourish: know what is in your food',
+    default: 'Nourish | The small print, read for you',
     template: '%s · Nourish',
   },
   description:
-    'Scan any food barcode to see its grade, sugar, additives and allergens, checked against your own diet. Free, with no ads.',
+    'Scan any food barcode to see its health score out of 100, how processed it is, and every additive and allergen in plain words, checked against your diet. Free, with no ads.',
   applicationName: 'Nourish',
   verification: {
     google: '9_JzOdfOk3oOJkfW-pZ7t_XjlRBABpYdauzpEX9h1i0',

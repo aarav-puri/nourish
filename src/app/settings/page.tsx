@@ -9,6 +9,7 @@ import { auth } from '@/lib/supabase'
 import { getGeminiApiKey, maskKey, setGeminiApiKey } from '@/lib/ai-service'
 import { type DietId } from '@/lib/profile'
 import AppShell from '@/components/app/AppShell'
+import PageHeader from '@/components/app/PageHeader'
 import KeySetup from '@/components/app/KeySetup'
 import ProfileFields from '@/components/app/ProfileFields'
 import Avatar from '@/components/ui/Avatar'
@@ -36,9 +37,9 @@ function Settings() {
   }, [])
 
   return (
-    <div>
-      <div><h1 className="t-title app-editorial-title"><em>Settings.</em></h1></div>
-      <div className="mt-8 space-y-10">
+    <div className="mx-auto max-w-2xl">
+      <PageHeader title="Settings." subtitle="Your account, food profile and Gemini key." />
+      <div className="space-y-10">
         <AccountSection />
         <FoodProfileSection />
         <KeySection />
