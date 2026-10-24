@@ -78,14 +78,13 @@ export function SwapIcon(props: IconProps) {
   )
 }
 
-/** A question with an olive in it: ask Olive. */
+/** A question with a star in it: ask NourishAI. */
 export function AskIcon(props: IconProps) {
   return (
     <Glyph {...props}>
       <path d="M5 8.5a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4h-9l-6 5v-5a3 3 0 0 1-3-3z" />
-      <ellipse cx="16" cy="13.5" rx="3.6" ry="4.6" transform="rotate(-30 16 13.5)" className={soft} />
-      <ellipse cx="16" cy="13.5" rx="3.6" ry="4.6" transform="rotate(-30 16 13.5)" />
-      <path d="M18.4 9.4c.9-1.4 2.3-2.2 4-2.3" />
+      <path d="M16 8.5c.5 2.6 1.9 4 4.5 4.5-2.6.5-4 1.9-4.5 4.5-.5-2.6-1.9-4-4.5-4.5 2.6-.5 4-1.9 4.5-4.5z" className={soft} />
+      <path d="M16 8.5c.5 2.6 1.9 4 4.5 4.5-2.6.5-4 1.9-4.5 4.5-.5-2.6-1.9-4-4.5-4.5 2.6-.5 4-1.9 4.5-4.5z" />
     </Glyph>
   )
 }

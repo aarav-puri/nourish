@@ -31,9 +31,6 @@ export default function Footer() {
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-10 px-[var(--gutter)] py-14 md:grid-cols-[2fr_repeat(3,1fr)]">
         <div className="col-span-2 md:col-span-1">
           <Wordmark byline />
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-2">
-            Food labels in plain words.
-          </p>
         </div>
         {COLUMNS.map((col) => (
           <nav key={col.label} aria-label={col.label}>

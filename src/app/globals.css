@@ -347,93 +347,46 @@ summary::-webkit-details-marker {
   }
 }
 
-/* ---------- Olive, the assistant ---------- */
+/* ---------- NourishAI, the assistant ---------- */
 
-.olive-avatar svg * {
+.assistant-avatar svg * {
   transform-box: view-box;
 }
-.olive-sway {
-  transform-origin: 24px 4.5px;
+/* The wand pivots from its handle, bottom right. */
+.assistant-wand {
+  transform-origin: 21.9px 21.9px;
 }
-.olive-leaf {
-  transform-origin: 25px 8.5px;
-}
-.olive-eye {
-  transform-box: fill-box;
-  transform-origin: center;
+.assistant-star {
+  transform-origin: 12px 11px;
 }
 
-.olive-idle .olive-sway {
-  animation: olive-sway 4.8s ease-in-out infinite;
+.assistant-idle .assistant-star {
+  animation: assistant-twinkle 4.8s ease-in-out infinite;
 }
-.olive-idle .olive-leaf {
-  animation: olive-leaf 4.8s ease-in-out infinite;
+.assistant-thinking .assistant-wand {
+  animation: assistant-wave 1.2s ease-in-out infinite;
 }
-.olive-idle .olive-eye,
-.olive-thinking .olive-eye {
-  animation: olive-blink 5.2s ease-in-out infinite;
-}
-.olive-thinking .olive-sway {
-  animation: olive-sway 1.6s ease-in-out infinite;
-}
-.olive-thinking .olive-body {
-  animation: olive-bob 0.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-}
-.olive-thinking .olive-eyes {
-  animation: olive-glance 2.4s ease-in-out infinite;
+.assistant-thinking .assistant-star {
+  animation: assistant-twinkle 1.2s ease-in-out infinite;
 }
 
-@keyframes olive-sway {
+@keyframes assistant-twinkle {
   0%,
   100% {
-    transform: rotate(-5deg);
+    transform: scale(1) rotate(0deg);
   }
   50% {
-    transform: rotate(5deg);
+    transform: scale(0.88) rotate(-12deg);
   }
 }
 
-@keyframes olive-leaf {
+@keyframes assistant-wave {
   0%,
   100% {
-    transform: rotate(4deg);
-  }
-  50% {
     transform: rotate(-8deg);
   }
-}
-
-@keyframes olive-blink {
-  0%,
-  92%,
-  100% {
-    transform: scaleY(1);
-  }
-  95% {
-    transform: scaleY(0.1);
-  }
-}
-
-@keyframes olive-bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
   50% {
-    transform: translateY(-1.5px);
-  }
-}
-
-@keyframes olive-glance {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  30% {
-    transform: translate(-1.5px, -1px);
-  }
-  65% {
-    transform: translate(1.5px, -1px);
+    transform: rotate(8deg);
   }
 }
 

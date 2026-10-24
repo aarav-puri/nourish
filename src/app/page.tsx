@@ -28,8 +28,8 @@ const FEATURES: { icon: ComponentType<SVGProps<SVGSVGElement>>; title: string; b
   },
   {
     icon: AskIcon,
-    title: 'Ask Olive',
-    body: '“Which of my snacks has the least sugar?” Olive answers from your scans.',
+    title: 'Ask NourishAI',
+    body: '“Which of my snacks has the least sugar?” NourishAI answers from your scans.',
   },
 ]
 
@@ -128,7 +128,7 @@ export default function HomePage() {
         <section aria-labelledby="start-h" className="px-[var(--gutter)] pb-20 lg:pb-28">
           <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 rounded-3xl bg-accent px-8 py-10 text-on-accent sm:px-14 sm:py-14 lg:flex-row lg:items-center">
             <h2 id="start-h" className="font-display text-[clamp(1.75rem,3.4vw,2.6rem)] font-bold leading-[1.1] tracking-[-0.03em]">
-              What’s in your pantry?
+              What’s in your cupboard?
             </h2>
             <Link
               href="/app"
