@@ -11,18 +11,18 @@ import Button from '@/components/ui/Button'
 const NUTRIENTS = [
   { key: 'energy-kcal_100g', label: 'Energy', unit: 'kcal' },
   { key: 'fat_100g', label: 'Fat', unit: 'g' },
-  { key: 'saturated-fat_100g', label: 'of which saturates', unit: 'g' },
+  { key: 'saturated-fat_100g', label: 'Saturated fat', unit: 'g' },
   { key: 'carbohydrates_100g', label: 'Carbohydrate', unit: 'g' },
-  { key: 'sugars_100g', label: 'of which sugars', unit: 'g' },
-  { key: 'fiber_100g', label: 'Fibre', unit: 'g' },
+  { key: 'sugars_100g', label: 'Total sugars', unit: 'g' },
+  { key: 'fiber_100g', label: 'Fiber', unit: 'g' },
   { key: 'proteins_100g', label: 'Protein', unit: 'g' },
   { key: 'salt_100g', label: 'Salt', unit: 'g' },
 ] as const
 
 /**
  * For products the databases do not know: copy the label in, and Nourish
- * analyses it the same way. Fields follow the order of a printed label so
- * the eye can run down the pack and the form together.
+ * analyzes it the same way. Fields follow the order of a printed label so
+ * the eye can run down the package and the form together.
  */
 export default function ManualEntry({ barcode, onDone }: { barcode: string; onDone: (food: Food) => void }) {
   const [name, setName] = useState('')
@@ -36,7 +36,7 @@ export default function ManualEntry({ barcode, onDone }: { barcode: string; onDo
     e.preventDefault()
     const next: typeof errors = {}
     if (!name.trim()) next.name = 'Enter the product name.'
-    if (!ingredients.trim()) next.ingredients = 'Copy the ingredients from the pack.'
+    if (!ingredients.trim()) next.ingredients = 'Copy the ingredients from the package.'
     setErrors(next)
     if (Object.keys(next).length) return
 
@@ -69,7 +69,7 @@ export default function ManualEntry({ barcode, onDone }: { barcode: string; onDo
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="t-title">Enter it from the pack</h1>
+      <h1 className="t-title">Enter it from the package</h1>
       <p className="mt-2 leading-relaxed text-ink-2">
         Copy what is printed on the label. Nourish grades it, checks it against your profile, and keeps it in your history.
         {barcode && (
@@ -118,7 +118,7 @@ export default function ManualEntry({ barcode, onDone }: { barcode: string; onDo
           </legend>
           <div className="well mt-1 px-1">
             {NUTRIENTS.map((n) => {
-              const sub = n.label.startsWith('of which')
+              const sub = n.key === 'saturated-fat_100g' || n.key === 'sugars_100g'
               return (
                 <label key={n.key} className="flex items-center justify-between gap-3 border-b border-line px-3 py-1.5 last:border-b-0">
                   <span className={`text-sm ${sub ? 'pl-3 text-ink-2' : 'font-medium'}`}>{n.label}</span>
@@ -140,7 +140,7 @@ export default function ManualEntry({ barcode, onDone }: { barcode: string; onDo
         </fieldset>
 
         <Button type="submit" size="lg" loading={busy} className="w-full">
-          {busy ? 'Analysing' : 'Analyse this product'}
+          {busy ? 'Analyzing' : 'Analyze this product'}
         </Button>
       </form>
     </div>

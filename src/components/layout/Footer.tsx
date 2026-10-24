@@ -14,7 +14,6 @@ const COLUMNS = [
     label: 'Nourish',
     links: [
       { href: '/about', text: 'About' },
-      { href: '/#how', text: 'How it works' },
     ],
   },
   {
@@ -33,7 +32,7 @@ export default function Footer() {
         <div className="col-span-2 md:col-span-1">
           <Wordmark byline />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-2">
-            A second opinion in the grocery aisle.
+            Food labels in plain words.
           </p>
         </div>
         {COLUMNS.map((col) => (

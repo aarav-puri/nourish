@@ -37,6 +37,8 @@ export interface Food {
   ingredients: string[]
   highlights: string[]
   grade: Grade | null
+  /** The grade as a health score from 0 to 100, always inside its grade's band. */
+  score: number | null
   gradeEstimated: boolean
   eco: Grade | null
   ecoEstimated: boolean
@@ -64,6 +66,37 @@ export const GRADE_INFO: Record<Grade, { label: string; summary: string }> = {
   c: { label: 'Average', summary: 'Fine in moderation. Better options likely exist.' },
   d: { label: 'Poor', summary: 'Best as an occasional food.' },
   e: { label: 'Bad', summary: 'Weakest nutritional profile. Treat as a rare indulgence.' },
+}
+
+/** The share of the 0 to 100 score each grade covers. */
+export const SCORE_BANDS: Record<Grade, [number, number]> = {
+  a: [80, 100],
+  b: [60, 79],
+  c: [40, 59],
+  d: [20, 39],
+  e: [0, 19],
+}
+
+// Nutri-Score points per grade for solid foods (2023 method); fewer is better.
+const POINT_BANDS: Record<Grade, [number, number]> = {
+  a: [-17, 0],
+  b: [1, 2],
+  c: [3, 10],
+  d: [11, 18],
+  e: [19, 40],
+}
+
+/**
+ * Places the raw Nutri-Score points on 0 to 100 within the grade's band, so
+ * the number and the grade never disagree. Without points, the band's middle.
+ */
+export function scoreFor(grade: Grade | null, points?: number): number | null {
+  if (!grade) return null
+  const [lo, hi] = SCORE_BANDS[grade]
+  if (points === undefined) return Math.round((lo + hi) / 2)
+  const [best, worst] = POINT_BANDS[grade]
+  const t = Math.min(1, Math.max(0, (points - best) / (worst - best)))
+  return Math.round(hi - t * (hi - lo))
 }
 
 export const NOVA_INFO: Record<1 | 2 | 3 | 4, { label: string; detail: string }> = {
@@ -309,6 +342,7 @@ export function toFood(raw: any, barcodeHint = ''): Food {
     ingredients: splitIngredients(ingredientsText),
     highlights: Array.isArray(ai.key_highlights) ? ai.key_highlights.filter(Boolean) : [],
     grade: asGrade(p.nutriscore_grade),
+    score: scoreFor(asGrade(p.nutriscore_grade), estimated.includes('nutriscore_grade') ? undefined : num(p.nutriscore_score)),
     gradeEstimated: estimated.includes('nutriscore_grade'),
     eco: asGrade(p.ecoscore_grade),
     ecoEstimated: estimated.includes('ecoscore_grade'),
@@ -356,8 +390,8 @@ export function keyPoints(food: Food): Point[] {
   if (levels.fat === 'high' && levels.saturatedFat !== 'high')
     bad.push({ tone: 'bad', text: `High in fat, ${fmt(n.fat)}g per ${unit}` })
 
-  if (n.fiber !== undefined && n.fiber >= 6) good.push({ tone: 'good', text: `High in fibre, ${fmt(n.fiber)}g` })
-  else if (n.fiber !== undefined && n.fiber >= 3) good.push({ tone: 'good', text: `Source of fibre, ${fmt(n.fiber)}g` })
+  if (n.fiber !== undefined && n.fiber >= 6) good.push({ tone: 'good', text: `High in fiber, ${fmt(n.fiber)}g` })
+  else if (n.fiber !== undefined && n.fiber >= 3) good.push({ tone: 'good', text: `Source of fiber, ${fmt(n.fiber)}g` })
   if (n.protein !== undefined && n.protein >= 12) good.push({ tone: 'good', text: `High in protein, ${fmt(n.protein)}g` })
   if (levels.sugars === 'low') good.push({ tone: 'good', text: 'Low in sugar' })
   if (levels.salt === 'low') good.push({ tone: 'good', text: 'Low in salt' })

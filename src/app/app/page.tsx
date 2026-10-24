@@ -200,14 +200,14 @@ function Scanner() {
           body={
             <>
               No product uses <span className="font-mono text-ink">{view.code}</span> in Open Food Facts or Go-UPC.
-              Newer and local products are often missing. Check the digits, or enter the details from the pack and
-              we will analyse them.
+              Newer and local products are often missing. Check the digits, or enter the details from the package and
+              we will analyze them.
             </>
           }
           onBack={back}
         >
           <Button icon={<PenLine className="h-4 w-4" aria-hidden="true" />} onClick={() => router.replace(`/app?code=${view.code}&manual=1`)}>
-            Enter details from the pack
+            Enter details from the package
           </Button>
           <Button variant="secondary" onClick={() => router.push('/app')}>
             Try another barcode

@@ -499,7 +499,6 @@ summary::-webkit-details-marker {
 .scan-art-bars { width: 100px; height: 64px; background: repeating-linear-gradient(90deg,rgb(var(--ink) / .72) 0 2px,transparent 2px 5px,rgb(var(--ink) / .72) 5px 9px,transparent 9px 12px,rgb(var(--ink) / .72) 12px 13px,transparent 13px 17px); }
 .scan-primary { border-radius: 2rem; border: 1px solid rgb(var(--accent) / .12); background: linear-gradient(145deg,rgb(var(--accent-soft)),rgb(var(--surface-2) / .65)); padding: 1.6rem; }
 .scanner-method { border: 1px solid rgb(var(--line)); border-radius: 1.5rem; background: rgb(var(--surface)); padding: 1.3rem; }
-.nourish-feature-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; background: rgb(var(--accent-soft)); color: rgb(var(--accent-ink)); }
 @media(max-width: 900px) { .nourish-hero-inner { gap: 2.5rem; } .nourish-hero-visual { min-height: 31rem; } .nourish-hero-sticker { left: -1rem; right: 1rem; bottom: 1rem; } }
 @media(max-width: 640px) { .nourish-hero { padding-top: 1.5rem; } .nourish-hero-inner { grid-template-columns: 1fr; gap: 1.5rem; } .nourish-hero-copy { padding-block: .5rem; } .nourish-hero h1 { font-size: clamp(2.8rem, 12vw, 4rem); max-width: 12ch; } .nourish-hero-visual { min-height: 25rem; border-radius: 1.75rem; margin-left: .5rem; } .nourish-hero-sticker { padding: 1rem; } .scan-primary { padding: 1.25rem; } }
 
@@ -515,159 +514,170 @@ summary::-webkit-details-marker {
   .nourish-app .app-editorial-title { font-size: 2.6rem; }
 }
 .scanner-workspace { border: 1px solid rgb(var(--line)); border-radius: 2rem; padding: 12px; background: rgb(var(--surface)); box-shadow: 0 20px 70px rgb(var(--shadow) / .08); }
-.scan-switch { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; padding: 5px; background: rgb(var(--surface-2)); border-radius: 999px; }
+.scan-switch { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; padding: 5px; background: rgb(var(--surface-2)); border-radius: 999px; }
 .scan-switch button { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 999px; font-size: 13px; font-weight: 500; color: rgb(var(--ink-2)); transition: background .2s, color .2s, box-shadow .2s; }
 .scan-switch button[aria-selected="true"] { color: rgb(var(--accent-ink)); }
 /* The selected tab's raised pill; it slides between tabs. */
 .scan-switch-pill { position: absolute; inset: 0; border-radius: inherit; background: rgb(var(--surface)); box-shadow: 0 2px 8px rgb(var(--shadow) / .12); }
 .scan-switch button:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; }
 .scan-panel { padding: 28px 24px 20px; text-align: center; }
-/* The camera tab is one large target; the card's own padding frames it. */
-.scan-panel.scan-panel-flush { padding: 12px 0 0; }
-/* Viewfinder: a soft sage wash, brightest where the lens sits. */
-.camera-launcher { background: radial-gradient(60% 70% at 50% 45%, rgb(var(--accent-soft)) 0%, rgb(var(--surface-2) / .55) 70%, rgb(var(--surface-2) / .35) 100%); box-shadow: inset 0 0 0 1px rgb(var(--line) / .7); }
-.scan-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; width: 100%; min-height: 280px; border: 1px dashed rgb(var(--line-strong) / .4); border-radius: 1.5rem; background: rgb(var(--paper)); transition: background .2s; }
+.scan-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; width: 100%; min-height: 240px; border: 1px dashed rgb(var(--line-strong) / .4); border-radius: 1.5rem; background: rgb(var(--paper)); transition: background .2s; }
 .scan-upload:hover, .scan-upload.is-dragging { background: rgb(var(--accent-soft)); }
-@media(max-width:639px) { .scan-switch button { flex-direction: column; gap: 5px; font-size: 11px; min-height: 58px; } .scan-panel { padding: 22px 8px 12px; } .scan-panel.scan-panel-flush { padding: 10px 0 0; } }
+/* The one way into the live camera on the scan screen. */
+.scan-camera-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin-bottom: 10px; border-radius: 999px; background: rgb(var(--accent)); color: rgb(var(--on-accent)); font-family: var(--font-display), sans-serif; font-size: 15px; font-weight: 600; box-shadow: 0 10px 24px -12px rgb(var(--accent) / .8); transition: background .2s, transform .15s; }
+.scan-camera-button:hover { background: rgb(var(--accent-ink)); }
+.scan-camera-button:active { transform: scale(.985); }
+.scan-camera-button:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 3px; }
+@media(max-width:639px) { .scan-panel { padding: 22px 8px 12px; } .scan-upload { min-height: 200px; } }
 
-/* ---------- Landing hero: from blur to clarity ---------- */
-
-.food-stage {
-  --spread-x: min(44vw, 620px);
-  --spread-y: calc((100svh - 5rem) * 0.42);
-  /* Item scale on this screen size. */
-  --m: 1;
+/* ---------- Signed-in pages: one header, one column, one wash ---------- */
+/* A sage morning light from the top of the page, fading into paper well
+   before the content. Built only from theme tokens, so it follows dark mode. */
+.nourish-app {
+  background-color: rgb(var(--paper));
+  background-image:
+    radial-gradient(64rem 32rem at 50% 2rem, rgb(var(--accent-soft)) 0%, rgb(var(--accent-soft) / .55) 38%, rgb(var(--accent-soft) / 0) 82%),
+    radial-gradient(34rem 22rem at 90% 0, rgb(var(--grade-b) / .1) 0%, rgb(var(--grade-b) / 0) 70%),
+    linear-gradient(180deg, rgb(var(--surface-2) / .6) 0, rgb(var(--paper)) 34rem);
+  background-repeat: no-repeat;
 }
-@media (max-width: 639px) {
-  .food-stage {
-    --spread-x: 47vw;
-    --spread-y: calc((100svh - 5rem) * 0.44);
-    --m: 0.62;
-  }
-  .food-item {
-    --fx: var(--mfx) !important;
-    --fy: var(--mfy) !important;
-  }
-}
+.app-page-header { margin-bottom: 2.25rem; text-align: center; }
+.app-page-title { font-family: var(--font-display), sans-serif; font-size: clamp(2.6rem, 5vw, 3.75rem); font-weight: 700; line-height: 1; letter-spacing: -.045em; color: rgb(var(--ink)); text-wrap: balance; }
+.app-page-subtitle { margin-top: .75rem; font-size: .9375rem; line-height: 1.5; color: rgb(var(--ink-2)); }
+.nourish-app #recent-h { font-family: var(--font-display), sans-serif; font-style: normal; font-weight: 700; letter-spacing: -.035em; }
+/* History's search and filters stay readable over the list while stuck. */
+.app-sticky-tools { background: rgb(var(--paper) / .88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+@media(max-width:639px) { .app-page-header { margin-bottom: 1.75rem; } }
 
-/* --e runs from 0 (unread: tilted, small, soft) to 1 (read: upright and sharp),
-   with a small pop on the way. */
-.food-item {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  transform: translate(calc(var(--fx) * var(--spread-x)), calc(var(--fy) * var(--spread-y)))
-    rotate(calc(var(--r) * (1 - var(--e))))
-    scale(calc(var(--m) * (var(--s) * (1 - var(--e)) + var(--e) + 0.36 * var(--e) * (1 - var(--e)))));
-}
+/* ===== landing (agent) ===== */
 
-.food-focus {
-  filter: blur(calc(var(--b) * (1 - var(--e)))) saturate(calc(0.45 + 0.55 * var(--e)));
-  opacity: calc(var(--o) + (1 - var(--o)) * var(--e));
-  will-change: filter, opacity;
-}
-
-.food-float {
-  animation: food-float 5s ease-in-out infinite;
-}
-
-@keyframes food-float {
-  0%,
-  100% {
-    transform: translateY(calc(-8px * var(--amp))) rotate(calc(-2deg * var(--amp)));
-  }
-  50% {
-    transform: translateY(calc(8px * var(--amp))) rotate(calc(2deg * var(--amp)));
-  }
-}
-
-.food-card {
+/* The hero label: pack fine print, read through a lens. */
+/* The lens may hang past the card's edge; the card itself is drawn twice. */
+.label-card {
   border: 1px solid rgb(var(--line) / 0.8);
-  border-radius: 1.1rem;
-  background: rgb(var(--surface) / 0.94);
-  box-shadow: 0 14px 30px -10px rgb(var(--shadow) / 0.28), inset 0 1px 0 rgb(var(--sh-light) / 0.5);
+  border-radius: 1.75rem;
+  background: rgb(var(--surface));
 }
-
-/* What the scan read, under each item once it is in focus. */
-.food-tag {
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.5rem;
-  padding: 0.3rem 0.65rem 0.3rem 0.5rem;
-  border: 1px solid rgb(var(--line) / 0.8);
-  border-radius: 9999px;
-  background: rgb(var(--surface) / 0.92);
-  box-shadow: 0 8px 18px -8px rgb(var(--shadow) / 0.3);
+.label-card-base {
+  box-shadow: 0 1px 0 rgb(var(--sh-light) / 0.5) inset, 0 30px 60px -30px rgb(var(--shadow) / 0.35);
+}
+.label-print {
+  padding: 1.75rem 1.75rem 1.5rem;
+  font-size: 12.5px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  color: rgb(var(--ink-2));
+}
+.label-print[data-read='false'] {
+  color: rgb(var(--ink-3) / 0.85);
+}
+.label-print[data-read='true'] {
   color: rgb(var(--ink));
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  opacity: calc((var(--e) - 0.55) * 2.2);
-  transform: translateX(-50%) translateY(calc((1 - var(--e)) * 10px));
-  backdrop-filter: blur(8px);
 }
-
-.food-tick {
-  position: absolute;
-  right: -0.4rem;
-  top: -0.4rem;
+.label-print b {
+  font-weight: 700;
+}
+.label-lower {
   display: grid;
-  place-items: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  border-radius: 9999px;
-  background: rgb(var(--level-low));
-  color: rgb(var(--paper));
-  box-shadow: 0 0 0 3px rgb(var(--paper)), 0 6px 14px -4px rgb(var(--level-low) / 0.6);
-  opacity: calc((var(--e) - 0.55) * 2.2);
-  transform: scale(calc(0.4 + 0.6 * var(--e)));
+  grid-template-columns: minmax(0, 1fr) 7.25rem;
+  gap: 1.75rem;
+  align-items: end;
+  margin-top: 1.1rem;
+}
+.label-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  font-variant-numeric: tabular-nums;
+}
+.label-table th {
+  padding: 0.35rem 0;
+  font-weight: 700;
+  text-align: left;
+}
+.label-table th + th,
+.label-table td + td {
+  text-align: right;
+}
+.label-table td {
+  padding: 0.18rem 0;
+  border-top: 1px solid rgb(var(--line));
+}
+.label-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+.label-bars {
+  width: 100% !important;
+  height: 44px !important;
+  opacity: 0.8;
+}
+.label-print[data-read='false'] .label-bars {
+  opacity: 0.45;
 }
 
-/* The scan line: a bright sage edge trailing a soft wash of light. */
-.food-scan {
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  z-index: 20;
-  height: 0;
-  pointer-events: none;
-  opacity: var(--scan);
-  transform: translateY(var(--scan-y));
+/* Under the glass, flagged terms are marked with their level colour. */
+.label-term {
+  border-radius: 4px;
+  padding: 0 2px;
+  margin: 0 -2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
-.food-scan::before {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  height: 180px;
-  background: linear-gradient(to bottom, transparent, rgb(var(--accent) / 0.1));
-  mask-image: linear-gradient(to right, transparent, #000 15%, #000 85%, transparent);
+.label-term-high {
+  color: rgb(var(--level-high));
+  background: rgb(var(--level-high) / 0.1);
 }
-.food-scan::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  top: -1px;
-  height: 2px;
-  background: linear-gradient(to right, transparent, rgb(var(--accent)) 20%, rgb(var(--accent)) 80%, transparent);
-  box-shadow: 0 0 18px 2px rgb(var(--accent) / 0.45);
+.label-term-moderate {
+  color: rgb(var(--level-moderate));
+  background: rgb(var(--level-moderate) / 0.12);
+}
+.label-term-high.is-active {
+  background: rgb(var(--level-high) / 0.2);
+}
+.label-term-moderate.is-active {
+  background: rgb(var(--level-moderate) / 0.22);
 }
 
-.food-cue {
-  animation: food-cue 1.8s ease-in-out infinite;
+.label-lens-ring {
+  border: 1px solid rgb(var(--accent) / 0.45);
+  box-shadow: inset 0 0 0 4px rgb(var(--surface) / 0.5), inset 0 0 18px rgb(var(--accent) / 0.12),
+    0 14px 30px -10px rgb(var(--shadow) / 0.45);
+  background: radial-gradient(circle at 30% 26%, rgb(255 255 255 / 0.28), transparent 40%);
 }
 
-@keyframes food-cue {
-  0%,
-  100% {
-    transform: translateY(0);
+@media (prefers-color-scheme: dark) {
+  .label-lens-ring {
+    background: radial-gradient(circle at 30% 26%, rgb(255 255 255 / 0.07), transparent 40%);
   }
-  50% {
-    transform: translateY(4px);
+}
+
+.label-lens-note {
+  padding: 0.7rem 0.9rem 0.8rem;
+  border-radius: 0.9rem;
+  background: rgb(var(--ink));
+  color: rgb(var(--on-ink));
+  box-shadow: 0 18px 36px -14px rgb(var(--shadow) / 0.6);
+  transition: opacity 0.25s ease;
+}
+.label-lens-note[data-shown='false'] {
+  opacity: 0;
+}
+
+@media (max-width: 419px) {
+  .label-print {
+    padding: 1.25rem 1.15rem 1.1rem;
+    font-size: 11.5px;
+  }
+  .label-lower {
+    grid-template-columns: minmax(0, 1fr) 5.5rem;
+    gap: 1.1rem;
   }
 }
+
+/* ===== /landing (agent) ===== */

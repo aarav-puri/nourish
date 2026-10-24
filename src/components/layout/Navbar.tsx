@@ -8,7 +8,6 @@ import { useAuth } from '@/lib/auth-context'
 import Wordmark from '@/components/brand/Wordmark'
 
 const NAV = [
-  { href: '/#how', label: 'How it works' },
   { href: '/#features', label: 'Features' },
   { href: '/about', label: 'About' },
 ]
@@ -39,7 +38,7 @@ export default function Navbar() {
     }
   }, [open])
 
-  const cta = user ? 'Go to dashboard' : 'Sign in'
+  const cta = user ? 'Open scanner' : 'Sign in'
 
   return (
     <header
@@ -81,7 +80,7 @@ export default function Navbar() {
           </button>
           <div className="flex items-center" aria-busy={loading || undefined}>
             <Link href={user ? '/app' : '/signin'} className="btn-primary h-11 min-h-11 rounded-full px-5 sm:px-6">
-              {loading ? 'Get started' : cta}
+              {loading ? 'Sign in' : cta}
             </Link>
           </div>
         </div>

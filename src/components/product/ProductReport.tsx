@@ -29,7 +29,7 @@ import {
 } from '@/lib/food'
 import { DIETS, checkProduct, dietLabel, isProfileEmpty, overallStatus, type Check, type CheckStatus } from '@/lib/profile'
 import { INSIGHT_TITLES, type InsightKind } from '@/lib/ai-service'
-import { GradeScale } from '@/components/product/Grade'
+import { GradeScale, ScoreMeter } from '@/components/product/Grade'
 import InsightResults from '@/components/product/InsightResults'
 import { useInsights } from '@/components/product/useInsights'
 import Modal from '@/components/ui/Modal'
@@ -113,17 +113,15 @@ function Verdict({ food, points }: { food: Food; points: ReturnType<typeof keyPo
       <div className="p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 id="verdict-h" className="t-eyebrow">
-            Nutri-Score
+            Health score
           </h2>
           {food.gradeEstimated && <span className="chip py-0.5 text-[11px]">Estimated by AI</span>}
         </div>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-          <GradeScale grade={food.grade} label="Nutri-Score" />
-          {info ? (
-            <p className="font-display font-bold text-3xl leading-none">{info.label}</p>
-          ) : (
-            <p className="font-display font-bold text-2xl leading-none text-ink-2">Not graded</p>
-          )}
+          <div className="min-w-[14rem] flex-1">
+            <ScoreMeter grade={food.grade} score={food.score} />
+          </div>
+          {info && <p className="font-display font-bold text-3xl leading-none">{info.label}</p>}
         </div>
         <p className="mt-4 text-sm leading-relaxed text-ink-2">
           {info
@@ -174,7 +172,7 @@ const STATUS: Record<CheckStatus, { title: string; icon: LucideIcon; banner: str
     dotClass: 'text-level-high',
   },
   caution: {
-    title: 'Check the pack before buying',
+    title: 'Check the package before buying',
     icon: ShieldQuestion,
     banner: 'bg-level-moderate text-[#2b2200]',
     dot: TriangleAlert,
@@ -270,10 +268,10 @@ function NutritionPanel({ food }: { food: Food }) {
 
   const rows: { key: keyof typeof n; label: string; value?: number; digits?: number; indent?: boolean; level?: Level; max?: number }[] = [
     { key: 'fat', label: 'Fat', value: n.fat, level: food.levels.fat, max: BAR_MAX.fat },
-    { key: 'saturatedFat', label: 'Saturates', value: n.saturatedFat, indent: true, level: food.levels.saturatedFat, max: BAR_MAX.saturatedFat },
+    { key: 'saturatedFat', label: 'Saturated fat', value: n.saturatedFat, indent: true, level: food.levels.saturatedFat, max: BAR_MAX.saturatedFat },
     { key: 'carbs', label: 'Carbohydrate', value: n.carbs },
     { key: 'sugars', label: 'Sugars', value: n.sugars, indent: true, level: food.levels.sugars, max: BAR_MAX.sugars },
-    { key: 'fiber', label: 'Fibre', value: n.fiber },
+    { key: 'fiber', label: 'Fiber', value: n.fiber },
     { key: 'protein', label: 'Protein', value: n.protein },
     { key: 'salt', label: 'Salt', value: n.salt, digits: 2, level: food.levels.salt, max: BAR_MAX.salt },
   ]
@@ -509,7 +507,7 @@ function AskAI({ food }: { food: Food }) {
 
   // Exactly what goes to Gemini with the question, shown while it works.
   const context = [
-    food.grade ? `Nutri-Score ${food.grade.toUpperCase()}` : null,
+    food.score !== null ? `Health score ${food.score}/100` : null,
     food.ingredients.length ? `${food.ingredients.length} ingredients` : null,
     food.additives.length ? `${food.additives.length} additive${food.additives.length > 1 ? 's' : ''}` : null,
     'Nutrition per 100g',
