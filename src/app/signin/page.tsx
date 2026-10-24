@@ -23,7 +23,6 @@ function SignInForm() {
   const errorRef = useRef<HTMLDivElement>(null)
 
   const next = params.get('next') || '/app'
-  const reason = params.get('reason')
 
   // Already signed in: this page has nothing to do.
   useEffect(() => {
@@ -65,11 +64,6 @@ function SignInForm() {
     <AuthShell
       eyebrow="Sign in"
       title="Welcome back"
-      lede={
-        reason === 'save'
-          ? 'Sign in and we\'ll keep every scan, on whatever device you pick up next.'
-          : 'Your scans and your history are where you left them.'
-      }
       footer={
         <>
           New here?{' '}

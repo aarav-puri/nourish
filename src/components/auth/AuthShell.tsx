@@ -5,7 +5,7 @@ import Wordmark from '@/components/brand/Wordmark'
 interface AuthShellProps {
   eyebrow: string
   title: string
-  lede: string
+  lede?: string
   children: ReactNode
   /** The cross link to the other auth page. */
   footer: ReactNode
@@ -26,7 +26,7 @@ export default function AuthShell({ eyebrow, title, lede, children, footer }: Au
         <div className="mx-auto flex w-full max-w-[24rem] flex-1 flex-col justify-center py-12">
           <p className="t-eyebrow">{eyebrow}</p>
           <h1 className="t-title mt-2">{title}</h1>
-          <p className="mt-3 leading-relaxed text-ink-2">{lede}</p>
+          {lede && <p className="mt-3 leading-relaxed text-ink-2">{lede}</p>}
           {children}
           <div className="mt-8 text-sm text-ink-2">{footer}</div>
         </div>

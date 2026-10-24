@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { KeyRound } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAuth } from '@/lib/auth-context'
+import { SessionEndedError, useAuth } from '@/lib/auth-context'
 import { auth } from '@/lib/supabase'
 import { getGeminiApiKey, maskKey, setGeminiApiKey } from '@/lib/ai-service'
-import { type DietId } from '@/lib/profile'
 import AppShell from '@/components/app/AppShell'
 import PageHeader from '@/components/app/PageHeader'
 import KeySetup from '@/components/app/KeySetup'
@@ -64,7 +63,7 @@ function Section({ id, title, description, children }: { id?: string; title: str
 
 function FoodProfileSection() {
   const { profile, saveProfile } = useAuth()
-  const [diets, setDiets] = useState<DietId[]>(profile.diets)
+  const [diets, setDiets] = useState<string[]>(profile.diets)
   const [avoid, setAvoid] = useState<string[]>(profile.avoid)
   const [saving, setSaving] = useState(false)
 
@@ -77,8 +76,8 @@ function FoodProfileSection() {
     try {
       await saveProfile({ diets, avoid })
       toast.success('Food profile saved', { description: 'Every scan now checks against it.' })
-    } catch {
-      toast.error('Could not save your profile. Try again.')
+    } catch (err) {
+      toast.error(err instanceof SessionEndedError ? err.message : 'Could not save your profile. Try again.')
     }
     setSaving(false)
   }

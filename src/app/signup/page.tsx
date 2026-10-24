@@ -115,7 +115,6 @@ function SignUpForm() {
     <AuthShell
       eyebrow="Sign up"
       title="Let's get you started"
-      lede="Free to start, with unlimited scans. Your history follows you to any device."
       footer={
         <>
           Already have an account?{' '}

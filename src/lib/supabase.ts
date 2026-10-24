@@ -89,7 +89,8 @@ export const auth = {
       throw new Error(body.error || 'Failed to delete account')
     }
 
-    await supabase.auth.signOut()
+    // The account and its server sessions are gone; only this browser's copy is left to clear.
+    await supabase.auth.signOut({ scope: 'local' })
   },
 
   async signInWithGoogle() {

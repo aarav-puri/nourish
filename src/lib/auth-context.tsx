@@ -20,6 +20,17 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
+/** Thrown when the stored session no longer belongs to a live account. */
+export class SessionEndedError extends Error {
+  constructor() {
+    super('Your session has ended. Sign in again.')
+  }
+}
+
+// The auth server answers 401, 403 or 404 for a token whose account is gone,
+// such as one deleted from another device.
+const isSessionGone = (error: any) => [401, 403, 404].includes(error?.status)
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -32,6 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null)
       setLoading(false)
+      // Then confirm the account still exists, in the background; a stored
+      // session can outlive it. Network failures leave the session alone.
+      if (data.session) {
+        supabase.auth.getUser().then(({ error }) => {
+          if (error && isSessionGone(error)) supabase.auth.signOut({ scope: 'local' })
+        })
+      }
     })
 
     const {
@@ -62,8 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const profile = useMemo(() => readProfile(user), [user])
 
   const saveProfile = useCallback(async (next: FoodProfile, displayName?: string) => {
-    const { data, error } = await supabase.auth.updateUser({ data: { food_profile: next, ...(displayName !== undefined ? { display_name: displayName.trim() } : {}) } })
-    if (error) throw error
+    const { data, error } = await supabase.auth.updateUser({ data: { food_profile: next, onboarded: true, ...(displayName !== undefined ? { display_name: displayName.trim() } : {}) } })
+    if (error) {
+      console.error('Saving the food profile failed:', error)
+      if (isSessionGone(error)) {
+        await supabase.auth.signOut({ scope: 'local' })
+        throw new SessionEndedError()
+      }
+      throw error
+    }
     if (data.user) setUser(data.user)
   }, [])
 
