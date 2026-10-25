@@ -91,7 +91,7 @@ async function fetchWithRetry(
 // kilobytes; this keeps the lookup fast and the stored history row small.
 const OFF_FIELDS = [
   'code', 'product_name', 'product_name_en', 'brands', 'quantity', 'categories', 'categories_tags',
-  'ingredients_text', 'ingredients_text_en', 'image_front_url', 'image_url', 'nutriments',
+  'ingredients_text', 'ingredients_text_en', 'nutriments',
   'nutriscore_grade', 'nutriscore_score', 'ecoscore_grade', 'nova_group', 'additives_tags', 'allergens_tags',
   'traces_tags', 'ingredients_analysis_tags', 'labels_tags', 'packaging', 'countries', 'serving_size',
 ].join(',')
@@ -164,7 +164,6 @@ function mapGoUpcProduct(code: string, product: any) {
     product_name: product.name,
     brands: product.brand,
     ingredients_text: product.ingredients?.text,
-    image_url: product.imageUrl,
     categories: Array.isArray(product.categoryPath) && product.categoryPath.length
       ? product.categoryPath.join(', ')
       : product.category,
@@ -173,14 +172,14 @@ function mapGoUpcProduct(code: string, product: any) {
 
 function hasCoreFields(product: any) {
   return Boolean(
-    product.product_name && product.brands && product.image_url && product.ingredients_text
+    product.product_name && product.brands && product.ingredients_text
   )
 }
 
 // Open Food Facts values win; Go-UPC only fills fields that are missing.
 function mergeProducts(off: any | null, upc: any | null, barcode: string) {
   const merged: Record<string, any> = { code: barcode, ...(upc ?? {}), ...(off ?? {}) }
-  for (const key of ['product_name', 'brands', 'image_url', 'ingredients_text', 'categories']) {
+  for (const key of ['product_name', 'brands', 'ingredients_text', 'categories']) {
     if (!merged[key] && upc?.[key]) merged[key] = upc[key]
   }
   return merged
