@@ -67,24 +67,10 @@ export default function ProductReport({ food, actions }: { food: Food; actions?:
 /* ---------- Header ---------------------------------------------------- */
 
 function ProductHeader({ food, actions }: { food: Food; actions?: React.ReactNode }) {
-  const [imgOk, setImgOk] = useState(true)
   return (
     <header className="card flex items-start gap-4 p-5 sm:gap-5 sm:p-6">
       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-neu-sm sm:h-24 sm:w-24">
-        {food.image && imgOk ? (
-          // Product photos come from many hosts at unknown sizes, so a plain
-          // img with lazy decoding beats routing them through the optimiser.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={food.image}
-            alt=""
-            className="h-full w-full object-contain p-1.5"
-            decoding="async"
-            onError={() => setImgOk(false)}
-          />
-        ) : (
-          <Package className="h-7 w-7 text-ink-3" aria-hidden="true" />
-        )}
+        <Package className="h-7 w-7 text-ink-3" aria-hidden="true" />
       </div>
       <div className="min-w-0 flex-1 pt-0.5">
         {food.brand && food.brand.toLowerCase() !== food.name.toLowerCase() && (

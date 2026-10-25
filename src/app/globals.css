@@ -456,8 +456,8 @@ summary::-webkit-details-marker {
 @media(max-width: 640px) { .nourish-hero { padding-top: 1.5rem; } .nourish-hero-inner { grid-template-columns: 1fr; gap: 1.5rem; } .nourish-hero-copy { padding-block: .5rem; } .nourish-hero h1 { font-size: clamp(2.8rem, 12vw, 4rem); max-width: 12ch; } .nourish-hero-visual { min-height: 25rem; border-radius: 1.75rem; margin-left: .5rem; } .nourish-hero-sticker { padding: 1rem; } .scan-primary { padding: 1.25rem; } }
 
 /* Editorial app surfaces echo the landing hero without adding motion to tasks. */
-.nourish-app .app-editorial-title { font-size: clamp(2.5rem, 5.4vw, 4.5rem); line-height: 1.03; font-weight: 500; letter-spacing: -.05em; }
-.nourish-app .app-editorial-title em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color: rgb(var(--accent-ink)); }
+.nourish-app .app-editorial-title { font-family: var(--font-display), sans-serif; font-size: clamp(2.5rem, 5.4vw, 4.5rem); line-height: 1.03; font-weight: 700; letter-spacing: -.045em; }
+.nourish-app .app-editorial-title em { font-family: inherit; font-style: normal; font-weight: inherit; color: rgb(var(--accent-ink)); }
 .nourish-app .card { border-radius: 1.5rem; box-shadow: 0 8px 32px rgb(var(--shadow) / .035); }
 .nourish-app .scan-primary { padding: 2rem; border-radius: 1.75rem; background: radial-gradient(ellipse at 50% 30%, rgb(var(--surface)) 0%, rgb(var(--accent-soft)) 80%); }
 .nourish-app .btn-primary, .nourish-app .btn-secondary { border-radius: 999px; }

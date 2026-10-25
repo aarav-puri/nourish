@@ -31,7 +31,6 @@ export interface Food {
   name: string
   brand?: string
   quantity?: string
-  image?: string
   categories?: string
   ingredientsText?: string
   ingredients: string[]
@@ -340,7 +339,6 @@ export function toFood(raw: any, barcodeHint = ''): Food {
     brand: ai.formatted_brand || (p.brands ? String(p.brands).split(',')[0].trim() : undefined),
     // Drop the ℮ "estimated quantity" mark, which often arrives as a bare "e".
     quantity: p.quantity ? String(p.quantity).replace(/\s*(℮|\be)\s*$/, '').trim() || undefined : undefined,
-    image: p.image_front_url || p.image_url || p.image_front_small_url || undefined,
     categories: categories || undefined,
     ingredientsText,
     ingredients: splitIngredients(ingredientsText),
