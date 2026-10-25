@@ -16,7 +16,6 @@ import PageHeader from '@/components/app/PageHeader'
 import ChatAgent from '@/components/ChatAgent'
 import AssistantAvatar from '@/components/brand/AssistantAvatar'
 import { GRADE_STYLE, ScoreBadge } from '@/components/product/Grade'
-import ProductThumb from '@/components/product/ProductThumb'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 
@@ -319,7 +318,6 @@ function History() {
                           onClick={() => openEntry(e)}
                           className="-ml-2 flex min-w-0 flex-1 items-center gap-3.5 rounded-lg py-3 pl-2 pr-1 text-left transition-colors hover:bg-ink/[0.03]"
                         >
-                          <ProductThumb food={e.food} size={48} />
                           <span className="min-w-0 flex-1">
                             <span className="flex items-center gap-2">
                               <span className="truncate font-medium">{e.food.name}</span>

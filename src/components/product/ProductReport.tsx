@@ -9,7 +9,6 @@ import {
   CircleDashed,
   Leaf,
   ListChecks,
-  Package,
   RefreshCw,
   ShieldAlert,
   ShieldCheck,
@@ -69,10 +68,7 @@ export default function ProductReport({ food, actions }: { food: Food; actions?:
 function ProductHeader({ food, actions }: { food: Food; actions?: React.ReactNode }) {
   return (
     <header className="card flex items-start gap-4 p-5 sm:gap-5 sm:p-6">
-      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-neu-sm sm:h-24 sm:w-24">
-        <Package className="h-7 w-7 text-ink-3" aria-hidden="true" />
-      </div>
-      <div className="min-w-0 flex-1 pt-0.5">
+      <div className="min-w-0 flex-1">
         {food.brand && food.brand.toLowerCase() !== food.name.toLowerCase() && (
           <p className="truncate text-sm font-medium text-ink-2">{food.brand}</p>
         )}
