@@ -4,7 +4,6 @@ import Link from 'next/link'
 import type { Food } from '@/lib/food'
 import { timeAgo } from '@/lib/time'
 import { ScoreBadge } from '@/components/product/Grade'
-import ProductThumb from '@/components/product/ProductThumb'
 
 export interface RecentScan {
   id: string
@@ -71,7 +70,6 @@ export default function RecentScans({ items, onOpen }: { items: RecentScan[] | n
                 onClick={() => onOpen(food.barcode)}
                 className="group -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-ink/[0.03]"
               >
-                <ProductThumb food={food} size={44} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium group-hover:underline group-hover:decoration-ink/30 group-hover:underline-offset-4">
                     {food.name}
