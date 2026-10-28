@@ -128,8 +128,9 @@ export default function Modal({ isOpen, onClose, title, description, label, chil
         {/* Grab handle: a visual cue that this is a sheet on touch screens. */}
         <span aria-hidden="true" className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-ink/15 sm:hidden" />
 
-        {title && (
-          <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-3 pt-3 sm:px-6 sm:pt-5">
+        {/* Without a title the header is just the close button, and `label` names the dialog. */}
+        <div className={`flex shrink-0 items-start gap-4 px-5 sm:px-6 ${title ? 'justify-between pb-3 pt-3 sm:pt-5' : 'justify-end pt-2 sm:pt-4'}`}>
+          {title && (
             <div className="min-w-0">
               <h2 id={titleId} className="text-lg font-semibold tracking-tight">
                 {title}
@@ -140,11 +141,11 @@ export default function Modal({ isOpen, onClose, title, description, label, chil
                 </p>
               )}
             </div>
-            <button type="button" onClick={onClose} aria-label="Close" className="btn-icon -mr-2 -mt-1.5">
-              <X className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-        )}
+          )}
+          <button type="button" onClick={onClose} aria-label="Close" className="btn-icon -mr-2 -mt-1.5">
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 sm:px-6 sm:pb-6">{children}</div>
 

@@ -65,26 +65,11 @@ export function MatchIcon(props: IconProps) {
   )
 }
 
-/** One product handed for another. */
-export function SwapIcon(props: IconProps) {
-  return (
-    <Glyph {...props}>
-      <circle cx="22" cy="22" r="5" className={soft} />
-      <circle cx="10" cy="10" r="5" />
-      <circle cx="22" cy="22" r="5" />
-      <path d="M17 7.5c3.5 0 6.5 2.5 7 6M24 13.5l-2.2-1.6M24 13.5l1.6-2.3" />
-      <path d="M15 24.5c-3.5 0-6.5-2.5-7-6M8 18.5l2.2 1.6M8 18.5l-1.6 2.3" />
-    </Glyph>
-  )
-}
-
-/** A question with a star in it: ask NourishAI. */
+/** A speech bubble: ask Nourish AI. */
 export function AskIcon(props: IconProps) {
   return (
     <Glyph {...props}>
       <path d="M5 8.5a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4h-9l-6 5v-5a3 3 0 0 1-3-3z" />
-      <path d="M16 8.5c.5 2.6 1.9 4 4.5 4.5-2.6.5-4 1.9-4.5 4.5-.5-2.6-1.9-4-4.5-4.5 2.6-.5 4-1.9 4.5-4.5z" className={soft} />
-      <path d="M16 8.5c.5 2.6 1.9 4 4.5 4.5-2.6.5-4 1.9-4.5 4.5-.5-2.6-1.9-4-4.5-4.5 2.6-.5 4-1.9 4.5-4.5z" />
     </Glyph>
   )
 }

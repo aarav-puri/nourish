@@ -1,10 +1,10 @@
 """Split the NourishAI mascot into layers for AssistantAvatar.
 
-Run from the repo root: python3 brand/scripts/nourishai-layers.py (needs pillow and numpy).
+Run from the repo root: python3 scripts/nourishai-layers.py (needs pillow and numpy).
 """
 from PIL import Image, ImageDraw, ImageFilter
 import numpy as np
-im=Image.open("brand/nourishai-mascot.png").convert("RGBA")
+im=Image.open("public/nourishai/mascot.png").convert("RGBA")
 W,H=im.size
 # Leaf: everything above the helmet edge. The leaf layer sits behind the body,
 # so it also keeps a band below the edge that the body hides.

@@ -10,10 +10,10 @@ export default function Hero() {
             id="hero-h"
             className="max-w-[11ch] font-display text-[clamp(2.9rem,6.4vw,5.4rem)] font-bold leading-[0.98] tracking-[-0.045em] text-ink"
           >
-            The small print<span className="-ml-[0.06em]">,</span> read for you<span className="-ml-[0.06em]">.</span>
+            The fine print<span className="-ml-[0.06em]">,</span> made clear<span className="-ml-[0.06em]">.</span>
           </h1>
           <p className="mt-6 max-w-[26rem] text-lg leading-relaxed text-ink-2 sm:text-xl sm:leading-relaxed">
-            Scan a barcode and see what’s in it, in plain words, checked against your diet and allergies.
+            Scan any barcode to see exactly what’s inside, clearly explained and checked against your diet and allergies.
           </p>
         </div>
         <div className="mx-auto w-full max-w-[30rem] lg:mr-0">

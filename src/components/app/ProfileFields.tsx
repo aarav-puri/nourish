@@ -1,93 +1,78 @@
 'use client'
 
 import { useId, useState } from 'react'
-import { Check, Plus, X } from 'lucide-react'
+import { Check, ChevronDown, Plus, Search, X } from 'lucide-react'
 import { ALLERGENS, allergenLabel } from '@/lib/food'
-import { DIET_GROUPS, DIETS, MAX_ENTRY_LENGTH, dietLabel, isKnownDiet } from '@/lib/profile'
+import { DIET_GROUPS, DIETS, MAX_ENTRY_LENGTH, dietLabel, type DietId } from '@/lib/profile'
+
+/*
+ * Pickers follow the pattern food apps such as Fig, Yuka and MyFitnessPal
+ * settled on: the handful most people need first, the rest one tap away, and
+ * a search box that finds any option or adds one of your own.
+ */
+
+interface Option {
+  id: string
+  label: string
+  hint?: string
+}
+
+// The most followed diets in the IFIC 2025 Food & Health Survey (high protein
+// leads at 23%), limited to ones a label can be checked against.
+const POPULAR_DIETS: DietId[] = ['high-protein', 'low-carb', 'vegetarian', 'vegan', 'gluten-free', 'keto']
 
 // The nine major allergens U.S. law requires on labels (FDA, FASTER Act 2023).
-// Anything else is typed in.
 const MAJOR_ALLERGENS = ['milk', 'eggs', 'fish', 'crustaceans', 'nuts', 'peanuts', 'gluten', 'soybeans', 'sesame-seeds']
 
 const ALLERGEN_HINTS: Record<string, string> = {
   gluten: 'Wheat, barley, rye',
   nuts: 'Almonds, cashews, walnuts',
   crustaceans: 'Shrimp, crab, lobster',
+  molluscs: 'Mussels, oysters, squid',
+  celery: 'Celery, celeriac',
+  'sulphur-dioxide-and-sulphites': 'Wine, dried fruit',
 }
+
+const ALLERGEN_OPTIONS: Option[] = ALLERGENS.map((a) => ({ ...a, hint: ALLERGEN_HINTS[a.id] }))
 
 const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
 
-/** Diets, grouped, with room for any the list does not cover. */
+/** Diets: the most popular, then the rest by group, with search and room for any the list does not cover. */
 export function DietPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
-  const custom = value.filter((d) => !isKnownDiet(d))
+  const more = DIET_GROUPS.map((g) => ({
+    label: g.label,
+    options: DIETS.filter((d) => d.group === g.id && !POPULAR_DIETS.includes(d.id)),
+  })).filter((g) => g.options.length > 0)
 
   return (
-    <div className="space-y-7">
-      {DIET_GROUPS.map((g) => (
-        <fieldset key={g.id}>
-          <legend className="t-eyebrow">{g.label}</legend>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {DIETS.filter((d) => d.group === g.id).map((d) => (
-              <Choice key={d.id} on={value.includes(d.id)} onClick={() => onChange(toggle(value, d.id))} label={d.label} hint={d.hint} />
-            ))}
-          </div>
-        </fieldset>
-      ))}
-
-      <AddYourOwn
-        label="Something else?"
-        placeholder="Whole30, low FODMAP, Jain…"
-        custom={custom}
-        onAdd={(words) => {
-          const next = [...value]
-          for (const w of words) {
-            // Typing a listed diet selects it rather than adding a duplicate.
-            const known = DIETS.find((d) => d.label.toLowerCase() === w.toLowerCase())
-            const id = known ? known.id : w
-            if (!next.some((x) => x.toLowerCase() === id.toLowerCase())) next.push(id)
-          }
-          onChange(next)
-        }}
-        onRemove={(w) => onChange(value.filter((x) => x !== w))}
-        labelFor={dietLabel}
-      />
-    </div>
+    <Picker
+      value={value}
+      onChange={onChange}
+      options={DIETS}
+      popular={{ label: 'Most popular', options: POPULAR_DIETS.map((id) => DIETS.find((d) => d.id === id)!) }}
+      more={more}
+      searchLabel="Search diets"
+      placeholder="Search, or add your own (Whole30, Jain…)"
+      toId={(w) => w}
+      labelFor={dietLabel}
+    />
   )
 }
 
-/** The nine major allergens, then anything typed in. */
+/** Allergens: the nine major ones, then the other common ones, with search and room for anything else. */
 export function AllergenPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
-  // Everything outside the nine shows as a removable pill, including ones saved before the list was trimmed.
-  const custom = value.filter((a) => !MAJOR_ALLERGENS.includes(a))
-
   return (
-    <div className="space-y-7">
-      <fieldset>
-        <legend className="sr-only">Common allergens</legend>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {MAJOR_ALLERGENS.map((id) => (
-            <Choice key={id} on={value.includes(id)} onClick={() => onChange(toggle(value, id))} label={allergenLabel(id)} hint={ALLERGEN_HINTS[id]} />
-          ))}
-        </div>
-      </fieldset>
-
-      <AddYourOwn
-        label="Anything else you avoid?"
-        placeholder="Mustard, strawberries, corn…"
-        custom={custom}
-        onAdd={(words) => {
-          const next = [...value]
-          for (const w of words) {
-            const known = ALLERGENS.find((a) => a.label.toLowerCase() === w.toLowerCase() || a.id === w.toLowerCase())
-            const id = known ? known.id : w.toLowerCase()
-            if (!next.includes(id)) next.push(id)
-          }
-          onChange(next)
-        }}
-        onRemove={(w) => onChange(value.filter((x) => x !== w))}
-        labelFor={allergenLabel}
-      />
-    </div>
+    <Picker
+      value={value}
+      onChange={onChange}
+      options={ALLERGEN_OPTIONS}
+      popular={{ label: 'Most common', options: ALLERGEN_OPTIONS.filter((a) => MAJOR_ALLERGENS.includes(a.id)) }}
+      more={[{ label: 'Also common', options: ALLERGEN_OPTIONS.filter((a) => !MAJOR_ALLERGENS.includes(a.id)) }]}
+      searchLabel="Search allergens and ingredients"
+      placeholder="Search, or add your own (corn, mango…)"
+      toId={(w) => w.toLowerCase()}
+      labelFor={allergenLabel}
+    />
   )
 }
 
@@ -117,6 +102,160 @@ export default function ProfileFields({
   )
 }
 
+function Picker({
+  value,
+  onChange,
+  options,
+  popular,
+  more,
+  searchLabel,
+  placeholder,
+  toId,
+  labelFor,
+}: {
+  value: string[]
+  onChange: (v: string[]) => void
+  options: Option[]
+  popular: { label: string; options: Option[] }
+  more: { label: string; options: Option[] }[]
+  searchLabel: string
+  placeholder: string
+  /** How a typed entry is stored. */
+  toId: (word: string) => string
+  labelFor: (id: string) => string
+}) {
+  const searchId = useId()
+  const [query, setQuery] = useState('')
+  const moreOptions = more.flatMap((g) => g.options)
+  // Opens on its own when something in it is already chosen, so no choice is ever hidden.
+  const [expanded, setExpanded] = useState(() => moreOptions.some((o) => value.includes(o.id)))
+
+  const custom = value.filter((v) => !options.some((o) => o.id === v))
+  const q = query.trim().toLowerCase()
+  const matches = q ? options.filter((o) => o.label.toLowerCase().includes(q) || o.hint?.toLowerCase().includes(q)) : []
+  const exact = options.find((o) => o.label.toLowerCase() === q || o.id === q)
+  const canAdd = q.length > 0 && !exact && !custom.some((c) => c.toLowerCase() === q)
+
+  const add = () => {
+    const words = query
+      .split(',')
+      .map((w) => w.trim().slice(0, MAX_ENTRY_LENGTH))
+      .filter(Boolean)
+    if (!words.length) return
+    const next = [...value]
+    for (const w of words) {
+      // Typing a listed option selects it rather than adding a duplicate.
+      const known = options.find((o) => o.label.toLowerCase() === w.toLowerCase() || o.id === w.toLowerCase())
+      const id = known ? known.id : toId(w)
+      if (!next.some((x) => x.toLowerCase() === id.toLowerCase())) next.push(id)
+    }
+    onChange(next)
+    setQuery('')
+  }
+
+  const grid = (list: Option[]) => (
+    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+      {list.map((o) => (
+        <Choice key={o.id} on={value.includes(o.id)} onClick={() => onChange(toggle(value, o.id))} label={o.label} hint={o.hint} />
+      ))}
+    </div>
+  )
+
+  return (
+    <div className="space-y-7">
+      <div>
+        <label htmlFor={searchId} className="sr-only">
+          {searchLabel}
+        </label>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
+          <input
+            id={searchId}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                if (matches.length === 1 && !query.includes(',')) {
+                  onChange(toggle(value, matches[0].id))
+                  setQuery('')
+                } else add()
+              } else if (e.key === 'Escape') setQuery('')
+            }}
+            placeholder={placeholder}
+            maxLength={MAX_ENTRY_LENGTH * 4}
+            autoComplete="off"
+            className="field w-full pl-10"
+          />
+        </div>
+
+        {custom.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-2" aria-label="Added by you">
+            {custom.map((w) => (
+              <li key={w}>
+                <span className="inline-flex h-9 items-center gap-1 rounded-full bg-accent-soft pl-3.5 pr-1 text-sm font-medium text-accent-ink">
+                  {labelFor(w)}
+                  <button
+                    type="button"
+                    onClick={() => onChange(value.filter((x) => x !== w))}
+                    aria-label={`Remove ${labelFor(w)}`}
+                    className="flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-ink/[0.06]"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {q ? (
+        <section aria-live="polite">
+          <h4 className="t-eyebrow">{matches.length ? `${matches.length} match${matches.length > 1 ? 'es' : ''}` : 'No matches'}</h4>
+          {matches.length > 0 && grid(matches)}
+          {canAdd && (
+            <button
+              type="button"
+              onClick={add}
+              className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-paper px-4 text-sm font-medium shadow-neu-sm transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-neu-hover active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add &ldquo;{query.trim().slice(0, MAX_ENTRY_LENGTH)}&rdquo;
+            </button>
+          )}
+        </section>
+      ) : (
+        <>
+          <section>
+            <h4 className="t-eyebrow">{popular.label}</h4>
+            {grid(popular.options)}
+          </section>
+
+          {expanded &&
+            more.map((g) => (
+              <section key={g.label}>
+                <h4 className="t-eyebrow">{g.label}</h4>
+                {grid(g.options)}
+              </section>
+            ))}
+
+          <button
+            type="button"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+            className="-mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-ink-2 underline decoration-ink/25 underline-offset-4 hover:text-ink hover:decoration-ink"
+          >
+            {expanded ? 'Show fewer' : `Show ${moreOptions.length} more`}
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} aria-hidden="true" />
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 function Choice({ on, onClick, label, hint }: { on: boolean; onClick: () => void; label: string; hint?: string }) {
   return (
     <button
@@ -140,84 +279,5 @@ function Choice({ on, onClick, label, hint }: { on: boolean; onClick: () => void
         {hint && <span className={`mt-0.5 block text-xs leading-tight ${on ? 'text-ink-2' : 'text-ink-3'}`}>{hint}</span>}
       </span>
     </button>
-  )
-}
-
-/** A field for entries the lists do not cover. Commas add several at once. */
-function AddYourOwn({
-  label,
-  placeholder,
-  custom,
-  onAdd,
-  onRemove,
-  labelFor,
-}: {
-  label: string
-  placeholder: string
-  custom: string[]
-  onAdd: (words: string[]) => void
-  onRemove: (word: string) => void
-  labelFor: (id: string) => string
-}) {
-  const id = useId()
-  const [text, setText] = useState('')
-
-  const add = () => {
-    const words = text
-      .split(',')
-      .map((w) => w.trim().slice(0, MAX_ENTRY_LENGTH))
-      .filter(Boolean)
-    if (!words.length) return
-    onAdd(words)
-    setText('')
-  }
-
-  return (
-    <div>
-      <label htmlFor={id} className="t-eyebrow">
-        {label}
-      </label>
-      <div className="mt-3 flex gap-2">
-        <input
-          id={id}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              add()
-            }
-          }}
-          placeholder={placeholder}
-          maxLength={MAX_ENTRY_LENGTH * 4}
-          autoComplete="off"
-          className="field min-w-0 flex-1"
-        />
-        <button type="button" onClick={add} disabled={!text.trim()} className="btn-secondary h-12 shrink-0 gap-1.5 px-4 disabled:opacity-50">
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Add
-        </button>
-      </div>
-
-      {custom.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-2" aria-label="Added by you">
-          {custom.map((w) => (
-            <li key={w}>
-              <span className="inline-flex h-9 items-center gap-1 rounded-full bg-accent-soft pl-3.5 pr-1 text-sm font-medium text-accent-ink">
-                {labelFor(w)}
-                <button
-                  type="button"
-                  onClick={() => onRemove(w)}
-                  aria-label={`Remove ${labelFor(w)}`}
-                  className="flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-ink/[0.06]"
-                >
-                  <X className="h-3.5 w-3.5" aria-hidden="true" />
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   )
 }

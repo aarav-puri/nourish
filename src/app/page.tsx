@@ -3,7 +3,7 @@ import type { ComponentType, SVGProps } from 'react'
 import Navbar from '@/components/layout/Navbar'
 import Hero from '@/components/home/Hero'
 import Footer from '@/components/layout/Footer'
-import { AskIcon, GradeIcon, MatchIcon, ProcessIcon, SwapIcon } from '@/components/home/FeatureIcons'
+import { AskIcon, GradeIcon, MatchIcon, ProcessIcon } from '@/components/home/FeatureIcons'
 
 const FEATURES: { icon: ComponentType<SVGProps<SVGSVGElement>>; title: string; body: string }[] = [
   {
@@ -22,14 +22,9 @@ const FEATURES: { icon: ComponentType<SVGProps<SVGSVGElement>>; title: string; b
     body: 'Save your diet and allergies once. Every scan flags what does not fit.',
   },
   {
-    icon: SwapIcon,
-    title: 'Better swaps',
-    body: 'Healthier alternatives that taste alike, and recipes to use what you have.',
-  },
-  {
     icon: AskIcon,
-    title: 'Ask NourishAI',
-    body: '“Which of my snacks has the least sugar?” NourishAI answers from your scans.',
+    title: 'Ask Nourish AI',
+    body: '“Which of my snacks has the least sugar?” Nourish AI answers from your scans.',
   },
 ]
 

@@ -1,14 +1,14 @@
 <div align="center">
 
 <a href="https://nourishlabs.vercel.app">
-  <img src="brand/mark.svg" alt="Nourish" height="64">
+  <img src="public/brand/mark.svg" alt="Nourish" height="64">
 </a>
 
 <h1>Nourish</h1>
 
-### The small print, read for you.
+### The fine print, made clear.
 
-Scan a barcode and see what is in it, in plain words: a health score out of 100, how processed it is, and whether it fits your diet and allergies.
+Scan a barcode and see exactly what is inside, clearly explained: a health score out of 100, how processed it is, and whether it fits your diet and allergies.
 
 [**Open Nourish**](https://nourishlabs.vercel.app) · [Privacy Policy](https://nourishlabs.vercel.app/privacy) · [How it works](#how-it-works) · [Run it locally](#run-it-locally)
 
@@ -27,8 +27,7 @@ Scan a barcode and see what is in it, in plain words: a health score out of 100,
 - **A score out of 100**, built on the Nutri-Score, with sugar, fat and salt marked low, medium or high
 - **How processed it is**: the NOVA level from 1 to 4, and the plain name behind every E number
 - **Checked against you**: save your diets and allergens once, and every scan flags what does not fit
-- **Better swaps**: healthier alternatives that taste alike, and recipes that use what you have
-- **Ask NourishAI**, a chat assistant that answers from your own scans ("Which of my snacks has the least sugar?")
+- **Ask Nourish AI**, a chat assistant that answers from your own scans ("Which of my snacks has the least sugar?")
 - **Four ways to scan**: live camera, a photo of the barcode, drag and drop or paste an image, or type the number
 - **Scan history** saved to your account
 
@@ -37,7 +36,7 @@ Scan a barcode and see what is in it, in plain words: a health score out of 100,
 1. **Create an account** with email or Google.
 2. **Set up your profile.** A short onboarding asks for your name, the diets you follow, and the allergens and ingredients you avoid.
 3. **Scan something.** Nourish looks the barcode up in [Open Food Facts](https://world.openfoodfacts.org) (with Go-UPC as a fallback) and builds the report.
-4. **Add a Gemini key for AI insights.** Swaps, recipes and NourishAI use your own Google Gemini API key, which you paste in Settings. Scores and ingredient checks work without one.
+4. **Add a Gemini key for AI insights.** Nourish AI uses your own Google Gemini API key, which you paste in Settings. Scores and ingredient checks work without one.
 
 Supported barcodes: EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39 and QR codes.
 
@@ -60,10 +59,11 @@ Supported barcodes: EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39 and QR codes.
 ```
 src/app            Pages: landing, sign-in, setup, scanner, history, settings, product reports
 src/app/api        Route handlers: product lookup, scoring, AI insights, chat, account deletion
-src/components     UI: scanner, product report, NourishAI chat, layout, brand
+src/components     UI: scanner, product report, Nourish AI chat, layout, brand
 src/lib            Product API client, Gemini scoring and insight helpers, Supabase clients
 supabase/          SQL for the avatars bucket and the auth email templates
-brand/             Logo mark
+public/            Static assets: logo mark, Apple touch icons
+scripts/           Asset generators (touch icons, mascot layers)
 ```
 
 ## Run it locally

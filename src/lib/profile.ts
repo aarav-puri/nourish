@@ -267,8 +267,8 @@ export function checkProduct(food: Food, profile: FoodProfile): Check[] {
         else checks.push({ key: diet, status: 'unknown', title: 'Mediterranean: not enough data' })
         break
       default:
-        // A diet the person typed in: there is no rule for it, so the AI diet check covers it.
-        checks.push({ key: diet, status: 'unknown', title: `${diet}: not checked automatically`, detail: 'Run the AI diet check below' })
+        // A diet the person typed in: there is no rule to check it by.
+        checks.push({ key: diet, status: 'unknown', title: `${diet}: check the label`, detail: 'Not checked automatically' })
     }
   }
 

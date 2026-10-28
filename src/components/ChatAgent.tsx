@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import { getGeminiApiKey } from '@/lib/ai-service'
 import Modal from '@/components/ui/Modal'
 import Thinking from '@/components/ui/Thinking'
-import AssistantAvatar from '@/components/brand/AssistantAvatar'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -28,7 +27,7 @@ const TOKENS_PER_TICK = 4
 const TICK_MS = 28
 
 /**
- * NourishAI: questions answered from the person's own scan history. Opens as a
+ * Nourish AI: questions answered from the person's own scan history. Opens as a
  * sheet so it never fights the tab bar for the bottom of a phone screen.
  * Reply patterns (timed headers, streamed text, actions, follow-ups) follow
  * Beautiful UI's AI primitives, drawn in Nourish's soft clay.
@@ -63,7 +62,7 @@ export default function ChatAgent({ context, open, onClose }: { context?: any; o
     if (!text.trim() || busy) return
     const apiKey = getGeminiApiKey()
     if (!apiKey) {
-      toast.error('Add your Gemini key in Settings to chat with NourishAI.')
+      toast.error('Add your Gemini key in Settings to chat with Nourish AI.')
       return
     }
 
@@ -103,13 +102,7 @@ export default function ChatAgent({ context, open, onClose }: { context?: any; o
     <Modal
       isOpen={open}
       onClose={onClose}
-      title={
-        <span className="flex items-center gap-2.5">
-          <AssistantAvatar size={30} thinking={loading} />
-          NourishAI
-        </span>
-      }
-      description="Your food guide. Answers come from your own scan history."
+      label="Nourish AI"
       size="lg"
       footer={
         <form
@@ -120,7 +113,7 @@ export default function ChatAgent({ context, open, onClose }: { context?: any; o
           className="rounded-[14px] border border-line bg-paper p-1.5 shadow-neu-inset transition-[border-color,box-shadow] duration-150 focus-within:border-line-strong/40 focus-within:shadow-neu-inset-deep"
         >
           <label htmlFor="chat-input" className="sr-only">
-            Message NourishAI
+            Message Nourish AI
           </label>
           <textarea
             id="chat-input"
@@ -134,7 +127,7 @@ export default function ChatAgent({ context, open, onClose }: { context?: any; o
                 send(input)
               }
             }}
-            placeholder="Ask NourishAI about your scans…"
+            placeholder="Ask Nourish AI about your scans…"
             className="block max-h-[132px] w-full resize-none bg-transparent px-2 pb-1 pt-1.5 text-[0.9375rem] leading-relaxed text-ink [overflow-wrap:anywhere] placeholder:text-ink-3 focus:outline-none"
           />
           <div className="flex items-center justify-between gap-2 pl-1 pt-1">
@@ -157,14 +150,11 @@ export default function ChatAgent({ context, open, onClose }: { context?: any; o
       <div className="min-h-[40dvh]">
         {messages.length === 0 ? (
           <div className="chat-in pt-2">
-            <div className="flex items-center gap-3.5">
-              <AssistantAvatar size={52} />
-              <div>
-                <p className="font-display text-lg font-bold tracking-tight">Hi, I&rsquo;m NourishAI.</p>
-                <p className="text-sm text-ink-2">
-                  I&rsquo;ve read your {productCount} scan{productCount === 1 ? '' : 's'}. Ask me anything about them.
-                </p>
-              </div>
+            <div>
+              <p className="font-display text-lg font-bold tracking-tight">Hi, I&rsquo;m Nourish AI.</p>
+              <p className="text-sm text-ink-2">
+                I&rsquo;ve read your {productCount} scan{productCount === 1 ? '' : 's'}. Ask me anything about them.
+              </p>
             </div>
             <ul className="mt-6 grid gap-2 sm:grid-cols-2">
               {SUGGESTED_QUESTIONS.map((q, i) => (
@@ -201,8 +191,7 @@ export default function ChatAgent({ context, open, onClose }: { context?: any; o
               )
             )}
             {loading && (
-              <div className="chat-in flex items-center gap-2.5">
-                <AssistantAvatar size={22} thinking />
+              <div className="chat-in">
                 <Thinking label={`Reading ${productCount} product${productCount === 1 ? '' : 's'}`} className="text-ink-2" />
               </div>
             )}
@@ -273,11 +262,10 @@ function Reply({
   }
 
   return (
-    <div className="chat-in flex gap-2.5">
-      <AssistantAvatar size={22} animated={false} className="mt-0.5" />
-      <div className="min-w-0 max-w-[92%] flex-1">
+    <div className="chat-in">
+      <div className="min-w-0 max-w-[92%]">
         <p className="flex items-center gap-1 text-xs leading-5">
-          <span className="font-semibold text-ink">NourishAI</span>
+          <span className="font-semibold text-ink">Nourish AI</span>
           <span className="text-ink-3">read {productCount} scan{productCount === 1 ? '' : 's'}</span>
           {message.took !== undefined && <span className="tnum text-ink-2">for {message.took.toFixed(1)}s</span>}
         </p>

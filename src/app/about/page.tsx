@@ -32,15 +32,14 @@ export default function AboutPage() {
           </div>
 
           <div className="prose-nourish mt-10 text-[1.0625rem] leading-8">
+            <blockquote className="border-l-2 border-accent pl-5 font-display text-xl leading-relaxed text-ink sm:text-2xl sm:leading-relaxed">
+              &ldquo;My dad is vegetarian, and I kept noticing how often packaged food quietly includes things that do
+              not fit. I wanted a scan to tell us, instantly.&rdquo;
+            </blockquote>
             <p>
-              Nourish was born from a simple, everyday problem: my dad is vegetarian, and I kept noticing how often
-              packaged foods quietly include ingredients that don&rsquo;t actually fit vegetarian diets. Hidden
-              animal-derived ingredients, confusing labels and unclear nutritional information made grocery shopping
-              unnecessarily complicated.
-            </p>
-            <p>
-              I wanted a simple way to scan products and immediately know what&rsquo;s inside, not just for
-              vegetarians but for anyone trying to make informed choices about what they eat.
+              Hidden animal-derived ingredients, confusing labels and unclear nutritional information made grocery
+              shopping unnecessarily complicated. Nourish began as a way to fix that, not just for vegetarians but for
+              anyone trying to make informed choices about what they eat.
             </p>
             <p>
               From there, the idea grew beyond checking ingredients. People need help understanding what they&rsquo;re
