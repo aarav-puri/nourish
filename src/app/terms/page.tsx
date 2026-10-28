@@ -24,7 +24,7 @@ export default function TermsPage() {
             <h2>2. Description of Service</h2>
             <p>
               Nourish is a product scanning application that provides AI powered insights about food products, 
-              including nutritional information, health scores, dietary compatibility, and environmental impact.
+              including nutritional information, health scores and dietary compatibility.
             </p>
           </section>
 

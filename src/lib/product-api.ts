@@ -44,7 +44,6 @@ export async function scoreProduct(product: Record<string, any>) {
 
   return response.json() as Promise<{
     nutriscore_grade?: string
-    ecoscore_grade?: string
     ai_estimated_scores?: string[]
   }>
 }
