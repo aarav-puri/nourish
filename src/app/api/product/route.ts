@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GEMINI_LITE } from '@/lib/gemini-models'
 import { scoreProductWithGemini } from '@/lib/gemini-score'
+import { checkDietsWithGemini, readCustomDiets } from '@/lib/gemini-diets'
 
 const TIMEOUT_MS = Math.max(
   1000,
@@ -305,11 +306,13 @@ export async function GET(request: NextRequest) {
     const data: { status: number; product?: any } =
       off || upc ? { status: 1, product: mergeProducts(off, upc, barcode) } : { status: 0 }
 
-    // Formatting and scoring of unscored items run in parallel on the user's key.
+    // Formatting, scoring of unscored items and checks for typed-in diets run
+    // in parallel on the user's key.
     if (data.status === 1 && data.product) {
       const [formatted] = await Promise.all([
         formatProductWithGemini(data.product, apiKey),
         scoreProductWithGemini(data.product, apiKey),
+        checkDietsWithGemini(data.product, readCustomDiets(request.headers.get('x-custom-diets')), apiKey),
       ])
       if (formatted) {
         data.product.ai_formatted = formatted
