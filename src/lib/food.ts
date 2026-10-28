@@ -54,6 +54,8 @@ export interface Food {
   isBeverage: boolean
   nutrition: Nutrition
   levels: Partial<Record<'fat' | 'saturatedFat' | 'sugars' | 'salt', Level>>
+  /** AI verdicts for diets the person typed in, keyed by the diet as typed. */
+  aiDiets: Record<string, { verdict: 'yes' | 'no' | 'maybe'; reason?: string }>
   manual: boolean
 }
 
@@ -361,6 +363,7 @@ export function toFood(raw: any, barcodeHint = ''): Food {
     isBeverage,
     nutrition,
     levels,
+    aiDiets: p.ai_diet_checks && typeof p.ai_diet_checks === 'object' ? p.ai_diet_checks : {},
     manual: Boolean(p.manual),
   }
 }

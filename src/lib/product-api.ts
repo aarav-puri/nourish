@@ -11,11 +11,12 @@ export class LookupError extends Error {
   }
 }
 
-export async function fetchProductInfo(barcode: string, signal?: AbortSignal): Promise<ProductData> {
-  const response = await fetch(`/api/product?barcode=${encodeURIComponent(barcode)}`, {
-    headers: { 'x-gemini-api-key': getGeminiApiKey() },
-    signal,
-  })
+/** Looks a barcode up. `customDiets` are diets the person typed in, checked by AI during the lookup. */
+export async function fetchProductInfo(barcode: string, signal?: AbortSignal, customDiets: string[] = []): Promise<ProductData> {
+  const headers: Record<string, string> = { 'x-gemini-api-key': getGeminiApiKey() }
+  // A header rather than the URL, so the person's diets never land in logs or history.
+  if (customDiets.length) headers['x-custom-diets'] = encodeURIComponent(JSON.stringify(customDiets))
+  const response = await fetch(`/api/product?barcode=${encodeURIComponent(barcode)}`, { headers, signal })
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))

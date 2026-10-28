@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Camera, PenLine, RotateCcw, SearchX, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-context'
-import { isOnboarded } from '@/lib/profile'
+import { isKnownDiet, isOnboarded } from '@/lib/profile'
 import { db } from '@/lib/supabase'
 import { getGeminiApiKey } from '@/lib/ai-service'
 import { fetchProductInfo, LookupError } from '@/lib/product-api'
@@ -46,7 +46,10 @@ function Scanner() {
   const manual = params.get('manual') === '1'
   // Changes on "Try again" for the same code, to re-run the lookup.
   const attempt = params.get('r')
-  const { user, loading } = useAuth()
+  const { user, loading, profile } = useAuth()
+  // Typed-in diets have no built-in rule; the lookup has the AI check them. A ref, so editing the profile does not re-run a scan.
+  const customDiets = useRef<string[]>([])
+  customDiets.current = profile.diets.filter((d) => !isKnownDiet(d))
 
   const [hasKey, setHasKey] = useState<boolean | null>(null)
   const [view, setView] = useState<View>({ kind: 'idle' })
@@ -92,17 +95,21 @@ function Scanner() {
       return
     }
     const cached = cache.get(code)
-    if (cached) {
+    // A copy from before a diet was added is looked up again, so the new diet gets checked.
+    const unchecked = cached && customDiets.current.some((d) => !Object.keys(cached.aiDiets).some((k) => k.toLowerCase() === d.toLowerCase()))
+    if (cached && !unchecked) {
       setView({ kind: 'result', food: cached })
       return
     }
     if (!getGeminiApiKey()) return
+    // Wait for the account, so its diets go along with the lookup.
+    if (loading) return
 
     const id = ++requestRef.current
     const controller = new AbortController()
     setView({ kind: 'loading', code })
 
-    fetchProductInfo(code, controller.signal)
+    fetchProductInfo(code, controller.signal, customDiets.current)
       .then(async (data) => {
         if (id !== requestRef.current) return
         if (data.status !== 1 || !data.product) {
@@ -135,7 +142,7 @@ function Scanner() {
       })
 
     return () => controller.abort()
-  }, [code, manual, attempt, hasKey, warmHistoryCache])
+  }, [code, manual, attempt, hasKey, loading, warmHistoryCache])
 
   const open = useCallback(
     (barcode: string) => {

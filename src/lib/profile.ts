@@ -266,9 +266,14 @@ export function checkProduct(food: Food, profile: FoodProfile): Check[] {
         else if (food.nova || hasIngredients) checks.push({ key: diet, status: 'ok', title: 'Fits a Mediterranean diet' })
         else checks.push({ key: diet, status: 'unknown', title: 'Mediterranean: not enough data' })
         break
-      default:
-        // A diet the person typed in: there is no rule to check it by.
-        checks.push({ key: diet, status: 'unknown', title: `${diet}: check the label`, detail: 'Not checked automatically' })
+      default: {
+        // A diet the person typed in: no rule covers it, so the AI checked it during the scan.
+        const ai = Object.entries(food.aiDiets).find(([d]) => d.toLowerCase() === diet.toLowerCase())?.[1]
+        if (ai?.verdict === 'yes') checks.push({ key: diet, status: 'ok', title: `Fits ${diet}`, detail: ai.reason })
+        else if (ai?.verdict === 'no') checks.push({ key: diet, status: 'conflict', title: `Not ${diet}`, detail: ai.reason })
+        else if (ai?.verdict === 'maybe') checks.push({ key: diet, status: 'caution', title: `May not fit ${diet}`, detail: ai.reason })
+        else checks.push({ key: diet, status: 'unknown', title: `${diet}: check the label`, detail: 'Could not be checked for this product' })
+      }
     }
   }
 
