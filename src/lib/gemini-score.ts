@@ -1,5 +1,5 @@
-// Server only: estimates the grades a product record is missing, using the
-// caller's own Gemini key. Published grades are never overwritten.
+// Server only: estimates the Nutri-Score grade a product record is missing,
+// using the caller's own Gemini key. Published grades are never overwritten.
 
 import { GEMINI_LITE } from '@/lib/gemini-models'
 
@@ -8,15 +8,15 @@ const SCORE_MODEL = GEMINI_LITE
 const VALID_GRADES = ['a', 'b', 'c', 'd', 'e']
 
 export function needsScoring(product: any) {
-  return !isValidGrade(product?.nutriscore_grade) || !isValidGrade(product?.ecoscore_grade)
+  return !isValidGrade(product?.nutriscore_grade)
 }
 
 function isValidGrade(grade: unknown): grade is string {
   return typeof grade === 'string' && VALID_GRADES.includes(grade.toLowerCase())
 }
 
-// Fills nutriscore_grade and ecoscore_grade in place when they are missing,
-// and records which ones were estimated so the UI can label them.
+// Fills nutriscore_grade in place when it is missing, and records that it was
+// estimated so the UI can label it.
 export async function scoreProductWithGemini(product: any, apiKey: string) {
   if (!needsScoring(product)) return
 
@@ -25,23 +25,21 @@ export async function scoreProductWithGemini(product: any, apiKey: string) {
 
   try {
     const n = product.nutriments ?? {}
-    const prompt = `Estimate the Nutri-Score and Eco-Score grades for this product from the data given.
+    const prompt = `Estimate the Nutri-Score grade for this product from the data given.
 
 Product Data:
 - Name: ${product.product_name || 'Unknown'}
 - Brand: ${product.brands || 'Unknown'}
 - Categories: ${product.categories || 'Unknown'}
 - Ingredients: ${product.ingredients_text || 'Not available'}
-- Packaging: ${product.packaging || 'Unknown'}
 - Per 100g: energy ${n['energy-kcal_100g'] ?? n.energy_value ?? '?'} kcal, fat ${n.fat_100g ?? n.fat ?? '?'}g, saturated fat ${n['saturated-fat_100g'] ?? n['saturated-fat'] ?? '?'}g, sugars ${n.sugars_100g ?? n.sugars ?? '?'}g, salt ${n.salt_100g ?? n.salt ?? '?'}g, fiber ${n.fiber_100g ?? n.fiber ?? '?'}g, protein ${n.proteins_100g ?? n.proteins ?? '?'}g
 
-Use the official Nutri-Score and Eco-Score methods as closely as the data allows. Grades are a (best) to e (worst).
+Use the official Nutri-Score method as closely as the data allows. Grades are a (best) to e (worst).
 If the item is not food or drink, or there is too little information to judge, use null.
 
 Return JSON with these exact keys:
 {
-  "nutriscore_grade": "a" | "b" | "c" | "d" | "e" | null,
-  "ecoscore_grade": "a" | "b" | "c" | "d" | "e" | null
+  "nutriscore_grade": "a" | "b" | "c" | "d" | "e" | null
 }`
 
     const response = await fetch(GEMINI_URL, {
@@ -75,7 +73,7 @@ Return JSON with these exact keys:
     const parsed = JSON.parse(content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim())
 
     const estimated: string[] = []
-    for (const key of ['nutriscore_grade', 'ecoscore_grade']) {
+    for (const key of ['nutriscore_grade']) {
       if (!isValidGrade(product[key]) && isValidGrade(parsed[key])) {
         product[key] = parsed[key].toLowerCase()
         estimated.push(key)

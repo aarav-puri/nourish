@@ -49,7 +49,6 @@ export default function Footer() {
       </div>
       <div className="mx-auto flex max-w-6xl flex-col gap-2 border-t border-line px-[var(--gutter)] py-6 text-xs text-ink-3 sm:flex-row sm:justify-between">
         <p>© {new Date().getFullYear()} Nourish Labs. All rights reserved.</p>
-        <p>Product data from Open Food Facts and Go-UPC. Not medical advice.</p>
       </div>
     </footer>
   )

@@ -22,7 +22,7 @@ import {
   type Level,
 } from '@/lib/food'
 import { checkProduct, isProfileEmpty, overallStatus, type Check, type CheckStatus } from '@/lib/profile'
-import { GradeScale, ScoreMeter } from '@/components/product/Grade'
+import { ScoreMeter } from '@/components/product/Grade'
 
 /* ===================================================================== */
 
@@ -316,7 +316,7 @@ function NutritionPanel({ food }: { food: Food }) {
 
 function Processing({ food }: { food: Food }) {
   const hasAnything =
-    food.nova !== null || food.additives.length > 0 || food.allergens.length > 0 || food.traces.length > 0 || food.eco
+    food.nova !== null || food.additives.length > 0 || food.allergens.length > 0 || food.traces.length > 0
   if (!hasAnything) return null
 
   return (
@@ -374,18 +374,6 @@ function Processing({ food }: { food: Food }) {
               {food.traces.map(allergenLabel).join(', ')}
             </p>
           )}
-        </div>
-      )}
-
-      {food.eco && (
-        <div className="flex items-center justify-between gap-4 p-5 sm:px-6">
-          <div>
-            <h2 className="t-eyebrow">Eco-Score</h2>
-            <p className="mt-1.5 text-sm text-ink-2">
-              Environmental impact{food.ecoEstimated ? ', estimated by AI' : ''}
-            </p>
-          </div>
-          <GradeScale grade={food.eco} label="Eco-Score" />
         </div>
       )}
     </section>

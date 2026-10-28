@@ -94,8 +94,8 @@ async function fetchWithRetry(
 const OFF_FIELDS = [
   'code', 'product_name', 'product_name_en', 'brands', 'quantity', 'categories', 'categories_tags',
   'ingredients_text', 'ingredients_text_en', 'nutriments',
-  'nutriscore_grade', 'nutriscore_score', 'ecoscore_grade', 'nova_group', 'additives_tags', 'allergens_tags',
-  'traces_tags', 'ingredients_analysis_tags', 'labels_tags', 'packaging', 'countries', 'serving_size',
+  'nutriscore_grade', 'nutriscore_score', 'nova_group', 'additives_tags', 'allergens_tags',
+  'traces_tags', 'ingredients_analysis_tags', 'labels_tags', 'countries', 'serving_size',
 ].join(',')
 
 const NUTRIMENT_KEYS = [

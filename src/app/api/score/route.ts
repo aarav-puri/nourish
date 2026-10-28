@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     await scoreProductWithGemini(product, apiKey)
     return NextResponse.json({
       nutriscore_grade: product.nutriscore_grade,
-      ecoscore_grade: product.ecoscore_grade,
       ai_estimated_scores: product.ai_estimated_scores,
     })
   } catch (error: any) {

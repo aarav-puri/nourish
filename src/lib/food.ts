@@ -39,8 +39,6 @@ export interface Food {
   /** The grade as a health score from 0 to 100, always inside its grade's band. */
   score: number | null
   gradeEstimated: boolean
-  eco: Grade | null
-  ecoEstimated: boolean
   nova: 1 | 2 | 3 | 4 | null
   additives: { code: string; name?: string }[]
   allergens: string[]
@@ -49,7 +47,6 @@ export interface Food {
   vegetarian: Tri
   palmOil: Tri
   labels: string[]
-  packaging?: string
   countries?: string
   isBeverage: boolean
   nutrition: Nutrition
@@ -348,8 +345,6 @@ export function toFood(raw: any, barcodeHint = ''): Food {
     grade: asGrade(p.nutriscore_grade),
     score: scoreFor(asGrade(p.nutriscore_grade), estimated.includes('nutriscore_grade') ? undefined : num(p.nutriscore_score)),
     gradeEstimated: estimated.includes('nutriscore_grade'),
-    eco: asGrade(p.ecoscore_grade),
-    ecoEstimated: estimated.includes('ecoscore_grade'),
     nova: nova && nova >= 1 && nova <= 4 ? (Math.round(nova) as 1 | 2 | 3 | 4) : null,
     additives,
     allergens,
@@ -358,7 +353,6 @@ export function toFood(raw: any, barcodeHint = ''): Food {
     vegetarian: tri(analysis, 'en:vegetarian', 'en:non-vegetarian', 'en:maybe-vegetarian'),
     palmOil: tri(analysis, 'en:palm-oil-free', 'en:palm-oil', 'en:may-contain-palm-oil'),
     labels: tagLabels(p.labels_tags),
-    packaging: p.packaging || undefined,
     countries: p.countries || undefined,
     isBeverage,
     nutrition,
