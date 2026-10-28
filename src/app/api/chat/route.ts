@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { GEMINI_LITE } from '@/lib/gemini-models'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,11 +18,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Build system prompt with context from scan history
-    let systemPrompt = `You are NourishAI, the friendly in-app food guide for Nourish, a food scanning app. If asked your name, you are NourishAI. You help users understand their scanned products and make healthier choices.
+    let systemPrompt = `You are Nourish AI, the friendly in-app food guide for Nourish, a food scanning app. If asked your name, you are Nourish AI. You help users understand their scanned products and make healthier choices.
 
 You have access to the user's scan history including:
 - Product names, barcodes, ingredients, and nutrition information
-- AI insights like healthier alternatives, diet compatibility, eco-impact scores, and recipe suggestions
 
 IMPORTANT FORMATTING RULES:
 - Write in clean, professional prose without any markdown formatting
@@ -50,7 +50,7 @@ When answering questions:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemini-3.5-flash-lite',
+        model: GEMINI_LITE,
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages,

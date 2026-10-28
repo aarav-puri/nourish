@@ -1,15 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
-  ArrowRightLeft,
-  ChefHat,
   CircleCheck,
   CircleDashed,
-  Leaf,
-  ListChecks,
-  RefreshCw,
   ShieldAlert,
   ShieldCheck,
   ShieldQuestion,
@@ -26,14 +21,8 @@ import {
   type Food,
   type Level,
 } from '@/lib/food'
-import { DIETS, checkProduct, dietLabel, isProfileEmpty, overallStatus, type Check, type CheckStatus } from '@/lib/profile'
-import { INSIGHT_TITLES, type InsightKind } from '@/lib/ai-service'
+import { checkProduct, isProfileEmpty, overallStatus, type Check, type CheckStatus } from '@/lib/profile'
 import { GradeScale, ScoreMeter } from '@/components/product/Grade'
-import InsightResults from '@/components/product/InsightResults'
-import { useInsights } from '@/components/product/useInsights'
-import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
-import Thinking, { PixelGrid } from '@/components/ui/Thinking'
 
 /* ===================================================================== */
 
@@ -50,7 +39,6 @@ export default function ProductReport({ food, actions }: { food: Food; actions?:
         <div className="space-y-4">
           <Verdict food={food} points={points} />
           <ForYou checks={checks} profileEmpty={isProfileEmpty(profile)} />
-          <AskAI food={food} />
         </div>
         <div className="space-y-4">
           <NutritionPanel food={food} />
@@ -450,183 +438,4 @@ function Ingredients({ food }: { food: Food }) {
 
 function Footnote() {
   return <p className="px-1 text-xs leading-relaxed text-ink-3">You entered these details by hand.</p>
-}
-
-/* ---------- AI ------------------------------------------------------- */
-
-const AI_ACTIONS: { kind: InsightKind; icon: LucideIcon; blurb: string }[] = [
-  { kind: 'alternatives', icon: ArrowRightLeft, blurb: 'Healthier picks that taste alike' },
-  { kind: 'diet_compatibility', icon: ListChecks, blurb: 'Any diet, explained' },
-  { kind: 'recipe_suggestions', icon: ChefHat, blurb: 'Three ways to use it' },
-  { kind: 'eco_impact', icon: Leaf, blurb: 'Carbon, water, packaging' },
-]
-
-const RUNNING_LABEL: Record<InsightKind, string> = {
-  alternatives: 'Finding better swaps',
-  diet_compatibility: 'Checking diets',
-  recipe_suggestions: 'Writing recipes',
-  eco_impact: 'Estimating the footprint',
-}
-
-function AskAI({ food }: { food: Food }) {
-  const { profile } = useAuth()
-  const { saved, running, open, setOpen, run } = useInsights(food)
-  const [dietPicker, setDietPicker] = useState(false)
-  const [diets, setDiets] = useState<string[]>([])
-  const [usingDiets, setUsingDiets] = useState<string[]>([])
-  const thinkingRef = useRef<HTMLDivElement>(null)
-  const profileDiets = profile.diets.map(dietLabel)
-
-  const ask = (kind: InsightKind, opts: { diets: string[]; fresh?: boolean }) => {
-    setUsingDiets(opts.diets)
-    run(kind, opts)
-  }
-
-  // Keep the working panel in view; on phones it lands under the fold.
-  useEffect(() => {
-    if (running) thinkingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [running])
-
-  // Exactly what goes to Gemini with the question, shown while it works.
-  const context = [
-    food.score !== null ? `Health score ${food.score}/100` : null,
-    food.ingredients.length ? `${food.ingredients.length} ingredients` : null,
-    food.additives.length ? `${food.additives.length} additive${food.additives.length > 1 ? 's' : ''}` : null,
-    'Nutrition per 100g',
-    ...usingDiets,
-  ].filter(Boolean) as string[]
-
-  const start = (kind: InsightKind) => {
-    if (kind === 'diet_compatibility') {
-      const cached = saved.diet_compatibility?.diets
-      setDiets(cached?.length ? cached : profileDiets.length ? profileDiets : [])
-      setDietPicker(true)
-      return
-    }
-    ask(kind, { diets: profileDiets })
-  }
-
-  return (
-    <section aria-labelledby="ai-h" className="card p-5">
-      <h2 id="ai-h" className="font-semibold">
-        Go further
-      </h2>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        {AI_ACTIONS.map(({ kind, icon: Icon, blurb }) => {
-          const busy = running === kind
-          const has = Boolean(saved[kind])
-          return (
-            <button
-              key={kind}
-              type="button"
-              onClick={() => start(kind)}
-              disabled={Boolean(running)}
-              aria-busy={busy || undefined}
-              className="group relative flex min-h-[5.5rem] flex-col items-start justify-between gap-2 tile p-3.5 text-left disabled:opacity-60"
-            >
-              <span className="flex w-full items-center justify-between">
-                {busy ? <PixelGrid className="m-0.5 text-ink" /> : <Icon className="h-4 w-4 text-ink-2 group-hover:text-ink" aria-hidden="true" />}
-                {has && !busy && (
-                  <span className="rounded-full bg-ink/[0.06] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-ink-3">
-                    Saved
-                  </span>
-                )}
-              </span>
-              <span>
-                <span className="block text-sm font-medium leading-tight">{INSIGHT_TITLES[kind]}</span>
-                <span className="mt-0.5 block text-xs leading-snug text-ink-3">{blurb}</span>
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {running && (
-        <div ref={thinkingRef} className="well mt-4 px-4 py-3.5">
-          <Thinking label={RUNNING_LABEL[running]} />
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            <span className="mr-0.5 text-xs text-ink-3">Using</span>
-            {context.map((c) => (
-              <span key={c} className="chip">
-                {c}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Diet picker */}
-      <Modal
-        isOpen={dietPicker}
-        onClose={() => setDietPicker(false)}
-        title="Check against diets"
-        description="Pick the diets to check. Yours are selected already."
-        footer={
-          <Button
-            className="w-full"
-            disabled={diets.length === 0}
-            onClick={() => {
-              setDietPicker(false)
-              ask('diet_compatibility', { diets })
-            }}
-          >
-            Check {diets.length > 0 ? `${diets.length} diet${diets.length > 1 ? 's' : ''}` : 'diets'}
-          </Button>
-        }
-      >
-        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Diets">
-          {[...new Set([...DIETS.map((d) => d.label), 'Low FODMAP', 'Jain', ...profileDiets])].map((label) => {
-            const on = diets.includes(label)
-            return (
-              <button
-                key={label}
-                type="button"
-                aria-pressed={on}
-                onClick={() => setDiets((d) => (on ? d.filter((x) => x !== label) : [...d, label]))}
-                className={`flex min-h-11 items-center justify-between gap-2 rounded-lg border px-3 text-left text-sm transition-colors ${
-                  on ? 'border-transparent bg-paper text-accent-ink shadow-neu-inset' : 'border-transparent bg-paper shadow-neu-sm hover:-translate-y-px hover:shadow-neu-hover'
-                }`}
-              >
-                {label}
-                {on && <CircleCheck className="h-4 w-4 shrink-0" aria-hidden="true" />}
-              </button>
-            )
-          })}
-        </div>
-      </Modal>
-
-      {/* Answer */}
-      <Modal
-        isOpen={Boolean(open)}
-        onClose={() => setOpen(null)}
-        title={open ? INSIGHT_TITLES[open.kind] : ''}
-        description={
-          open
-            ? `${food.name}${open.kind === 'diet_compatibility' && open.diets?.length ? ` · ${open.diets.join(', ')}` : ''}`
-            : undefined
-        }
-        size="lg"
-        footer={
-          open && (
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs text-ink-3">
-                {new Date(open.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                loading={running === open.kind}
-                icon={<RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />}
-                onClick={() => ask(open.kind, { diets: open.diets ?? profileDiets, fresh: true })}
-              >
-                Ask again
-              </Button>
-            </div>
-          )
-        }
-      >
-        {open && <InsightResults content={open.content} />}
-      </Modal>
-    </section>
-  )
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { GEMINI_LITE } from '@/lib/gemini-models'
 import { scoreProductWithGemini } from '@/lib/gemini-score'
 
 const TIMEOUT_MS = Math.max(
@@ -218,7 +219,7 @@ Return JSON with these exact keys:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemini-3.5-flash-lite',
+        model: GEMINI_LITE,
         messages: [
           {
             role: 'system',

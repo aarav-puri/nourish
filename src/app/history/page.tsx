@@ -14,7 +14,6 @@ import { dayBucket, timeAgo } from '@/lib/time'
 import AppShell from '@/components/app/AppShell'
 import PageHeader from '@/components/app/PageHeader'
 import ChatAgent from '@/components/ChatAgent'
-import AssistantAvatar from '@/components/brand/AssistantAvatar'
 import { GRADE_STYLE, ScoreBadge } from '@/components/product/Grade'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
@@ -192,7 +191,7 @@ function History() {
     setClearing(false)
   }
 
-  // A compact, readable summary for NourishAI rather than raw database records.
+  // A compact, readable summary for Nourish AI rather than raw database records.
   const chatContext = useMemo(
     () => ({
       profile: { diets: profile.diets.map(dietLabel), avoids: profile.avoid },
@@ -223,8 +222,8 @@ function History() {
         subtitle={rows === null ? '\u00a0' : total === 0 ? 'Nothing here yet.' : `${total} product${total === 1 ? '' : 's'} scanned`}
         actions={
           total > 0 && (
-            <Button variant="secondary" icon={<AssistantAvatar size={24} className="-my-1 -ml-1" />} onClick={() => setChatOpen(true)}>
-              Ask NourishAI
+            <Button variant="secondary" onClick={() => setChatOpen(true)}>
+              Ask Nourish AI
             </Button>
           )
         }

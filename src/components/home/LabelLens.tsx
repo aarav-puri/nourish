@@ -18,19 +18,19 @@ type Tone = 'high' | 'moderate'
 interface Term {
   /** What the lens reads off the label. */
   read: string
-  /** What it means, in plain words. */
+  /** What it means, clearly explained. */
   meaning: string
   tone: Tone
 }
 
 /** Indexed by the number given to each t() in the print below, in reading order. */
 const TERMS: Term[] = [
-  { read: 'Glucose syrup', meaning: 'Added sugar, under another name.', tone: 'moderate' },
-  { read: 'E120', meaning: 'Red dye made from insects. Not vegetarian.', tone: 'high' },
-  { read: 'E471', meaning: 'Emulsifier. Can be made from animal fat.', tone: 'moderate' },
-  { read: 'May contain peanuts', meaning: 'Allergen. Traces are possible.', tone: 'moderate' },
-  { read: 'Saturated fat 7.1 g', meaning: 'High in saturated fat.', tone: 'high' },
-  { read: 'Sugars 29 g', meaning: 'High. Nearly a third of it is sugar.', tone: 'high' },
+  { read: 'Glucose syrup', meaning: 'Added sugar under a different name.', tone: 'moderate' },
+  { read: 'E120', meaning: 'Carmine, a red dye made from insects. Not vegetarian.', tone: 'high' },
+  { read: 'E471', meaning: 'An emulsifier that may be derived from animal fat.', tone: 'moderate' },
+  { read: 'May contain peanuts', meaning: 'Allergen warning: may contain traces of peanut.', tone: 'moderate' },
+  { read: 'Saturated fat 7.1 g', meaning: 'Above the high threshold for saturated fat.', tone: 'high' },
+  { read: 'Sugars 29 g', meaning: 'High: nearly a third of the bar is sugar.', tone: 'high' },
 ]
 
 /** The term the lens rests on when motion is reduced. */
@@ -262,7 +262,7 @@ export default function LabelLens() {
     <div
       ref={rootRef}
       role="img"
-      aria-label="The ingredients and nutrition label of a snack bar. A lens moves over the fine print and explains each flagged term in plain words."
+      aria-label="The ingredients and nutrition label of a snack bar. A lens moves over the fine print and explains each flagged term."
       className="relative isolate w-full select-none"
       onPointerMove={track}
       onPointerLeave={release}

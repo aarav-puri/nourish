@@ -1,8 +1,10 @@
 // Server only: estimates the grades a product record is missing, using the
 // caller's own Gemini key. Published grades are never overwritten.
 
+import { GEMINI_LITE } from '@/lib/gemini-models'
+
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
-const SCORE_MODEL = 'gemini-3.5-flash-lite'
+const SCORE_MODEL = GEMINI_LITE
 const VALID_GRADES = ['a', 'b', 'c', 'd', 'e']
 
 export function needsScoring(product: any) {

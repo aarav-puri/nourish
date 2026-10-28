@@ -20,12 +20,26 @@ const geistMono = Geist_Mono({ subsets: ['latin'], display: 'swap', variable: '-
 
 export const metadata: Metadata = {
   title: {
-    default: 'Nourish | The small print, read for you',
+    default: 'Nourish | The fine print, made clear',
     template: '%s · Nourish',
   },
   description:
-    'Scan any food barcode to see its health score out of 100, how processed it is, and every additive and allergen in plain words, checked against your diet. Free, with no ads.',
+    'Scan any food barcode to see its health score out of 100, how processed it is, and every additive and allergen clearly explained, checked against your diet. Free, with no ads.',
   applicationName: 'Nourish',
+  icons: {
+    icon: [
+      { url: '/brand/mark.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180' },
+      { url: '/icons/apple-touch-icon-167.png', sizes: '167x167' },
+      { url: '/icons/apple-touch-icon-152.png', sizes: '152x152' },
+      { url: '/icons/apple-touch-icon-120.png', sizes: '120x120' },
+    ],
+  },
+  appleWebApp: { title: 'Nourish', statusBarStyle: 'default' },
   verification: {
     google: '9_JzOdfOk3oOJkfW-pZ7t_XjlRBABpYdauzpEX9h1i0',
   },
